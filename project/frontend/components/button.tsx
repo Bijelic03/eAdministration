@@ -14,7 +14,7 @@ const Button: React.FC<ButtonProps> = ({
   ...rest
 }) => {
   return (
-    <button type={type} className={className} onClick={onClick} {...rest}>
+    <button type={type} className={`transition duration-300 hover:cursor-pointer ${className}`} onClick={onClick} {...rest}>
       {children}
     </button>
   );
