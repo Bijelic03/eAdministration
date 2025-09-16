@@ -9,7 +9,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type Employee struct {
+type Professor struct {
 	ID       uuid.UUID `json:"id" db:"id"`
 	FullName string    `json:"fullName" db:"fullName"`
 	Email    string    `json:"email" db:"email"`
@@ -17,30 +17,30 @@ type Employee struct {
 	Role     string    `json:"role" db:"role"`
 }
 
-type EmployeeRepository struct {
+type ProfessorRepository struct {
 	db *pgxpool.Pool
 }
 
-func NewEmployeeRepository(db *pgxpool.Pool) *EmployeeRepository {
-	return &EmployeeRepository{db: db}
+func NewProfessorRepository(db *pgxpool.Pool) *ProfessorRepository {
+	return &ProfessorRepository{db: db}
 }
 
-// Add new employee
-func (r *EmployeeRepository) Add(ctx context.Context, emp *Employee) (*Employee, error) {
+// Add new Professor
+func (r *ProfessorRepository) Add(ctx context.Context, prof *Professor) (*Professor, error) {
 	query := `
 		INSERT INTO users (fullName, email, password, role)
-		VALUES ($1, $2, $3, "employee")
+		VALUES ($1, $2, $3, "professor")
 		RETURNING id, fullName, email, password, role
 	`
 
-	emp.ID = uuid.New()
-	var created Employee
+	prof.ID = uuid.New()
+	var created Professor
 
 	err := r.db.QueryRow(ctx, query,
-		emp.FullName,
-		emp.Email,
-		emp.Password,
-		emp.Role,
+		prof.FullName,
+		prof.Email,
+		prof.Password,
+		prof.Role,
 	).Scan(
 		&created.ID,
 		&created.FullName,
@@ -52,7 +52,7 @@ func (r *EmployeeRepository) Add(ctx context.Context, emp *Employee) (*Employee,
 	if err != nil {
 		if pgErr, ok := err.(*pgconn.PgError); ok {
 			if pgErr.Code == "23505" { // unique_violation
-				return nil, fmt.Errorf("an employee with this email already exists")
+				return nil, fmt.Errorf("an professor with this email already exists")
 			}
 		}
 		return nil, err
@@ -60,44 +60,44 @@ func (r *EmployeeRepository) Add(ctx context.Context, emp *Employee) (*Employee,
 	return &created, nil
 }
 
-// Get employee by ID
-func (r *EmployeeRepository) GetByID(ctx context.Context, id uuid.UUID) (*Employee, error) {
+// Get professor by ID
+func (r *ProfessorRepository) GetByID(ctx context.Context, id uuid.UUID) (*Professor, error) {
 	query := `SELECT id, fullName, email, password, role FROM users WHERE id = $1`
 
-	var emp Employee
+	var prof Professor
 	err := r.db.QueryRow(ctx, query, id).Scan(
-		&emp.ID,
-		&emp.FullName,
-		&emp.Email,
-		&emp.Password,
-		&emp.Role,
+		&prof.ID,
+		&prof.FullName,
+		&prof.Email,
+		&prof.Password,
+		&prof.Role,
 	)
 	if err != nil {
 		return nil, err
 	}
-	return &emp, nil
+	return &prof, nil
 }
 
-// Get employee by email
-func (r *EmployeeRepository) GetByEmail(ctx context.Context, email string) (*Employee, error) {
+// Get professor by email
+func (r *ProfessorRepository) GetByEmail(ctx context.Context, email string) (*Professor, error) {
 	query := `SELECT id, fullName, email, password, role FROM users WHERE email = $1`
 
-	var emp Employee
+	var prof Professor
 	err := r.db.QueryRow(ctx, query, email).Scan(
-		&emp.ID,
-		&emp.FullName,
-		&emp.Email,
-		&emp.Password,
-		&emp.Role,
+		&prof.ID,
+		&prof.FullName,
+		&prof.Email,
+		&prof.Password,
+		&prof.Role,
 	)
 	if err != nil {
 		return nil, err
 	}
-	return &emp, nil
+	return &prof, nil
 }
 
-// Get all employees
-func (r *EmployeeRepository) GetAll(ctx context.Context, page, limit int) ([]*Employee, int, error) {
+// Get all professor
+func (r *ProfessorRepository) GetAll(ctx context.Context, page, limit int) ([]*Professor, int, error) {
 	if page < 1 {
 		page = 1
 	}
@@ -108,7 +108,7 @@ func (r *EmployeeRepository) GetAll(ctx context.Context, page, limit int) ([]*Em
 
 	query := `SELECT id, fullName, email, password, role 
 	          FROM users 
-			  WHERE role = 'employee'
+			  WHERE role = 'professor'
 	          ORDER BY fullName 
 	          LIMIT $1 OFFSET $2`
 
@@ -118,32 +118,32 @@ func (r *EmployeeRepository) GetAll(ctx context.Context, page, limit int) ([]*Em
 	}
 	defer rows.Close()
 
-	employees := make([]*Employee, 0)
+	professors := make([]*Professor, 0)
 	for rows.Next() {
-		var emp Employee
+		var prof Professor
 		if err := rows.Scan(
-			&emp.ID,
-			&emp.FullName,
-			&emp.Email,
-			&emp.Password,
-			&emp.Role,
+			&prof.ID,
+			&prof.FullName,
+			&prof.Email,
+			&prof.Password,
+			&prof.Role,
 		); err != nil {
 			return nil, 0, err
 		}
-		employees = append(employees, &emp)
+		professors = append(professors, &prof)
 	}
 
 	// total count
 	var totalItems int
-	if err := r.db.QueryRow(ctx, `SELECT COUNT(*) FROM users WHERE role = 'employee'`).Scan(&totalItems); err != nil {
+	if err := r.db.QueryRow(ctx, `SELECT COUNT(*) FROM users WHERE role = 'professor'`).Scan(&totalItems); err != nil {
 		return nil, 0, err
 	}
 
-	return employees, totalItems, nil
+	return professors, totalItems, nil
 }
 
-// Update employee
-func (r *EmployeeRepository) Update(ctx context.Context, emp *Employee) (*Employee, error) {
+// Update professor
+func (r *ProfessorRepository) Update(ctx context.Context, prof *Professor) (*Professor, error) {
 	query := `
 		UPDATE users
 		SET fullName = $1, email = $2, password = $3, role = $4
@@ -151,13 +151,13 @@ func (r *EmployeeRepository) Update(ctx context.Context, emp *Employee) (*Employ
 		RETURNING id, fullName, email, password, role
 	`
 
-	var updated Employee
+	var updated Professor
 	err := r.db.QueryRow(ctx, query,
-		emp.FullName,
-		emp.Email,
-		emp.Password,
-		emp.Role,
-		emp.ID,
+		prof.FullName,
+		prof.Email,
+		prof.Password,
+		prof.Role,
+		prof.ID,
 	).Scan(
 		&updated.ID,
 		&updated.FullName,
@@ -171,8 +171,8 @@ func (r *EmployeeRepository) Update(ctx context.Context, emp *Employee) (*Employ
 	return &updated, nil
 }
 
-// Delete employee
-func (r *EmployeeRepository) Delete(ctx context.Context, id uuid.UUID) error {
+// Delete professor
+func (r *ProfessorRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	query := `DELETE FROM users WHERE id = $1`
 	_, err := r.db.Exec(ctx, query, id)
 	return err

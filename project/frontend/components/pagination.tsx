@@ -15,11 +15,7 @@ const Pagination: React.FC<PaginationProps> = ({
 	onPageChange,
 }) => {
 	const totalPages = Math.ceil(total / limit);
-
-	console.log('page', page);
-	console.log('total', total);
-	console.log('limit', limit);
-
+	
 	return (
 		<div className='flex justify-between items-center mt-4'>
 			<p className='text-sm text-white'>

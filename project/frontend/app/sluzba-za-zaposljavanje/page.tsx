@@ -81,18 +81,18 @@ export default function SluzbaZaZaposljavanje() {
           Kandidati
         </LinkButton>
         <LinkButton href="/sluzba-za-zaposljavanje/poslovi">Poslovi</LinkButton>
-        <LinkButton href="/sluzba-za-zaposljavanje/intervjui">
+        {/* <LinkButton href="/sluzba-za-zaposljavanje/intervjui">
           Intervjui
-        </LinkButton>
+        </LinkButton> */}
         {/* <LinkButton href="/sluzba-za-zaposljavanje/ocjene-kandidata">
           Ocjene kandidata
         </LinkButton> */}
         {/* <LinkButton href="/sluzba-za-zaposljavanje/statistika">
           Statistika i izvještaji
         </LinkButton> */}
-        <LinkButton href="/sluzba-za-zaposljavanje/pozicije-oglasi">
+        {/* <LinkButton href="/sluzba-za-zaposljavanje/pozicije-oglasi">
           Pozicije / Oglasi
-        </LinkButton>
+        </LinkButton> */}
         {/* <LinkButton href="/sluzba-za-zaposljavanje/obavijesti">
           Obavijesti kandidatima
         </LinkButton> */}

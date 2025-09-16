@@ -6,29 +6,29 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/Bijelic03/eAdministration/project/microservices/employmentOffice/repositories"
+	"github.com/Bijelic03/eAdministration/project/microservices/university/repositories"
 	"github.com/google/uuid"
 )
 
-type JobListResponse struct {
-	Jobs       []*repositories.Job `json:"jobs"`
-	Page       int                 `json:"page"`
-	TotalItems int                 `json:"totalItems"`
-	TotalPages int                 `json:"totalPages"`
-	Error      interface{}         `json:"error"`
+type CourseListResponse struct {
+	Courses    []*repositories.Course `json:"courses"`
+	Page       int                    `json:"page"`
+	TotalItems int                    `json:"totalItems"`
+	TotalPages int                    `json:"totalPages"`
+	Error      interface{}            `json:"error"`
 }
 
-type JobHandler struct {
-	repo *repositories.JobRepository
+type CourseHandler struct {
+	repo *repositories.CourseRepository
 }
 
-func NewJobHandler(repo *repositories.JobRepository) *JobHandler {
-	return &JobHandler{repo: repo}
+func NewCourseHandler(repo *repositories.CourseRepository) *CourseHandler {
+	return &CourseHandler{repo: repo}
 }
 
-// Create job
-func (h *JobHandler) CreateJob(w http.ResponseWriter, r *http.Request) {
-	var emp repositories.Job
+// Create course
+func (h *CourseHandler) CreateCourse(w http.ResponseWriter, r *http.Request) {
+	var emp repositories.Course
 	if err := json.NewDecoder(r.Body).Decode(&emp); err != nil {
 		http.Error(w, "invalid request", http.StatusBadRequest)
 		return
@@ -44,8 +44,8 @@ func (h *JobHandler) CreateJob(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(created)
 }
 
-// Get job by ID
-func (h *JobHandler) GetJobByID(w http.ResponseWriter, r *http.Request) {
+// Get course by ID
+func (h *CourseHandler) GetCourseByID(w http.ResponseWriter, r *http.Request) {
 	idStr := r.URL.Query().Get("id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
@@ -63,8 +63,8 @@ func (h *JobHandler) GetJobByID(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(emp)
 }
 
-// Get all jobs
-func (h *JobHandler) GetAllJobs(w http.ResponseWriter, r *http.Request) {
+// Get all courses
+func (h *CourseHandler) GetAllCourses(w http.ResponseWriter, r *http.Request) {
 	pageStr := r.URL.Query().Get("page")
 	limitStr := r.URL.Query().Get("max")
 
@@ -82,10 +82,10 @@ func (h *JobHandler) GetAllJobs(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	jobs, totalItems, err := h.repo.GetAll(r.Context(), page, limit)
+	courses, totalItems, err := h.repo.GetAll(r.Context(), page, limit)
 	if err != nil {
-		resp := JobListResponse{
-			Jobs:       nil,
+		resp := CourseListResponse{
+			Courses:    nil,
 			Page:       page,
 			TotalItems: 0,
 			TotalPages: 0,
@@ -98,8 +98,8 @@ func (h *JobHandler) GetAllJobs(w http.ResponseWriter, r *http.Request) {
 
 	totalPages := (totalItems + limit - 1) / limit
 
-	resp := JobListResponse{
-		Jobs:       jobs,
+	resp := CourseListResponse{
+		Courses:    courses,
 		Page:       page,
 		TotalItems: totalItems,
 		TotalPages: totalPages,
@@ -110,9 +110,9 @@ func (h *JobHandler) GetAllJobs(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(resp)
 }
 
-// Update job
-func (h *JobHandler) UpdateJob(w http.ResponseWriter, r *http.Request) {
-	var emp repositories.Job
+// Update course
+func (h *CourseHandler) UpdateCourse(w http.ResponseWriter, r *http.Request) {
+	var emp repositories.Course
 	if err := json.NewDecoder(r.Body).Decode(&emp); err != nil {
 		http.Error(w, "invalid request", http.StatusBadRequest)
 		return
@@ -128,8 +128,8 @@ func (h *JobHandler) UpdateJob(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(updated)
 }
 
-// Delete job
-func (h *JobHandler) DeleteJob(w http.ResponseWriter, r *http.Request) {
+// Delete course
+func (h *CourseHandler) DeleteCourse(w http.ResponseWriter, r *http.Request) {
 	idStr := r.URL.Query().Get("id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {

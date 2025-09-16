@@ -1,106 +1,171 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
+	"strconv"
 
-	"github.com/Bijelic03/eAdministration/project/microservices/employmentOffice/model"
-	"github.com/Bijelic03/eAdministration/project/microservices/employmentOffice/services"
-	"github.com/gorilla/mux"
+	"github.com/Bijelic03/eAdministration/project/microservices/employmentOffice/repositories"
+	"github.com/google/uuid"
 )
 
+type CandidateListResponse struct {
+	Candidates []*repositories.Candidate `json:"candidates"`
+	Page       int                       `json:"page"`
+	TotalItems int                       `json:"totalItems"`
+	TotalPages int                       `json:"totalPages"`
+	Error      interface{}               `json:"error"`
+}
+
 type CandidateHandler struct {
-	Service *services.CandidateService
+	repo *repositories.CandidateRepository
 }
 
-// =================== CRUD ===================
+func NewCandidateHandler(repo *repositories.CandidateRepository) *CandidateHandler {
+	return &CandidateHandler{repo: repo}
+}
 
-func (h *CandidateHandler) Create(w http.ResponseWriter, r *http.Request) {
-	var candidate model.Candidate
-	if err := json.NewDecoder(r.Body).Decode(&candidate); err != nil {
-		http.Error(w, "Invalid input", http.StatusBadRequest)
+// Create candidate
+func (h *CandidateHandler) CreateCandidate(w http.ResponseWriter, r *http.Request) {
+	var emp repositories.Candidate
+	if err := json.NewDecoder(r.Body).Decode(&emp); err != nil {
+		http.Error(w, "invalid request", http.StatusBadRequest)
 		return
 	}
 
-	if err := h.Service.Create(&candidate); err != nil {
-		http.Error(w, "Failed to create candidate", http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(candidate)
-}
-
-func (h *CandidateHandler) GetAll(w http.ResponseWriter, r *http.Request) {
-	candidates, err := h.Service.GetAll()
+	created, err := h.repo.Add(r.Context(), &emp)
 	if err != nil {
-		http.Error(w, "Failed to fetch candidates", http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	json.NewEncoder(w).Encode(candidates)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(created)
 }
 
-func (h *CandidateHandler) GetByID(w http.ResponseWriter, r *http.Request) {
-	id := mux.Vars(r)["id"]
-
-	candidate, err := h.Service.GetByID(id)
+// Get candidate by ID
+func (h *CandidateHandler) GetCandidateByID(w http.ResponseWriter, r *http.Request) {
+	idStr := r.URL.Query().Get("id")
+	id, err := uuid.Parse(idStr)
 	if err != nil {
-		http.Error(w, "Candidate not found", http.StatusNotFound)
+		http.Error(w, "invalid id", http.StatusBadRequest)
 		return
 	}
 
-	json.NewEncoder(w).Encode(candidate)
+	emp, err := h.repo.GetByID(context.Background(), id)
+	if err != nil {
+		http.Error(w, "not found", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(emp)
 }
 
-func (h *CandidateHandler) Update(w http.ResponseWriter, r *http.Request) {
-	var candidate model.Candidate
-	if err := json.NewDecoder(r.Body).Decode(&candidate); err != nil {
-		http.Error(w, "Invalid input", http.StatusBadRequest)
+// Get candidate by email (JSON body)
+func (h *CandidateHandler) GetCandidateByEmail(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		Email string `json:"email"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "invalid JSON", http.StatusBadRequest)
+		return
+	}
+	if req.Email == "" {
+		http.Error(w, "email is required", http.StatusBadRequest)
 		return
 	}
 
-	if err := h.Service.Update(&candidate); err != nil {
-		http.Error(w, "Failed to update candidate", http.StatusInternalServerError)
+	emp, err := h.repo.GetByEmail(r.Context(), req.Email)
+	if err != nil {
+		http.Error(w, "not found", http.StatusNotFound)
 		return
 	}
 
-	json.NewEncoder(w).Encode(candidate)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(emp)
 }
 
-func (h *CandidateHandler) Delete(w http.ResponseWriter, r *http.Request) {
-	id := mux.Vars(r)["id"]
+// Get all candidates
+func (h *CandidateHandler) GetAllCandidates(w http.ResponseWriter, r *http.Request) {
+	pageStr := r.URL.Query().Get("page")
+	limitStr := r.URL.Query().Get("max")
 
-	if err := h.Service.Delete(id); err != nil {
-		http.Error(w, "Failed to delete candidate", http.StatusInternalServerError)
+	page := 1
+	limit := 10
+
+	if pageStr != "" {
+		if p, err := strconv.Atoi(pageStr); err == nil && p > 0 {
+			page = p
+		}
+	}
+	if limitStr != "" {
+		if l, err := strconv.Atoi(limitStr); err == nil && l > 0 {
+			limit = l
+		}
+	}
+
+	candidates, totalItems, err := h.repo.GetAll(r.Context(), page, limit)
+	if err != nil {
+		resp := CandidateListResponse{
+			Candidates: nil,
+			Page:       page,
+			TotalItems: 0,
+			TotalPages: 0,
+			Error:      err.Error(),
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	totalPages := (totalItems + limit - 1) / limit
+
+	resp := CandidateListResponse{
+		Candidates: candidates,
+		Page:       page,
+		TotalItems: totalItems,
+		TotalPages: totalPages,
+		Error:      nil,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(resp)
+}
+
+// Update candidate
+func (h *CandidateHandler) UpdateCandidate(w http.ResponseWriter, r *http.Request) {
+	var emp repositories.Candidate
+	if err := json.NewDecoder(r.Body).Decode(&emp); err != nil {
+		http.Error(w, "invalid request", http.StatusBadRequest)
+		return
+	}
+
+	updated, err := h.repo.Update(r.Context(), &emp)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(updated)
+}
+
+// Delete candidate
+func (h *CandidateHandler) DeleteCandidate(w http.ResponseWriter, r *http.Request) {
+	idStr := r.URL.Query().Get("id")
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		http.Error(w, "invalid id", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.repo.Delete(r.Context(), id); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	w.WriteHeader(http.StatusNoContent)
-}
-
-// =============== DODATNE FUNKCIJE ===============
-
-func (h *CandidateHandler) Apply(w http.ResponseWriter, r *http.Request) {
-	candidateID := r.URL.Query().Get("candidateID")
-	jobID := r.URL.Query().Get("jobID")
-
-	if err := h.Service.Apply(candidateID, jobID); err != nil {
-		http.Error(w, "Failed to apply", http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
-}
-
-func (h *CandidateHandler) VerifyEducation(w http.ResponseWriter, r *http.Request) {
-	candidateID := r.URL.Query().Get("candidateID")
-
-	verified, err := h.Service.VerifyEducation(candidateID)
-	if err != nil {
-		http.Error(w, "Verification failed", http.StatusInternalServerError)
-		return
-	}
-
-	json.NewEncoder(w).Encode(map[string]bool{"verified": verified})
 }
