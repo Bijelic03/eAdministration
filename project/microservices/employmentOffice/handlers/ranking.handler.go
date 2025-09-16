@@ -3,7 +3,7 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/Bijelic03/eAdministration/project/microservices/employmentOffice/services"
+	"employmentOffice/services"
 )
 
 type RankingHandler struct {

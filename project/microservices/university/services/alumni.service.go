@@ -1,6 +1,6 @@
 package services
 
-import "github.com/Bijelic03/eAdministration/project/microservices/university/repositories"
+import "university/repositories"
 
 type AlumniService struct {
 	repo *repositories.AlumniRepository

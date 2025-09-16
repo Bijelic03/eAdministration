@@ -1,0 +1,202 @@
+package models
+
+import (
+	"time"
+
+	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
+)
+
+//
+// --- Core academic domain ---
+//
+
+type StudentStatus string
+
+const (
+	StudentActive     StudentStatus = "ACTIVE"
+	StudentGraduated  StudentStatus = "GRADUATED"
+	StudentSuspended  StudentStatus = "SUSPENDED" // dodaj/izbaci po potrebi
+)
+
+type Student struct {
+	ID        uuid.UUID     `json:"id"         db:"id"`          // uuid
+	IndexNo   string        `json:"indexNo"    db:"index_no"`
+	Name      string        `json:"name"       db:"name"`
+	Email     string        `json:"email"      db:"email"`
+	Status    StudentStatus `json:"status"     db:"status"`
+	CreatedAt time.Time     `json:"createdAt"  db:"created_at"`
+	UpdatedAt time.Time     `json:"updatedAt"  db:"updated_at"`
+
+	// relations
+	EducationRecords []EducationRecord `json:"educationRecords" db:"-"`
+	Enrollments      []Enrollment      `json:"enrollments"      db:"-"`
+}
+
+// Snapshot akademske evidencije (po dijagramu: facultyName, programName, degree, itd.)
+type EducationRecord struct {
+	ID               uuid.UUID       `json:"id"                db:"id"`
+	StudentID        uuid.UUID       `json:"studentId"         db:"student_id"`          // FK -> students.id
+	FacultyID        *uuid.UUID      `json:"facultyId"         db:"faculty_id"`          // opcionalno
+	FacultyName      string          `json:"facultyName"       db:"faculty_name"`
+	ProgramID        *uuid.UUID      `json:"programId"         db:"program_id"`          // opcionalno
+	ProgramName      string          `json:"programName"       db:"program_name"`
+	Degree           string          `json:"degree"            db:"degree"`              // BSc, MSc...
+	StartDate        *time.Time      `json:"startDate"         db:"start_date"`          // DATE
+	EndDate          *time.Time      `json:"endDate"           db:"end_date"`            // DATE
+	Graduated        bool            `json:"graduated"         db:"graduated"`
+	GraduationDate   *time.Time      `json:"graduationDate"    db:"graduation_date"`     // DATE
+	AvgGradeSnapshot *decimal.Decimal`json:"avgGradeSnapshot"  db:"avg_grade_snapshot"`  // NUMERIC, opcionalno
+
+	CreatedAt time.Time `json:"createdAt" db:"created_at"`
+	UpdatedAt time.Time `json:"updatedAt" db:"updated_at"`
+}
+
+type Faculty struct {
+	ID        uuid.UUID `json:"id"       db:"id"`
+	Name      string    `json:"name"     db:"name"`
+	Address   string    `json:"address"  db:"address"`
+	CreatedAt time.Time `json:"createdAt" db:"created_at"`
+	UpdatedAt time.Time `json:"updatedAt" db:"updated_at"`
+
+	Programs  []Program        `json:"programs"  db:"-"`
+	Employees []FacultyEmployee`json:"employees" db:"-"`
+}
+
+type Program struct {
+	ID        uuid.UUID `json:"id"       db:"id"`
+	FacultyID uuid.UUID `json:"facultyId" db:"faculty_id"` // FK -> faculties.id
+	Name      string    `json:"name"     db:"name"`
+	Degree    string    `json:"degree"   db:"degree"`      // BSc, MSc...
+	CreatedAt time.Time `json:"createdAt" db:"created_at"`
+	UpdatedAt time.Time `json:"updatedAt" db:"updated_at"`
+
+	Courses []Course `json:"courses" db:"-"`
+}
+
+type Course struct {
+	ID        uuid.UUID `json:"id"      db:"id"`
+	ProgramID uuid.UUID `json:"programId" db:"program_id"` // FK -> programs.id
+	Code      string    `json:"code"    db:"code"`
+	Name      string    `json:"name"    db:"name"`
+	Ects      int       `json:"ects"    db:"ects"`
+	CreatedAt time.Time `json:"createdAt" db:"created_at"`
+	UpdatedAt time.Time `json:"updatedAt" db:"updated_at"`
+}
+
+type Enrollment struct {
+	ID         uuid.UUID `json:"id"         db:"id"`
+	StudentID  uuid.UUID `json:"studentId"  db:"student_id"` // FK -> students.id
+	CourseID   uuid.UUID `json:"courseId"   db:"course_id"`  // FK -> courses.id
+	Grade      *int      `json:"grade"      db:"grade"`      // nullable
+	EnrolledAt time.Time `json:"enrolledAt" db:"enrolled_at"`
+
+	CreatedAt time.Time `json:"createdAt" db:"created_at"`
+	UpdatedAt time.Time `json:"updatedAt" db:"updated_at"`
+}
+
+type Exam struct {
+	ID        uuid.UUID `json:"id"       db:"id"`
+	CourseID  uuid.UUID `json:"courseId" db:"course_id"` // FK -> courses.id (pretpostavka)
+	DateTime  time.Time `json:"dateTime" db:"date_time"`
+	Room      string    `json:"room"     db:"room"`
+	CreatedAt time.Time `json:"createdAt" db:"created_at"`
+	UpdatedAt time.Time `json:"updatedAt" db:"updated_at"`
+}
+
+type FacultyEmployee struct {
+	ID        uuid.UUID `json:"id"        db:"id"`
+	FacultyID uuid.UUID `json:"facultyId" db:"faculty_id"` // FK -> faculties.id
+	FullName  string    `json:"fullName"  db:"full_name"`
+	Role      string    `json:"role"      db:"role"`        // Professor/Assistant/Admin...
+	Email     string    `json:"email"     db:"email"`
+	CreatedAt time.Time `json:"createdAt" db:"created_at"`
+	UpdatedAt time.Time `json:"updatedAt" db:"updated_at"`
+}
+
+//
+// --- Career fair / hiring domain ---
+//
+
+type Candidate struct {
+	ID        uuid.UUID `json:"id"       db:"id"`
+	StudentID *uuid.UUID`json:"studentId" db:"student_id"` // ako je kandidat student, inače NULL
+	FullName  string    `json:"fullName" db:"full_name"`
+	Email     string    `json:"email"    db:"email"`
+	CreatedAt time.Time `json:"createdAt" db:"created_at"`
+	UpdatedAt time.Time `json:"updatedAt" db:"updated_at"`
+
+	EducationRecords []EducationRecord `json:"educationRecords" db:"-"`
+	Applications     []Application     `json:"applications"     db:"-"`
+}
+
+type FairCheckIn struct {
+	ID          uuid.UUID `json:"id"          db:"id"`
+	CandidateID uuid.UUID `json:"candidateId" db:"candidate_id"` // FK -> candidates.id
+	Time        time.Time `json:"time"        db:"time"`
+	QRCode      string    `json:"qrCode"      db:"qr_code"`
+	CreatedAt   time.Time `json:"createdAt"   db:"created_at"`
+	UpdatedAt   time.Time `json:"updatedAt"   db:"updated_at"`
+}
+
+type Employer struct {
+	ID        uuid.UUID `json:"id"      db:"id"`
+	Name      string    `json:"name"    db:"name"`
+	Sector    string    `json:"sector"  db:"sector"`
+	CreatedAt time.Time `json:"createdAt" db:"created_at"`
+	UpdatedAt time.Time `json:"updatedAt" db:"updated_at"`
+}
+
+type JobOffer struct {
+	ID                uuid.UUID  `json:"id"                db:"id"`
+	EmployerID        uuid.UUID  `json:"employerId"        db:"employer_id"`         // FK -> employers.id
+	Title             string     `json:"title"             db:"title"`
+	Description       string     `json:"description"       db:"description"`
+	Location          string     `json:"location"          db:"location"`
+	RequiredFacultyID *uuid.UUID `json:"requiredFacultyId" db:"required_faculty_id"` // “traženi fakultet” iz dijagrama (opciono)
+	CreatedAt         time.Time  `json:"createdAt"         db:"created_at"`
+	UpdatedAt         time.Time  `json:"updatedAt"         db:"updated_at"`
+}
+
+type ApplicationStatus string
+
+const (
+	ApplicationSubmitted ApplicationStatus = "SUBMITTED"
+	ApplicationInterview ApplicationStatus = "INTERVIEW"
+	ApplicationOffer     ApplicationStatus = "OFFER"
+	ApplicationRejected  ApplicationStatus = "REJECTED"
+)
+
+type Application struct {
+	ID         uuid.UUID        `json:"id"         db:"id"`
+	CandidateID uuid.UUID       `json:"candidateId" db:"candidate_id"` // FK -> candidates.id
+	JobOfferID uuid.UUID        `json:"jobOfferId" db:"job_offer_id"`  // FK -> job_offers.id
+	Status     ApplicationStatus`json:"status"     db:"status"`
+	CreatedAt  time.Time        `json:"createdAt"  db:"created_at"`
+	UpdatedAt  time.Time        `json:"updatedAt"  db:"updated_at"`
+
+	Interviews []Interview `json:"interviews" db:"-"`
+}
+
+type Interview struct {
+	ID          uuid.UUID `json:"id"         db:"id"`
+	ApplicationID uuid.UUID `json:"applicationId" db:"application_id"` // FK -> applications.id
+	DateTime    time.Time `json:"dateTime"   db:"date_time"`
+	Location    string    `json:"location"   db:"location"`
+	Type        string    `json:"type"       db:"type"`
+	CreatedAt   time.Time `json:"createdAt"  db:"created_at"`
+	UpdatedAt   time.Time `json:"updatedAt"  db:"updated_at"`
+}
+
+//
+// --- External services from the diagram (as Go interfaces) ---
+//
+
+type FacultyAPI interface {
+	GetOfficialGPA(studentID uuid.UUID) (decimal.Decimal, error)
+	ListEmployees(facultyID uuid.UUID) ([]FacultyEmployee, error)
+}
+
+type RecommendationEngine interface {
+	RankCandidates(offer JobOffer) ([]Candidate, error)
+}

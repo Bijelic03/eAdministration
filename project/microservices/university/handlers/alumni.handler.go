@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/Bijelic03/eAdministration/project/microservices/university/services"
+	"university/services"
 )
 
 type AlumniHandler struct {

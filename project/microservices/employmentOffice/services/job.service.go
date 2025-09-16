@@ -1,6 +1,6 @@
 package services
 
-import "github.com/Bijelic03/eAdministration/project/microservices/employmentOffice/repositories"
+import "employmentOffice/repositories"
 
 type JobService struct {
 	repo *repositories.JobRepository
