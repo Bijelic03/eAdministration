@@ -80,10 +80,8 @@ const ProfesoriiPage = () => {
       >
         <TableHeader>
           <TableHeaderCell>#</TableHeaderCell>
-          <TableHeaderCell>Indeks NO</TableHeaderCell>
           <TableHeaderCell>Ime i prezime</TableHeaderCell>
           <TableHeaderCell>Email</TableHeaderCell>
-          <TableHeaderCell>Status</TableHeaderCell>
           <TableHeaderCell>Akcije</TableHeaderCell>
         </TableHeader>
         <tbody>
@@ -92,10 +90,8 @@ const ProfesoriiPage = () => {
             values?.professors?.map((professor: any) => (
               <TableRow key={professor.id}>
                 <TableCell># {professor?.id}</TableCell>
-                <TableCell>{professor?.indexNo}</TableCell>
-                <TableCell>{professor?.name}</TableCell>
+                <TableCell>{professor?.fullName}</TableCell>
                 <TableCell>{professor?.email}</TableCell>
-                <TableCell>{professor?.status}</TableCell>
                 <TableCell className="flex gap-4">
                   <Button
                     onClick={() => {

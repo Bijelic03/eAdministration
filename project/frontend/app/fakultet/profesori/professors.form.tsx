@@ -1,7 +1,6 @@
 'use client';
 import Button from '@/components/button';
 import Input from '@/components/form/input';
-import Select from '@/components/form/select';
 import React, { useState } from 'react';
 
 interface FormProps {
@@ -11,46 +10,31 @@ interface FormProps {
     onEdit: () => void;
 }
 const UpsertProfessorForm = ({ data, onCreate, onEdit }: FormProps) => {
-    // type StudentStatus string
-
-    // const (
-    //     StudentActive     StudentStatus = "ACTIVE"
-    //     StudentGraduated  StudentStatus = "GRADUATED"
-    //     StudentSuspended  StudentStatus = "SUSPENDED" // dodaj/izbaci po potrebi
-    // )
-
-    // type Student struct {
-    //     ID        uuid.UUID     `json:"id"         db:"id"`          // uuid
-    //     IndexNo   string        `json:"indexNo"    db:"index_no"`
-    //     Name      string        `json:"name"       db:"name"`
-    //     Email     string        `json:"email"      db:"email"`
-    //     Status    StudentStatus `json:"status"     db:"status"`
-    //     CreatedAt time.Time     `json:"createdAt"  db:"created_at"`
-    //     UpdatedAt time.Time     `json:"updatedAt"  db:"updated_at"`
-
-    //     // relations
-    //     EducationRecords []EducationRecord `json:"educationRecords" db:"-"`
-    //     Enrollments      []Enrollment      `json:"enrollments"      db:"-"`
-    // }
+    /* 
+    type Professor struct {
+	ID       uuid.UUID `json:"id" db:"id"`
+	FullName string    `json:"fullName" db:"full_name"`
+	Email    string    `json:"email" db:"email"`
+}*/
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [formData, setFormData] = useState<any>({
         id: data?.id || '',
-        indexNo: data?.indexNo || '',
-        name: data?.name || '',
+        fullName: data?.fullName || '',
         email: data?.email || '',
-        status: data?.status || '',
     });
 
     const handleChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-    ) => {
-        const { name, value } = e.target;
+      ) => {
+        const { name, type, value, checked } = e.target as HTMLInputElement;
+      
         setFormData({
-            ...formData,
-            [name]: value,
+          ...formData,
+          [name]: type === "checkbox" ? checked : value,
         });
-    };
+      };
+      
 
     return (
         <>
@@ -60,20 +44,12 @@ const UpsertProfessorForm = ({ data, onCreate, onEdit }: FormProps) => {
             >
                 <div className='grid grid-cols-1 gap-5 w-full'>
                     <Input
-                        id='indexNo'
-                        name='indexNo'
-                        value={formData.indexNo}
-                        onChange={handleChange}
-                        placeholder='Indeks NO.'
-                        required
-                    />
-                    <Input
                         type='text'
-                        id='name'
-                        name='name'
-                        value={formData.name}
+                        id='fullName'
+                        name='fullName'
+                        value={formData.fullName}
                         onChange={handleChange}
-                        placeholder='Puno ime studenta'
+                        placeholder='Puno ime profesora'
                         required
                     />
                     <Input
@@ -83,17 +59,6 @@ const UpsertProfessorForm = ({ data, onCreate, onEdit }: FormProps) => {
                         onChange={handleChange}
                         placeholder='email@email.com'
                         required
-                    />
-                    <Select
-                        id='status'
-                        name='status'
-                        value={formData.status}
-                        onChange={handleChange}
-                        options={[
-                            { value: 'ACTIVE', label: 'ACTIVE' },
-                            { value: 'GRADUATED', label: 'GRADUATED' },
-                            { value: 'SUSPENDED', label: 'SUSPENDED' },
-                        ]}
                     />
                 </div>
 

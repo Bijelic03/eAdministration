@@ -1,3 +1,16 @@
+/* 
+// JobOffer - oglas za posao/praksu
+type JobOffer struct {
+	ID                uuid.UUID  `json:"id" db:"id"`
+	EmployerID        uuid.UUID  `json:"employerId" db:"employer_id"`
+	Title             string     `json:"title" db:"title"`
+	Description       string     `json:"description" db:"description"`
+	Location          string     `json:"location" db:"location"`
+	RequiredFaculty   *string    `json:"requiredFaculty" db:"required_faculty"` // opciono: traženi fakultet (naziv)
+	PublishedAt       time.Time  `json:"publishedAt" db:"published_at"`
+}
+*/
+
 'use client';
 import Button from '@/components/button';
 import Input from '@/components/form/input';
@@ -9,24 +22,15 @@ interface FormProps {
     onCreate: () => void;
     onEdit: () => void;
 }
-const UpsertCoursesForm = ({ data, onCreate, onEdit }: FormProps) => {
-    /* 
-type Course struct {
-	ID     uuid.UUID `json:"id" db:"id"`
-	Code   string    `json:"code" db:"code"`
-	Name   string    `json:"name" db:"name"`
-	Ects   int       `json:"ects" db:"ects"`
-	Active bool      `json:"active" db:"active"`
-}
-}*/
-
+const UpsertOffersForm = ({ data, onCreate, onEdit }: FormProps) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [formData, setFormData] = useState<any>({
         id: data?.id || '',
-        code: data?.code || '',
-        name: data?.name || '',
-        ects: data?.ects || 2,
-        active: data?.active || false,
+        employerId: data?.employerId || '',
+        title: data?.title || '',
+        description: data?.description || '',
+        location: data?.location || '',
+        requiredFaculty: data?.requiredFaculty || false,
     });
 
     const handleChange = (
@@ -40,7 +44,6 @@ type Course struct {
         });
       };
       
-      
 
     return (
         <>
@@ -50,42 +53,47 @@ type Course struct {
             >
                 <div className='grid grid-cols-1 gap-5 w-full'>
                     <Input
-                        type='text'
-                        id='code'
-                        name='code'
-                        value={formData.code}
+                        id='employerId'
+                        name='employerId'
+                        value={formData.employerId}
                         onChange={handleChange}
-                        placeholder='Kod'
+                        placeholder='Employer ID'
                         required
                     />
                     <Input
                         type='text'
-                        id='name'
-                        name='name'
-                        value={formData.name}
+                        id='title'
+                        name='title'
+                        value={formData.title}
                         onChange={handleChange}
-                        placeholder='Naziv'
+                        placeholder='Title'
                         required
                     />
                     <Input
-                        type='number'
-                        id='ects'
-                        name='ects'
-                        value={formData.ects}
+                        id='description'
+                        name='description'
+                        value={formData.description}
                         onChange={handleChange}
-                        placeholder='ECTS bodova'
+                        placeholder='Description'
                         required
                     />
                     <Input
+                        id='location'
+                        name='location'
+                        value={formData.location}
+                        onChange={handleChange}
+                        placeholder='Location'
+                        required
+                    />
+                    <Input
+                        id='requiredFaculty'
+                        name='requiredFaculty'
+                        value={formData.requiredFaculty}
+                        onChange={handleChange}
+                        placeholder='Required faculty'
                         type='checkbox'
-                        id='active'
-                        name='active'
-                        value={formData.active}
-                        onChange={handleChange}
-                        placeholder='Aktivan'
                         required
                     />
-                   
                 </div>
 
                 <Button
@@ -99,4 +107,4 @@ type Course struct {
     );
 };
 
-export default UpsertCoursesForm;
+export default UpsertOffersForm;
