@@ -1,8 +1,9 @@
 package services
 
 import (
-	"employmentOffice/model"
-	"employmentOffice/repositories"
+	"github.com/Bijelic03/eAdministration/project/microservices/employmentOffice/repositories"
+
+	"github.com/Bijelic03/eAdministration/project/microservices/employmentOffice/model"
 )
 
 type CandidateService struct {

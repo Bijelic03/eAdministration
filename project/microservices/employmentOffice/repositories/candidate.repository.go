@@ -1,10 +1,6 @@
 package repositories
 
-import (
-	"errors"
-
-	"employmentOffice/model"
-)
+import "github.com/Bijelic03/eAdministration/project/microservices/employmentOffice/model"
 
 type CandidateRepository struct {
 	// TODO: dodaj konekciju ka DB (npr. *sql.DB ili *gorm.DB)
