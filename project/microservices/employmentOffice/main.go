@@ -41,11 +41,35 @@ func main() {
 		handler.AllowedOrigins([]string{"http://localhost:5173"}),
 	)
 
-	// Set up the server
-	server := &http.Server{
-		Handler: cors(router),
-		Addr:    address,
-	}
+		// ====== EMPLOYMENT OFFICE ROUTING ======
+
+		employmentOfficeRouter := router.PathPrefix("/employmentOffice").Subrouter()
+
+		// Inicijalizacija candidate handler-a
+		candidateHandler := &handlers.CandidateHandler{
+			Service: &services.CandidateService{
+				Repo: &repositories.CandidateRepository{},
+			},
+		}
+	
+		// Candidate routes (CRUD + dodatne)
+		employmentOfficeRouter.HandleFunc("/candidates", candidateHandler.Create).Methods("POST")
+		employmentOfficeRouter.HandleFunc("/candidates", candidateHandler.GetAll).Methods("GET")
+		employmentOfficeRouter.HandleFunc("/candidates/{id}", candidateHandler.GetByID).Methods("GET")
+		employmentOfficeRouter.HandleFunc("/candidates", candidateHandler.Update).Methods("PUT")
+		employmentOfficeRouter.HandleFunc("/candidates/{id}", candidateHandler.Delete).Methods("DELETE")
+	
+		employmentOfficeRouter.HandleFunc("/candidates/apply", candidateHandler.Apply).Methods("POST")
+		employmentOfficeRouter.HandleFunc("/candidates/verify-education", candidateHandler.VerifyEducation).Methods("GET")
+	
+		// ===================
+	
+		address := ":8082"
+	
+		server := &http.Server{
+			Handler: cors(router),
+			Addr:    address,
+		}
 
 	// Start the server
 	go func() {
