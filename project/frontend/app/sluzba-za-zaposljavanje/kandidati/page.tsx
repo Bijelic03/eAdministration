@@ -1,145 +1,159 @@
-"use client";
+'use client';
 
-import Button from "@/components/button";
-import Icon from "@/components/Icons";
-import Pagination from "@/components/pagination";
-import Table from "@/components/table/table";
-import TableCell from "@/components/table/tableCell";
-import TableHeader from "@/components/table/tableHeader";
-import TableHeaderCell from "@/components/table/tableHeaderCell";
-import TableRow from "@/components/table/tableRow";
-import Wrap from "@/components/wrap";
-import { useState } from "react";
+import Button from '@/components/button';
+import Icon from '@/components/Icons';
+import Loading from '@/components/loading';
+import FullScreenModal, { ModalLabel } from '@/components/modal';
+import Table from '@/components/table/table';
+import TableCell from '@/components/table/tableCell';
+import TableHeader from '@/components/table/tableHeader';
+import TableHeaderCell from '@/components/table/tableHeaderCell';
+import TableRow from '@/components/table/tableRow';
+import Wrap from '@/components/wrap';
+import useCandidate from '@/hooks/useCandidate';
+import useModal from '@/hooks/useModal';
+import usePaginationAndSearch from '@/hooks/usePaginationAndSearch';
+import { handleApiError } from '@/services/api.service';
+import { useEffect, useState } from 'react';
+import UpsertCandidateForm from './candidate.form';
 
-// import Table from "@/components/Shared/Table";
-// import TableHeader from "@/components/Shared/TableHeader";
-// import TableRow from "@/components/Shared/TableRow";
-// import TableCell from "@/components/Shared/TableCell";
-// import TableHeaderCell from "@/components/Shared/TableHeaderCell";
-// import {
-//   deleteCompany,
-//   getAllCompanies,
-//   getTotalCompaniesNumber,
-// } from "@/services/companies";
-// import { useEffect, useState } from "react";
-// import { useRouter } from "next/navigation";
-// import { Company } from "@/types/company";
-// import Button from "@/components/Shared/Button";
-// import Icon from "@/components/Shared/Icons";
-// import { handleApiError } from "@/services/handle-api.service";
-// import Pagination from "@/components/Pagination";
+const DUMMY_ARRAY = [
+	{
+		id: 1,
+		fullName: 'Andrej Stj',
+		email: 'andrej@gmail.com',
+	},
+];
 
 const KandidatiPage = () => {
-//   const router = useRouter();
-//   const [companies, setCompanies] = useState<Company[]>([]);
-//   const [loading, setLoading] = useState<boolean>(true);
-  const [page, setPage] = useState(1);
-  const [limit] = useState(10);
-  const [total, setTotal] = useState(0);
+	const {
+		values,
+		fetchCandidates,
+		deleteCandidate,
+		updateCandidate,
+		createCandidate,
+	} = useCandidate();
+	const { page, rowsPerPage, search, handlePageChange } =
+		usePaginationAndSearch();
+	const { isOpen, toggleModal } = useModal();
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const [data, setData] = useState<any>();
 
-//   const onViewAnalytics = (id: string) => {
-//     router.push(`/companies/analytics/${id}`);
-//   };
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const onCreate = async (data: any) => {
+		try {
+			await createCandidate(data);
+		} catch (error) {
+			handleApiError(error, 'Kreiranje nije uspjelo');
+		}
+	};
 
-//   const onEditCompany = (id: string) => {
-//     router.push(`/companies/edit/${id}`);
-//   };
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const onEdit = async (data: any) => {
+		try {
+			await updateCandidate(data);
+		} catch (error) {
+			handleApiError(error, 'Update nije uspio');
+		}
+	};
 
-//   const onDeleteCompany = async (id: string) => {
-//     try {
-//       await deleteCompany(id);
-//       setCompanies((prev) =>
-//         prev.filter((company: Company) => company.id !== id)
-//       );
-//       setTotal((prevTotal) => prevTotal - 1);
-//     } catch (error) {
-//       handleApiError(error, "Failed to delete company.");
-//     }
-//   };
+	const onDelete = async (id: string) => {
+		try {
+			await deleteCandidate(id);
+		} catch (error) {
+			handleApiError(error, 'Brisanje nije uspjelo.');
+		}
+	};
 
-//   useEffect(() => {
-//     const fetchCompanies = async () => {
-//       setLoading(true);
-//       try {
-//         const data = await getAllCompanies(page, limit);
-//         setCompanies(data);
-//       } catch (err) {
-//         handleApiError(err, "Failed to fetch companies.");
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
+	useEffect(() => {
+		fetchCandidates();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [page, rowsPerPage, search]);
 
-//     fetchCompanies();
-//   }, [page, limit]);
+	if (values?.loading) return <Loading />;
 
-//   useEffect(() => {
-//     const fetchTotalCompanies = async () => {
-//       try {
-//         const response = await getTotalCompaniesNumber();
-//         setTotal(response.total);
-//       } catch (error) {
-//         handleApiError(error, "Failed to fetch total companies number.");
-//       }
-//     };
+	return (
+		<Wrap>
+			<Table
+				hasAddButton={true}
+				addButtonOnClick={() => toggleModal()}
+				addButtonLabel='Dodaj novog kandidata'
+				className='mt-8'
+				paginationProps={{
+					page: page + 1,
+					total: values.totalItems,
+					limit: rowsPerPage,
+					onPageChange: (newPage) => handlePageChange(undefined, newPage),
+				}}
+			>
+				<TableHeader>
+					<TableHeaderCell>#</TableHeaderCell>
+					<TableHeaderCell>Ime i prezime</TableHeaderCell>
+					<TableHeaderCell>Email</TableHeaderCell>
+					<TableHeaderCell>Student ID</TableHeaderCell>
+					<TableHeaderCell>Akcije</TableHeaderCell>
+				</TableHeader>
+				<tbody>
+					{/* {values?.candidates?.length > 0 ? ( */}
+					{DUMMY_ARRAY?.length > 0 ? (
+						// values?.candidates?.map((candidate: any) => (
+						// eslint-disable-next-line @typescript-eslint/no-explicit-any
+						DUMMY_ARRAY?.map((candidate: any) => (
+							<TableRow key={candidate.id}>
+								<TableCell># {candidate?.id}</TableCell>
+								<TableCell>{candidate?.fullName}</TableCell>
+								<TableCell>{candidate?.email}</TableCell>
+								<TableCell>{candidate?.studentId || 'NO STUDENT'}</TableCell>
+								<TableCell className='flex gap-4'>
+									<Button
+										onClick={() => {
+											setData(candidate);
+											toggleModal();
+										}}
+									>
+										<Icon type='edit' />
+									</Button>
+									<Button onClick={() => onDelete(candidate.id)}>
+										<Icon type='reject' />
+									</Button>
+								</TableCell>
+							</TableRow>
+						))
+					) : (
+						<TableRow>
+							<TableCell colSpan={6}>Nema kandidata</TableCell>
+						</TableRow>
+					)}
+				</tbody>
+			</Table>
 
-//     fetchTotalCompanies();
-//   }, []);
-
-//   if (loading) return <p>Loading...</p>;
-
-const testFun = () => {
-  console.log("test");
-}
-
-  return (
-    <Wrap>
-      <Table hasAddButton={true} addButtonHref="/kandidati/new" addButtonLabel="Dodaj novog kandidata" className="mt-8">
-        <TableHeader>
-          <TableHeaderCell>Company Name</TableHeaderCell>
-          <TableHeaderCell>Email</TableHeaderCell>
-          <TableHeaderCell>Phone</TableHeaderCell>
-          <TableHeaderCell>City</TableHeaderCell>
-          <TableHeaderCell>Pib</TableHeaderCell>
-          <TableHeaderCell>Actions</TableHeaderCell>
-        </TableHeader>
-        <tbody>
-          {[{id: '123'}].length > 0 ? (
-            [{id: '123'}].map((company: {id: string}) => (
-              <TableRow key={company.id}>
-                <TableCell>1</TableCell>
-                <TableCell>2</TableCell>
-                <TableCell>3</TableCell>
-                <TableCell>4</TableCell>
-                <TableCell>5</TableCell>
-                <TableCell className="flex gap-4">
-                  <Button onClick={() => testFun}>
-                    <Icon type="analytics" />
-                  </Button>
-                  <Button onClick={() => testFun}>
-                    <Icon type="edit" />
-                  </Button>
-                  <Button onClick={() => testFun}>
-                    <Icon type="reject" />
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={6}>No companies available</TableCell>
-            </TableRow>
-          )}
-        </tbody>
-      </Table>
-      <Pagination
-        page={page}
-        total={total}
-        limit={limit}
-        onPageChange={setPage}
-      />
-    </Wrap>
-  );
+			<FullScreenModal
+				key={Math.random()}
+				isOpen={isOpen}
+				onClose={() => {
+					setData(null);
+					toggleModal();
+				}}
+			>
+				{!data?.id ? (
+					<ModalLabel label='Kreiraj kandidata' />
+				) : (
+					<ModalLabel label='Apdejtuj kandidata' />
+				)}
+				<UpsertCandidateForm
+					data={data}
+					onCreate={() => {
+						onCreate(data);
+						toggleModal();
+					}}
+					onEdit={() => {
+						onEdit(data);
+						toggleModal();
+					}}
+				/>
+			</FullScreenModal>
+		</Wrap>
+	);
 };
 
 export default KandidatiPage;
