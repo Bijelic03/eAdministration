@@ -97,7 +97,6 @@ func (r *EmployeeRepository) GetByEmail(ctx context.Context, email string) (*Emp
 }
 
 // Get all employees
-// GetAll vraća zaposlene paginirano + ukupan broj
 func (r *EmployeeRepository) GetAll(ctx context.Context, page, limit int) ([]*Employee, int, error) {
 	if page < 1 {
 		page = 1
@@ -118,7 +117,7 @@ func (r *EmployeeRepository) GetAll(ctx context.Context, page, limit int) ([]*Em
 	}
 	defer rows.Close()
 
-	var employees []*Employee
+	employees := make([]*Employee, 0)
 	for rows.Next() {
 		var emp Employee
 		if err := rows.Scan(
