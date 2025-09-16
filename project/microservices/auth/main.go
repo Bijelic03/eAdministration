@@ -36,8 +36,8 @@ func main() {
 	cors := handler.CORS(
 		handler.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}),
 		handler.AllowedHeaders([]string{"Authorization", "Content-Type"}),
-		handler.AllowCredentials(),
-		handler.AllowedOrigins([]string{"http://localhost:5173"}),
+		handler.AllowCredentials(),            // ⚠️ Ako koristiš *, AllowCredentials() neće raditi
+		handler.AllowedOrigins([]string{"*"}), // dozvoljava sve origin-e
 	)
 
 	// Set up the server

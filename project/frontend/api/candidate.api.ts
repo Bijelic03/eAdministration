@@ -4,6 +4,7 @@ const CANDIDATE_API_PATH = '/employmentOffice/candidates';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function createCandidateAPI(data: any) {
+	console.log('DATA FROM FORM', data);
 	const response = await axiosInstance.post(CANDIDATE_API_PATH, data);
 	return response.data;
 }

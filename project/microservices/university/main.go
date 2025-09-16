@@ -7,38 +7,71 @@ import (
 	"os"
 	"os/signal"
 	"time"
-	//"github.com/Bijelic03/eAdministration/project/microservices/university/config"
 
-	//"github.com/Bijelic03/eAdministration/project/microservices/university/db"
+	"github.com/Bijelic03/eAdministration/project/microservices/university/config"
+	"github.com/Bijelic03/eAdministration/project/microservices/university/db"
+	"github.com/Bijelic03/eAdministration/project/microservices/university/handlers"
+	"github.com/Bijelic03/eAdministration/project/microservices/university/repositories"
+
 	handler "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 
 func main() {
+	cfg := config.GetConfig()
 
-//	cfg := config.GetConfig()
-
-//	conn, err := db.Connect(cfg.DatabaseURL())
-//	handleErr(err)
+	conn, err := db.Connect(cfg.DatabaseURL())
+	handleErr(err)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
 	address := ":8081"
 
-	// Set up the router
-	router := mux.NewRouter()
-
-	router.Use(mux.CORSMethodMiddleware(router))
-
-//	api := router.PathPrefix("/api/v1").Subrouter()
-
 	cors := handler.CORS(
 		handler.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}),
 		handler.AllowedHeaders([]string{"Authorization", "Content-Type"}),
 		handler.AllowCredentials(),
-		handler.AllowedOrigins([]string{"http://localhost:5173"}),
+		handler.AllowedOrigins([]string{"*"}),
 	)
+
+	// Set up the router
+	router := mux.NewRouter()
+	router.Use(mux.CORSMethodMiddleware(router))
+
+	api := router.PathPrefix("/api/v1/university").Subrouter()
+
+	// /api/v1/university/courses
+	courseRepository := repositories.NewCourseRepository(conn)
+	courseHandler := handlers.NewCourseHandler(courseRepository)
+	courses := api.PathPrefix("/courses").Subrouter()
+	courses.Handle("", authMiddleware(http.HandlerFunc(courseHandler.CreateCourse))).Methods("POST")
+	courses.Handle("", authMiddleware(http.HandlerFunc(courseHandler.GetAllCourses))).Methods("GET")
+	courses.Handle("/{id}", authMiddleware(http.HandlerFunc(courseHandler.GetCourseByID))).Methods("GET")
+	courses.Handle("/{id}", authMiddleware(http.HandlerFunc(courseHandler.UpdateCourse))).Methods("PUT")
+	courses.Handle("/{id}", authMiddleware(http.HandlerFunc(courseHandler.DeleteCourse))).Methods("DELETE")
+
+	// /api/v1/university/professors
+	professorRepository := repositories.NewProfessorRepository(conn)
+	professorHandler := handlers.NewProfessorHandler(professorRepository)
+	professors := api.PathPrefix("/professors").Subrouter()
+	professors.Handle("", authMiddleware(http.HandlerFunc(professorHandler.CreateProfessor))).Methods("POST")
+	professors.Handle("", authMiddleware(http.HandlerFunc(professorHandler.GetAllProfessors))).Methods("GET")
+	professors.Handle("/{id}", authMiddleware(http.HandlerFunc(professorHandler.GetProfessorByID))).Methods("GET")
+	professors.Handle("/by-email", authMiddleware(http.HandlerFunc(professorHandler.GetProfessorByEmail))).Methods("GET")
+	professors.Handle("/{id}", authMiddleware(http.HandlerFunc(professorHandler.UpdateProfessor))).Methods("PUT")
+	professors.Handle("/{id}", authMiddleware(http.HandlerFunc(professorHandler.DeleteProfessor))).Methods("DELETE")
+
+	// /api/v1/university/students
+	studentRepository := repositories.NewStudentRepository(conn)
+	studentHandler := handlers.NewStudentHandler(studentRepository)
+	students := api.PathPrefix("/students").Subrouter()
+	students.Handle("", authMiddleware(http.HandlerFunc(studentHandler.CreateStudent))).Methods("POST")
+	students.Handle("", authMiddleware(http.HandlerFunc(studentHandler.GetAllStudents))).Methods("GET")
+	students.Handle("/{id}", authMiddleware(http.HandlerFunc(studentHandler.GetStudentByID))).Methods("GET")
+	students.Handle("/by-email", authMiddleware(http.HandlerFunc(studentHandler.GetStudentByEmail))).Methods("GET")
+	students.Handle("/{id}", authMiddleware(http.HandlerFunc(studentHandler.UpdateStudent))).Methods("PUT")
+	students.Handle("/{id}", authMiddleware(http.HandlerFunc(studentHandler.DeleteStudent))).Methods("DELETE")
 
 	// Set up the server
 	server := &http.Server{
@@ -76,4 +109,12 @@ func handleErr(err error) {
 		log.Fatalln(err)
 	}
 
+}
+
+func authMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// TODO: implement api to auth service
+
+		next.ServeHTTP(w, r)
+	})
 }
