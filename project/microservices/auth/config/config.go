@@ -18,13 +18,14 @@ type Config struct {
 func GetConfig() Config {
 
 	return Config{
-		Host:   os.Getenv("HOST_PORT"),
-		Port:   os.Getenv("AUTH_PORT"),
-		DBHost: os.Getenv("DB_HOST"),
-		DBUser: os.Getenv("DB_USER"),
-		DBPort: os.Getenv("DB_PORT"),
-		DBPass: os.Getenv("DB_PASS"),
-		DBName: os.Getenv("DB_NAME"),
+		Host:          os.Getenv("HOST_PORT"),
+		Port:          os.Getenv("AUTH_PORT"),
+		SecretKeyAuth: os.Getenv("SECRET_KEY_AUTH"),
+		DBHost:        os.Getenv("DB_HOST"),
+		DBUser:        os.Getenv("DB_USER"),
+		DBPort:        os.Getenv("DB_PORT"),
+		DBPass:        os.Getenv("DB_PASS"),
+		DBName:        os.Getenv("DB_NAME"),
 	}
 }
 

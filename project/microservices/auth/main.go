@@ -8,31 +8,35 @@ import (
 	"os/signal"
 	"time"
 
+	"github.com/Bijelic03/eAdministration/project/microservices/auth/config"
+	"github.com/Bijelic03/eAdministration/project/microservices/auth/db"
+	"github.com/Bijelic03/eAdministration/project/microservices/auth/handlers"
 	handler "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
-//	"github.com/Bijelic03/eAdministration/project/microservices/employmentOffice/config"
-
-//	"github.com/Bijelic03/eAdministration/project/microservices/employmentOffice/db"
 )
 
 func main() {
 
-//	cfg := config.GetConfig()
+	cfg := config.GetConfig()
 
-//	conn, err := db.Connect(cfg.DatabaseURL())
-//	handleErr(err)
+	conn, err := db.Connect(cfg.DatabaseURL())
+	handleErr(err)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
 	address := ":8083"
 
+	var secretKey = []byte(cfg.SecretKeyAuth)
+	auth := handlers.NewAuthHandler(secretKey)
+
 	// Set up the router
 	router := mux.NewRouter()
 
 	router.Use(mux.CORSMethodMiddleware(router))
+	router.Use(userHandler.MiddlewareContentTypeSet)
 
-//	api := router.PathPrefix("/api/v1").Subrouter()
+	api := router.PathPrefix("/api/v1").Subrouter()
 
 	cors := handler.CORS(
 		handler.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}),
@@ -40,6 +44,15 @@ func main() {
 		handler.AllowCredentials(),
 		handler.AllowedOrigins([]string{"http://localhost:5173"}),
 	)
+
+	// Initialize user repository
+	userRepository, err := repositories.New(timeoutContext, storeLogger)
+
+	studentRouter := router.NewRoute().Subrouter()
+	studentRouter.Use(auth.MiddlewareAuth)
+
+	employeeRouter := router.NewRoute().Subrouter()
+	employeeRouter.Use(auth.MiddlewareAuthManager)
 
 	// Set up the server
 	server := &http.Server{
