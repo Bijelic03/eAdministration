@@ -1,8 +1,6 @@
 package services
 
-import (
-	"employmentOffice/repositories"
-)
+import "github.com/Bijelic03/eAdministration/project/microservices/employmentOffice/repositories"
 
 type RankingService struct {
 	repo          *repositories.JobRepository

@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"employmentOffice/services"
+	"github.com/Bijelic03/eAdministration/project/microservices/employmentOffice/services"
 )
 
 type JobHandler struct {

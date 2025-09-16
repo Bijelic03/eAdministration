@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"employmentOffice/model"
-	"employmentOffice/services"
+	"github.com/Bijelic03/eAdministration/project/microservices/employmentOffice/model"
+	"github.com/Bijelic03/eAdministration/project/microservices/employmentOffice/services"
 	"github.com/gorilla/mux"
 )
 
