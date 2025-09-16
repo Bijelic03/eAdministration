@@ -30,13 +30,15 @@ const UpsertJobForm = ({ data, onCreate, onEdit }: FormProps) => {
 
 	const handleChange = (
 		e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-	) => {
-		const { name, value } = e.target;
+	  ) => {
+		const { name, type, value, checked } = e.target as HTMLInputElement;
+	  
 		setFormData({
-			...formData,
-			[name]: value,
+		  ...formData,
+		  [name]: type === "checkbox" ? checked : value,
 		});
-	};
+	  };
+	  
 
 	return (
 		<>

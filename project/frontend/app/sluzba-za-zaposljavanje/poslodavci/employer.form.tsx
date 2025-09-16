@@ -9,22 +9,21 @@ interface FormProps {
 	onCreate: () => void;
 	onEdit: () => void;
 }
-const UpsertCandidateForm = ({ data, onCreate, onEdit }: FormProps) => {
-	// ID        uuid.UUID `json:"id"       db:"id"`
-	// StudentID *uuid.UUID`json:"studentId" db:"student_id"` // ako je kandidat student, inače NULL
-	// FullName  string    `json:"fullName" db:"full_name"`
-	// Email     string    `json:"email"    db:"email"`
-	// CreatedAt time.Time `json:"createdAt" db:"created_at"`
-	// UpdatedAt time.Time `json:"updatedAt" db:"updated_at"`
-	// EducationRecords []EducationRecord `json:"educationRecords" db:"-"`
-	// Applications     []Application     `json:"applications"     db:"-"`
+const UpsertEmployerForm = ({ data, onCreate, onEdit }: FormProps) => {
+/* 
+// Employer - poslodavac koji objavljuje ponude
+type Employer struct {
+	ID   uuid.UUID `json:"id" db:"id"`
+	Name string    `json:"name" db:"name"`
+	Sector string  `json:"sector" db:"sector"`
+}
+*/
 
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const [formData, setFormData] = useState<any>({
 		id: data?.id || '',
-		fullName: data?.fullName || '',
-		email: data?.email || '',
-		studentId: data?.studentId || '',
+		name: data?.name || '',
+        sector: data?.sector || '',
 	});
 
 	const handleChange = (
@@ -47,28 +46,20 @@ const UpsertCandidateForm = ({ data, onCreate, onEdit }: FormProps) => {
 			>
 				<div className='grid grid-cols-1 gap-5 w-full'>
 					<Input
-						id='fullName'
-						name='fullName'
-						value={formData.fullName}
+						id='name'
+						name='name'
+						value={formData.name}
 						onChange={handleChange}
-						placeholder='Full name'
+						placeholder='Name'
 						required
 					/>
 					<Input
-						type='email'
-						id='email'
-						name='email'
-						value={formData.email}
+						type='text'
+						id='sector'
+						name='sector'
+						value={formData.sector}
 						onChange={handleChange}
-						placeholder='email@email.com'
-						required
-					/>
-					<Input
-						id='studentId'
-						name='studentId'
-						value={formData.studentId}
-						onChange={handleChange}
-						placeholder='Student ID (can be empty)'
+						placeholder='Sector'
 						required
 					/>
 				</div>
@@ -84,4 +75,4 @@ const UpsertCandidateForm = ({ data, onCreate, onEdit }: FormProps) => {
 	);
 };
 
-export default UpsertCandidateForm;
+export default UpsertEmployerForm;

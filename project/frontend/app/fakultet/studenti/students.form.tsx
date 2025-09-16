@@ -44,13 +44,15 @@ const UpsertStudentForm = ({ data, onCreate, onEdit }: FormProps) => {
 
 	const handleChange = (
 		e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-	) => {
-		const { name, value } = e.target;
+	  ) => {
+		const { name, type, value, checked } = e.target as HTMLInputElement;
+	  
 		setFormData({
-			...formData,
-			[name]: value,
+		  ...formData,
+		  [name]: type === "checkbox" ? checked : value,
 		});
-	};
+	  };
+	  
 
 	return (
 		<>
@@ -69,9 +71,9 @@ const UpsertStudentForm = ({ data, onCreate, onEdit }: FormProps) => {
 					/>
 					<Input
 						type='text'
-						id='name'
-						name='name'
-						value={formData.name}
+						id='fullName'
+						name='fullName'
+						value={formData.fullName}
 						onChange={handleChange}
 						placeholder='Puno ime studenta'
 						required

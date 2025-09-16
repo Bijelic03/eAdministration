@@ -118,10 +118,10 @@ export default function FakultetPage() {
         <div className="flex flex-col gap-y-4 mt-8">
           <LinkButton href="/fakultet/studenti">Studenti</LinkButton>
           <LinkButton href="/fakultet/profesori">Profesori</LinkButton>
-          <LinkButton href="/fakultet/kursovi">Kursevi</LinkButton>
-          <LinkButton href="/fakultet/ocjene">Ocjene</LinkButton>
-          <LinkButton href="/fakultet/gpa">GPA</LinkButton>
-          <LinkButton href="/fakultet/alumni">Alumni</LinkButton>
+          <LinkButton href="/fakultet/kursevi">Kursevi</LinkButton>
+          {/* <LinkButton href="/fakultet/ocjene">Ocjene</LinkButton> */}
+          {/* <LinkButton href="/fakultet/gpa">GPA</LinkButton>
+          <LinkButton href="/fakultet/alumni">Alumni</LinkButton> */}
         </div>
       </Wrap>
   );
