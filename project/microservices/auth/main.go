@@ -10,17 +10,16 @@ import (
 
 	handler "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
-//	"github.com/Bijelic03/eAdministration/project/microservices/employmentOffice/config"
-
-//	"github.com/Bijelic03/eAdministration/project/microservices/employmentOffice/db"
+	//	"github.com/Bijelic03/eAdministration/project/microservices/employmentOffice/config"
+	//	"github.com/Bijelic03/eAdministration/project/microservices/employmentOffice/db"
 )
 
 func main() {
 
-//	cfg := config.GetConfig()
+	//	cfg := config.GetConfig()
 
-//	conn, err := db.Connect(cfg.DatabaseURL())
-//	handleErr(err)
+	//	conn, err := db.Connect(cfg.DatabaseURL())
+	//	handleErr(err)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
@@ -32,7 +31,7 @@ func main() {
 
 	router.Use(mux.CORSMethodMiddleware(router))
 
-//	api := router.PathPrefix("/api/v1").Subrouter()
+	//	api := router.PathPrefix("/api/v1").Subrouter()
 
 	cors := handler.CORS(
 		handler.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}),
