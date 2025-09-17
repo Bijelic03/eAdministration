@@ -2,10 +2,13 @@ package main
 
 import (
 	"context"
+	"encoding/json"
+	"io"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"time"
 
 	"github.com/Bijelic03/eAdministration/project/microservices/university/config"
@@ -16,6 +19,15 @@ import (
 	handler "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
+
+const authServiceURL = "http://auth:8083/api/v1/auth/verify"
+
+type VerifyResponse struct {
+	Ok    bool   `json:"ok"`
+	Email string `json:"email,omitempty"`
+	Role  string `json:"role,omitempty"`
+	Error string `json:"error,omitempty"`
+}
 
 func main() {
 	cfg := config.GetConfig()
@@ -113,7 +125,50 @@ func handleErr(err error) {
 
 func authMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// TODO: implement api to auth service
+		authHeader := r.Header.Get("Authorization")
+		if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
+			http.Error(w, `{"error":"Missing or invalid Authorization header"}`, http.StatusUnauthorized)
+			return
+		}
+		token := strings.TrimPrefix(authHeader, "Bearer ")
+
+		client := &http.Client{Timeout: 5 * time.Second}
+		req, err := http.NewRequest("GET", authServiceURL, nil)
+		if err != nil {
+			http.Error(w, `{"error":"internal error"}`, http.StatusInternalServerError)
+			return
+		}
+		req.Header.Set("Authorization", "Bearer "+token)
+
+		resp, err := client.Do(req)
+		if err != nil {
+			msg := map[string]string{"error": "auth service unreachable: " + err.Error()}
+			b, _ := json.Marshal(msg)
+			http.Error(w, string(b), http.StatusUnauthorized)
+			return
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(resp.StatusCode)
+			io.Copy(w, resp.Body)
+			return
+		}
+
+		var verify VerifyResponse
+		if err := json.NewDecoder(resp.Body).Decode(&verify); err != nil {
+			http.Error(w, `{"error":"invalid response from auth service"}`, http.StatusUnauthorized)
+			return
+		}
+		if !verify.Ok {
+			http.Error(w, `{"error":"token not valid"}`, http.StatusUnauthorized)
+			return
+		}
+
+		ctx := context.WithValue(r.Context(), "email", verify.Email)
+		ctx = context.WithValue(ctx, "role", verify.Role)
+		r = r.WithContext(ctx)
 
 		next.ServeHTTP(w, r)
 	})
