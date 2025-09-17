@@ -5,5 +5,5 @@ export const axiosEmploymentOfficeInstance = axios.create({
 });
 
 export const axiosUniversityInstance = axios.create({
-	baseURL: 'http://universities.hipolabs.com',
+	baseURL: 'http://localhost:8081/api/v1',
 });

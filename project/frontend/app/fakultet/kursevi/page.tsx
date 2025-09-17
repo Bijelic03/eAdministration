@@ -89,7 +89,7 @@ const KurseviPage = () => {
                 <TableCell>{course?.code}</TableCell>
                 <TableCell>{course?.name}</TableCell>
                 <TableCell>{course?.ects}</TableCell>
-                <TableCell>{course?.active}</TableCell>
+                <TableCell>{course?.active === true ? 'Da' : 'Ne'}</TableCell>
                 <TableCell className="flex gap-4">
                   <Button
                     onClick={() => {

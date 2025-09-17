@@ -36,7 +36,7 @@ type Job struct {
 	Title           string    `json:"title" db:"title"`
 	Description     string    `json:"description" db:"description"`
 	Location        string    `json:"location" db:"location"`
-	RequiredFaculty *string   `json:"requiredfaculty" db:"requiredfaculty"`
+	RequiredFaculty *bool     `json:"requiredfaculty" db:"requiredfaculty"`
 }
 
 type JobRepository struct {

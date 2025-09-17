@@ -8,6 +8,7 @@ import (
 
 	"github.com/Bijelic03/eAdministration/project/microservices/employmentOffice/repositories"
 	"github.com/google/uuid"
+	"github.com/gorilla/mux"
 )
 
 type JobListResponse struct {
@@ -46,7 +47,8 @@ func (h *JobHandler) CreateJob(w http.ResponseWriter, r *http.Request) {
 
 // Get job by ID
 func (h *JobHandler) GetJobByID(w http.ResponseWriter, r *http.Request) {
-	idStr := r.URL.Query().Get("id")
+	vars := mux.Vars(r)
+	idStr := vars["id"]
 	id, err := uuid.Parse(idStr)
 	if err != nil {
 		http.Error(w, "invalid id", http.StatusBadRequest)
@@ -130,7 +132,8 @@ func (h *JobHandler) UpdateJob(w http.ResponseWriter, r *http.Request) {
 
 // Delete job
 func (h *JobHandler) DeleteJob(w http.ResponseWriter, r *http.Request) {
-	idStr := r.URL.Query().Get("id")
+	vars := mux.Vars(r)
+	idStr := vars["id"]
 	id, err := uuid.Parse(idStr)
 	if err != nil {
 		http.Error(w, "invalid id", http.StatusBadRequest)
