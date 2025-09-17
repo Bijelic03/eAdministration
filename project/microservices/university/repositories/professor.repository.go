@@ -11,7 +11,7 @@ import (
 
 type Professor struct {
 	ID       uuid.UUID `json:"id" db:"id"`
-	FullName string    `json:"fullName" db:"fullName"`
+	FullName string    `json:"fullName" db:"full_name"`
 	Email    string    `json:"email" db:"email"`
 	Password string    `json:"password" db:"password"`
 	Role     string    `json:"role" db:"role"`
@@ -28,9 +28,9 @@ func NewProfessorRepository(db *pgxpool.Pool) *ProfessorRepository {
 // Add new Professor
 func (r *ProfessorRepository) Add(ctx context.Context, prof *Professor) (*Professor, error) {
 	query := `
-		INSERT INTO users (fullName, email, password, role)
-		VALUES ($1, $2, $3, "professor")
-		RETURNING id, fullName, email, password, role
+		INSERT INTO users (full_name, email, password, role)
+		VALUES ($1, $2, $3, 'professor')
+		RETURNING id, full_name, email, password, role
 	`
 
 	prof.ID = uuid.New()
@@ -62,7 +62,7 @@ func (r *ProfessorRepository) Add(ctx context.Context, prof *Professor) (*Profes
 
 // Get professor by ID
 func (r *ProfessorRepository) GetByID(ctx context.Context, id uuid.UUID) (*Professor, error) {
-	query := `SELECT id, fullName, email, password, role FROM users WHERE id = $1`
+	query := `SELECT id, full_name, email, password, role FROM users WHERE id = $1`
 
 	var prof Professor
 	err := r.db.QueryRow(ctx, query, id).Scan(
@@ -80,7 +80,7 @@ func (r *ProfessorRepository) GetByID(ctx context.Context, id uuid.UUID) (*Profe
 
 // Get professor by email
 func (r *ProfessorRepository) GetByEmail(ctx context.Context, email string) (*Professor, error) {
-	query := `SELECT id, fullName, email, password, role FROM users WHERE email = $1`
+	query := `SELECT id, full_name, email, password, role FROM users WHERE email = $1`
 
 	var prof Professor
 	err := r.db.QueryRow(ctx, query, email).Scan(
@@ -106,10 +106,10 @@ func (r *ProfessorRepository) GetAll(ctx context.Context, page, limit int) ([]*P
 	}
 	offset := (page - 1) * limit
 
-	query := `SELECT id, fullName, email, password, role 
+	query := `SELECT id, full_name, email, password, role 
 	          FROM users 
 			  WHERE role = 'professor'
-	          ORDER BY fullName 
+	          ORDER BY full_name 
 	          LIMIT $1 OFFSET $2`
 
 	rows, err := r.db.Query(ctx, query, limit, offset)
@@ -146,9 +146,9 @@ func (r *ProfessorRepository) GetAll(ctx context.Context, page, limit int) ([]*P
 func (r *ProfessorRepository) Update(ctx context.Context, prof *Professor) (*Professor, error) {
 	query := `
 		UPDATE users
-		SET fullName = $1, email = $2, password = $3, role = $4
+		SET full_name = $1, email = $2, password = $3, role = $4
 		WHERE id = $5
-		RETURNING id, fullName, email, password, role
+		RETURNING id, full_name, email, password, role
 	`
 
 	var updated Professor

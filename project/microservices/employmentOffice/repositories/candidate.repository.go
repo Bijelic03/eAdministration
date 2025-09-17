@@ -23,11 +23,11 @@ import (
 
 type Candidate struct {
 	ID        uuid.UUID `json:"id" db:"id"`
-	FullName  string    `json:"fullName" db:"fullName"`
+	FullName  string    `json:"fullName" db:"full_name"`
 	Email     string    `json:"email" db:"email"`
 	Password  string    `json:"password" db:"password"`
 	Role      string    `json:"role" db:"role"`
-	StudentId string    `json:"studentId,omitempty" db:"studentId"`
+	StudentId string    `json:"studentId,omitempty" db:"student_id"`
 }
 
 type CandidateRepository struct {
@@ -41,9 +41,9 @@ func NewCandidateRepository(db *pgxpool.Pool) *CandidateRepository {
 // Add new Candidate
 func (r *CandidateRepository) Add(ctx context.Context, cand *Candidate) (*Candidate, error) {
 	query := `
-		INSERT INTO users (fullName, email, password, studentId, role)
-		VALUES ($1, $2, $3, $4, "candidate")
-		RETURNING id, fullName, email, password, studentId, role
+		INSERT INTO users (full_name, email, password, student_id, role)
+		VALUES ($1, $2, $3, $4, 'candidate')
+		RETURNING id, full_name, email, password, student_id, role
 	`
 
 	cand.ID = uuid.New()
@@ -77,7 +77,7 @@ func (r *CandidateRepository) Add(ctx context.Context, cand *Candidate) (*Candid
 
 // Get candidate by ID
 func (r *CandidateRepository) GetByID(ctx context.Context, id uuid.UUID) (*Candidate, error) {
-	query := `SELECT id, fullName, email, password, studentId, role FROM users WHERE id = $1`
+	query := `SELECT id, full_name, email, password, student_id, role FROM users WHERE id = $1`
 
 	var cand Candidate
 	err := r.db.QueryRow(ctx, query, id).Scan(
@@ -96,7 +96,7 @@ func (r *CandidateRepository) GetByID(ctx context.Context, id uuid.UUID) (*Candi
 
 // Get Candidate by email
 func (r *CandidateRepository) GetByEmail(ctx context.Context, email string) (*Candidate, error) {
-	query := `SELECT id, fullName, email, password, studentId, role FROM users WHERE email = $1`
+	query := `SELECT id, full_name, email, password, student_id, role FROM users WHERE email = $1`
 
 	var cand Candidate
 	err := r.db.QueryRow(ctx, query, email).Scan(
@@ -123,10 +123,10 @@ func (r *CandidateRepository) GetAll(ctx context.Context, page, limit int) ([]*C
 	}
 	offset := (page - 1) * limit
 
-	query := `SELECT id, fullName, email, password, studentId, role 
+	query := `SELECT id, full_name, email, password, student_id, role 
 	          FROM users 
 			  WHERE role = 'candidate'
-	          ORDER BY fullName 
+	          ORDER BY full_name 
 	          LIMIT $1 OFFSET $2`
 
 	rows, err := r.db.Query(ctx, query, limit, offset)
@@ -164,9 +164,9 @@ func (r *CandidateRepository) GetAll(ctx context.Context, page, limit int) ([]*C
 func (r *CandidateRepository) Update(ctx context.Context, cand *Candidate) (*Candidate, error) {
 	query := `
 		UPDATE users
-		SET fullName = $1, email = $2, password = $3, studentId = $4, role = $5
+		SET full_name = $1, email = $2, password = $3, student_id = $4, role = $5
 		WHERE id = $6
-		RETURNING id, fullName, email, password, studentId, role
+		RETURNING id, full_name, email, password, student_id, role
 	`
 
 	var updated Candidate

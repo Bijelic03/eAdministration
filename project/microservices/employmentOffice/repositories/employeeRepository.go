@@ -11,7 +11,7 @@ import (
 
 type Employee struct {
 	ID       uuid.UUID `json:"id" db:"id"`
-	FullName string    `json:"fullName" db:"fullName"`
+	FullName string    `json:"fullName" db:"full_name"`
 	Email    string    `json:"email" db:"email"`
 	Password string    `json:"password" db:"password"`
 	Role     string    `json:"role" db:"role"`
@@ -28,9 +28,9 @@ func NewEmployeeRepository(db *pgxpool.Pool) *EmployeeRepository {
 // Add new employee
 func (r *EmployeeRepository) Add(ctx context.Context, emp *Employee) (*Employee, error) {
 	query := `
-		INSERT INTO users (fullName, email, password, role)
-		VALUES ($1, $2, $3, "employee")
-		RETURNING id, fullName, email, password, role
+		INSERT INTO users (full_name, email, password, role)
+		VALUES ($1, $2, $3, 'employee')
+		RETURNING id, full_name, email, password, role
 	`
 
 	emp.ID = uuid.New()
@@ -62,7 +62,7 @@ func (r *EmployeeRepository) Add(ctx context.Context, emp *Employee) (*Employee,
 
 // Get employee by ID
 func (r *EmployeeRepository) GetByID(ctx context.Context, id uuid.UUID) (*Employee, error) {
-	query := `SELECT id, fullName, email, password, role FROM users WHERE id = $1`
+	query := `SELECT id, full_name, email, password, role FROM users WHERE id = $1`
 
 	var emp Employee
 	err := r.db.QueryRow(ctx, query, id).Scan(
@@ -80,7 +80,7 @@ func (r *EmployeeRepository) GetByID(ctx context.Context, id uuid.UUID) (*Employ
 
 // Get employee by email
 func (r *EmployeeRepository) GetByEmail(ctx context.Context, email string) (*Employee, error) {
-	query := `SELECT id, fullName, email, password, role FROM users WHERE email = $1`
+	query := `SELECT id, full_name, email, password, role FROM users WHERE email = $1`
 
 	var emp Employee
 	err := r.db.QueryRow(ctx, query, email).Scan(
@@ -106,10 +106,10 @@ func (r *EmployeeRepository) GetAll(ctx context.Context, page, limit int) ([]*Em
 	}
 	offset := (page - 1) * limit
 
-	query := `SELECT id, fullName, email, password, role 
+	query := `SELECT id, full_name, email, password, role 
 	          FROM users 
 			  WHERE role = 'employee'
-	          ORDER BY fullName 
+	          ORDER BY full_name 
 	          LIMIT $1 OFFSET $2`
 
 	rows, err := r.db.Query(ctx, query, limit, offset)
@@ -146,9 +146,9 @@ func (r *EmployeeRepository) GetAll(ctx context.Context, page, limit int) ([]*Em
 func (r *EmployeeRepository) Update(ctx context.Context, emp *Employee) (*Employee, error) {
 	query := `
 		UPDATE users
-		SET fullName = $1, email = $2, password = $3, role = $4
+		SET full_name = $1, email = $2, password = $3, role = $4
 		WHERE id = $5
-		RETURNING id, fullName, email, password, role
+		RETURNING id, full_name, email, password, role
 	`
 
 	var updated Employee
