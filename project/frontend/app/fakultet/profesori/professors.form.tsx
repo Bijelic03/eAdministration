@@ -14,7 +14,7 @@ interface FormProps {
 const UpsertProfessorForm = ({ data, onCreate, onEdit }: FormProps) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [formData, setFormData] = useState<any>({
-    fullName: data?.fullName || "",
+    fullname: data?.fullname || "",
     email: data?.email || "",
     password: data?.password || "",
     role: "professor",
@@ -50,9 +50,9 @@ const UpsertProfessorForm = ({ data, onCreate, onEdit }: FormProps) => {
         <div className="grid grid-cols-1 gap-5 w-full">
           <Input
             type="text"
-            id="fullName"
-            name="fullName"
-            value={formData.fullName}
+            id="fullname"
+            name="fullname"
+            value={formData.fullname}
             onChange={handleChange}
             placeholder="Puno ime profesora"
             required

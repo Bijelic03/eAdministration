@@ -40,7 +40,7 @@ export default function useProfessor() {
             );
             setValues((prev) => ({
                 ...prev,
-                professors: response.data,
+                professors: response.professors,
                 page: response.page,
                 totalItems: response.totalItems,
                 totalPages: response.totalPages,

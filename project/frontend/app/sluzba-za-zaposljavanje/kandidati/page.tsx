@@ -101,9 +101,9 @@ const KandidatiPage = () => {
             values?.candidates?.map((candidate: any) => (
               <TableRow key={candidate.id}>
                 <TableCell># {candidate?.id}</TableCell>
-                <TableCell>{candidate?.fullName}</TableCell>
+                <TableCell>{candidate?.fullname}</TableCell>
                 <TableCell>{candidate?.email}</TableCell>
-                <TableCell>{candidate?.studentId || "NO STUDENT"}</TableCell>
+                <TableCell>{candidate?.studentid || "Nije student"}</TableCell>
                 <TableCell className="flex gap-4">
                   <Button
                     onClick={() => {

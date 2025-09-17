@@ -40,7 +40,7 @@ export default function useOffers() {
             );
             setValues((prev) => ({
                 ...prev,
-                offers: response.data,
+                offers: response.offers,
                 page: response.page,
                 totalItems: response.totalItems,
                 totalPages: response.totalPages,

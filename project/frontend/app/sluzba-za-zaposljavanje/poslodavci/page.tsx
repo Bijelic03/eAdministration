@@ -75,7 +75,8 @@ const PosloviPage = () => {
 				<TableHeader>
 					<TableHeaderCell>#</TableHeaderCell>
 					<TableHeaderCell>Ime i prezime</TableHeaderCell>
-					<TableHeaderCell>Sektor</TableHeaderCell>
+					<TableHeaderCell>Email</TableHeaderCell>
+					<TableHeaderCell>Akcije</TableHeaderCell>
 				</TableHeader>
 				<tbody>
 					{values?.employers?.length > 0 ? (
@@ -83,8 +84,8 @@ const PosloviPage = () => {
 						values?.employers?.map((employer: any) => (
 							<TableRow key={employer.id}>
 								<TableCell># {employer?.id}</TableCell>
-								<TableCell>{employer?.name}</TableCell>
-								<TableCell>{employer?.sector}</TableCell>
+								<TableCell>{employer?.fullname}</TableCell>
+								<TableCell>{employer?.email}</TableCell>
 								<TableCell className='flex gap-4'>
 									<Button
 										onClick={() => {
@@ -123,14 +124,14 @@ const PosloviPage = () => {
 				)}
 				<UpsertEmployerForm
 					data={data}
-					onCreate={() => {
-						onCreate(data);
+					onCreate={(formData) => {
+						onCreate(formData);
 						toggleModal();
-					}}
-					onEdit={() => {
-						onEdit(data);
+					  }}
+					  onEdit={(formData) => {
+						onEdit(formData);
 						toggleModal();
-					}}
+					  }}
 				/>
 			</FullScreenModal>
 		</Wrap>

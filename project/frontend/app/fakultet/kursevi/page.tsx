@@ -128,12 +128,12 @@ const KurseviPage = () => {
         )}
         <UpsertCoursesForm
           data={data}
-          onCreate={() => {
-            onCreate(data);
+          onCreate={(formData) => {
+            onCreate(formData);
             toggleModal();
           }}
-          onEdit={() => {
-            onEdit(data);
+          onEdit={(formData) => {
+            onEdit(formData);
             toggleModal();
           }}
         />

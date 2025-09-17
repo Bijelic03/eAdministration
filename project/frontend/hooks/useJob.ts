@@ -36,7 +36,7 @@ export default function useJob() {
 			const response = await fetchJobsAPI(Number(page), Number(max), search);
 			setValues((prev) => ({
 				...prev,
-				jobs: response.data,
+				jobs: response.jobs,
 				page: response.page,
 				totalItems: response.totalItems,
 				totalPages: response.totalPages,

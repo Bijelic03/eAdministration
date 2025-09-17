@@ -30,7 +30,7 @@ func NewJobHandler(repo *repositories.JobRepository) *JobHandler {
 func (h *JobHandler) CreateJob(w http.ResponseWriter, r *http.Request) {
 	var emp repositories.Job
 	if err := json.NewDecoder(r.Body).Decode(&emp); err != nil {
-		http.Error(w, "invalid request", http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 

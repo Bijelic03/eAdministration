@@ -1,4 +1,4 @@
-import axiosInstance from '@/utils/axios';
+import { axiosEmploymentOfficeInstance as axiosInstance } from "@/utils/axios";
 
 const EMPLOYERS_API_PATH = '/employmentOffice/employees';
 

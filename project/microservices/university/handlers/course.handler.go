@@ -30,7 +30,7 @@ func NewCourseHandler(repo *repositories.CourseRepository) *CourseHandler {
 func (h *CourseHandler) CreateCourse(w http.ResponseWriter, r *http.Request) {
 	var emp repositories.Course
 	if err := json.NewDecoder(r.Body).Decode(&emp); err != nil {
-		http.Error(w, "invalid request", http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 

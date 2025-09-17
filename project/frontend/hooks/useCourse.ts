@@ -40,7 +40,7 @@ export default function useCourse() {
             );
             setValues((prev) => ({
                 ...prev,
-                courses: response.data,
+                courses: response.courses,
                 page: response.page,
                 totalItems: response.totalItems,
                 totalPages: response.totalPages,

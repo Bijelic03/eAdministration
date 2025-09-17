@@ -40,7 +40,7 @@ export default function useExam() {
             );
             setValues((prev) => ({
                 ...prev,
-                exams: response.data,
+                exams: response.exams,
                 page: response.page,
                 totalItems: response.totalItems,
                 totalPages: response.totalPages,

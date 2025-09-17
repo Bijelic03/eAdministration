@@ -40,7 +40,7 @@ export default function useEmployer() {
             );
             setValues((prev) => ({
                 ...prev,
-                employers: response.data,
+                employers: response.employees,
                 page: response.page,
                 totalItems: response.totalItems,
                 totalPages: response.totalPages,
@@ -80,7 +80,7 @@ export default function useEmployer() {
             const newEmp = await createEmployerAPI(data);
             setValues((prev) => ({
                 ...prev,
-                employers: [...prev.employers, newEmp],
+                employers: [...(prev.employers || []), newEmp],
             }));
             return newEmp;
         } catch (error) {

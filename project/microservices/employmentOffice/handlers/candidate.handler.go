@@ -30,7 +30,7 @@ func NewCandidateHandler(repo *repositories.CandidateRepository) *CandidateHandl
 func (h *CandidateHandler) CreateCandidate(w http.ResponseWriter, r *http.Request) {
 	var emp repositories.Candidate
 	if err := json.NewDecoder(r.Body).Decode(&emp); err != nil {
-		http.Error(w, "invalid request", http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 

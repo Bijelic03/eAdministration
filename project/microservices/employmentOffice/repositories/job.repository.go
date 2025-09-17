@@ -32,11 +32,11 @@ import (
 
 type Job struct {
 	ID              uuid.UUID `json:"id" db:"id"`
-	EmployerID      uuid.UUID `json:"employerId" db:"employerId"`
+	EmployerID      uuid.UUID `json:"employerid" db:"employerid"`
 	Title           string    `json:"title" db:"title"`
 	Description     string    `json:"description" db:"description"`
 	Location        string    `json:"location" db:"location"`
-	RequiredFaculty *string   `json:"requiredFaculty" db:"requiredFaculty"`
+	RequiredFaculty *string   `json:"requiredfaculty" db:"requiredfaculty"`
 }
 
 type JobRepository struct {
@@ -50,9 +50,9 @@ func NewJobRepository(db *pgxpool.Pool) *JobRepository {
 // Add new Job
 func (r *JobRepository) Add(ctx context.Context, j *Job) (*Job, error) {
 	query := `
-		INSERT INTO jobs (id, employerId, title, description, location, requiredFaculty)
+		INSERT INTO jobs (id, employerid, title, description, location, requiredfaculty)
 		VALUES ($1, $2, $3, $4, $5, $6)
-		RETURNING id, employerId, title, description, location, requiredFaculty
+		RETURNING id, employerid, title, description, location, requiredfaculty
 	`
 
 	j.ID = uuid.New()
@@ -87,7 +87,7 @@ func (r *JobRepository) Add(ctx context.Context, j *Job) (*Job, error) {
 
 // Get job by ID
 func (r *JobRepository) GetByID(ctx context.Context, id uuid.UUID) (*Job, error) {
-	query := `SELECT id, employerId, title, description, location, requiredFaculty 
+	query := `SELECT id, employerid, title, description, location, requiredfaculty 
 	          FROM jobs WHERE id = $1`
 
 	var job Job
@@ -115,7 +115,7 @@ func (r *JobRepository) GetAll(ctx context.Context, page, limit int) ([]*Job, in
 	}
 	offset := (page - 1) * limit
 
-	query := `SELECT id, employerId, title, description, location, requiredFaculty 
+	query := `SELECT id, employerid, title, description, location, requiredfaculty 
 	          FROM jobs
 	          ORDER BY title
 	          LIMIT $1 OFFSET $2`
@@ -155,9 +155,9 @@ func (r *JobRepository) GetAll(ctx context.Context, page, limit int) ([]*Job, in
 func (r *JobRepository) Update(ctx context.Context, j *Job) (*Job, error) {
 	query := `
 		UPDATE jobs
-		SET employerId = $1, title = $2, description = $3, location = $4, requiredFaculty = $5
+		SET employerid = $1, title = $2, description = $3, location = $4, requiredfaculty = $5
 		WHERE id = $6
-		RETURNING id, employerId, title, description, location, requiredFaculty
+		RETURNING id, employerid, title, description, location, requiredfaculty
 	`
 
 	var updated Job

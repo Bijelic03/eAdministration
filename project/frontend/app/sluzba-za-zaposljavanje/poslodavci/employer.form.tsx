@@ -14,7 +14,7 @@ interface FormProps {
 const UpsertEmployerForm = ({ data, onCreate, onEdit }: FormProps) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [formData, setFormData] = useState<any>({
-    fullName: data?.fullName || "",
+    fullname: data?.fullname || "",
     email: data?.email || "",
     password: data?.password || "",
     role: "employee",
@@ -49,9 +49,9 @@ const UpsertEmployerForm = ({ data, onCreate, onEdit }: FormProps) => {
       >
         <div className="grid grid-cols-1 gap-5 w-full">
           <Input
-            id="fullName"
-            name="fullName"
-            value={formData.fullName}
+            id="fullname"
+            name="fullname"
+            value={formData.fullname}
             onChange={handleChange}
             placeholder="Ime i prezime"
             required

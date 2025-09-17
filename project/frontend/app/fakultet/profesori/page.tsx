@@ -90,7 +90,7 @@ const ProfesoriiPage = () => {
             values?.professors?.map((professor: any) => (
               <TableRow key={professor.id}>
                 <TableCell># {professor?.id}</TableCell>
-                <TableCell>{professor?.fullName}</TableCell>
+                <TableCell>{professor?.fullname}</TableCell>
                 <TableCell>{professor?.email}</TableCell>
                 <TableCell className="flex gap-4">
                   <Button
@@ -130,12 +130,12 @@ const ProfesoriiPage = () => {
         )}
         <UpsertProfessorForm
           data={data}
-          onCreate={() => {
-            onCreate(data);
+          onCreate={(formData) => {
+            onCreate(formData);
             toggleModal();
           }}
-          onEdit={() => {
-            onEdit(data);
+          onEdit={(formData) => {
+            onEdit(formData);
             toggleModal();
           }}
         />

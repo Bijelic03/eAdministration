@@ -75,7 +75,7 @@ const StudentiPage = () => {
 			>
 				<TableHeader>
 					<TableHeaderCell>#</TableHeaderCell>
-					<TableHeaderCell>Indeks NO</TableHeaderCell>
+					<TableHeaderCell>Broj indeksa</TableHeaderCell>
 					<TableHeaderCell>Ime i prezime</TableHeaderCell>
 					<TableHeaderCell>Email</TableHeaderCell>
 					<TableHeaderCell>Status</TableHeaderCell>
@@ -87,7 +87,7 @@ const StudentiPage = () => {
 						values?.students?.map((student: any) => (
 							<TableRow key={student.id}>
 								<TableCell># {student?.id}</TableCell>
-								<TableCell>{student?.indexNo}</TableCell>
+								<TableCell>{student?.indexno}</TableCell>
 								<TableCell>{student?.name}</TableCell>
 								<TableCell>{student?.email}</TableCell>
 								<TableCell>{student?.status}</TableCell>
@@ -129,14 +129,14 @@ const StudentiPage = () => {
 				)}
 				<UpsertStudentForm
 					data={data}
-					onCreate={() => {
-						onCreate(data);
+					onCreate={(formData) => {
+						onCreate(formData);
 						toggleModal();
-					}}
-					onEdit={() => {
-						onEdit(data);
+					  }}
+					  onEdit={(formData) => {
+						onEdit(formData);
 						toggleModal();
-					}}
+					  }}
 				/>
 			</FullScreenModal>
 		</Wrap>

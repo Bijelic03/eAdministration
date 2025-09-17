@@ -86,7 +86,7 @@ const PosloviPage = () => {
 						values?.jobs?.map((job: any) => (
 							<TableRow key={job.id}>
 								<TableCell># {job?.id}</TableCell>
-								<TableCell>{job?.employerId}</TableCell>
+								<TableCell>{job?.employerid}</TableCell>
 								<TableCell>{job?.title}</TableCell>
 								<TableCell>{job?.description}</TableCell>
 								<TableCell>{job?.location}</TableCell>
@@ -128,14 +128,14 @@ const PosloviPage = () => {
 				)}
 				<UpsertJobForm
 					data={data}
-					onCreate={() => {
-						onCreate(data);
+					onCreate={(formData) => {
+						onCreate(formData);
 						toggleModal();
-					}}
-					onEdit={() => {
-						onEdit(data);
+					  }}
+					  onEdit={(formData) => {
+						onEdit(formData);
 						toggleModal();
-					}}
+					  }}
 				/>
 			</FullScreenModal>
 		</Wrap>

@@ -66,7 +66,7 @@ func NewStudentHandler(repo *repositories.StudentRepository) *StudentHandler {
 func (h *StudentHandler) CreateStudent(w http.ResponseWriter, r *http.Request) {
 	var stud repositories.Student
 	if err := json.NewDecoder(r.Body).Decode(&stud); err != nil {
-		http.Error(w, "invalid request", http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 

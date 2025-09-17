@@ -14,11 +14,11 @@ interface FormProps {
 const UpsertJobForm = ({ data, onCreate, onEdit }: FormProps) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [formData, setFormData] = useState<any>({
-    employerId: data?.employerId || "",
+    employerid: data?.employerid || "",
     title: data?.title || "",
     description: data?.description || "",
     location: data?.location || "",
-    requiredFaculty: data?.requiredFaculty || false,
+    requiredfaculty: data?.requiredfaculty || false,
   });
 
   const handleChange = (
@@ -50,9 +50,9 @@ const UpsertJobForm = ({ data, onCreate, onEdit }: FormProps) => {
       >
         <div className="grid grid-cols-1 gap-5 w-full">
           <Input
-            id="employerId"
-            name="employerId"
-            value={formData.employerId}
+            id="employerid"
+            name="employerid"
+            value={formData.employerid}
             onChange={handleChange}
             placeholder="Employer ID"
             required
@@ -83,9 +83,9 @@ const UpsertJobForm = ({ data, onCreate, onEdit }: FormProps) => {
             required
           />
           <Input
-            id="requiredFaculty"
-            name="requiredFaculty"
-            value={formData.requiredFaculty}
+            id="requiredfaculty"
+            name="requiredfaculty"
+            value={formData.requiredfaculty}
             onChange={handleChange}
             type="checkbox"
             required
