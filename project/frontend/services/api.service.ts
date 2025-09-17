@@ -2,10 +2,12 @@ import { isAxiosError } from 'axios';
 import { toast } from 'react-toastify';
 
 export function handleApiError(
-	error: unknown,
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	error: any,
 	fallbackMessage: string = 'Unexpected error',
 	skipToaster = false
 ) {
+	console.log(error, "API EROR");
 	const message =
 		isAxiosError(error) && error.response?.data?.message
 			? error.response.data.message
@@ -14,5 +16,5 @@ export function handleApiError(
 			: fallbackMessage;
 
 	if (skipToaster) return;
-	toast.error(message);
+	toast.error(error?.response?.data || message);
 }

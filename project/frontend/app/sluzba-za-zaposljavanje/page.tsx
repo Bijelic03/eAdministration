@@ -90,9 +90,9 @@ export default function SluzbaZaZaposljavanje() {
         {/* <LinkButton href="/sluzba-za-zaposljavanje/statistika">
           Statistika i izvještaji
         </LinkButton> */}
-        {/* <LinkButton href="/sluzba-za-zaposljavanje/pozicije-oglasi">
-          Pozicije / Oglasi
-        </LinkButton> */}
+        <LinkButton href="/sluzba-za-zaposljavanje/prijave-za-posao">
+          Prijave za posao
+        </LinkButton>
         {/* <LinkButton href="/sluzba-za-zaposljavanje/obavijesti">
           Obavijesti kandidatima
         </LinkButton> */}

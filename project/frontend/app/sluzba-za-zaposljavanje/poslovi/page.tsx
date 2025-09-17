@@ -11,6 +11,7 @@ import TableHeaderCell from '@/components/table/tableHeaderCell';
 import TableRow from '@/components/table/tableRow';
 import Wrap from '@/components/wrap';
 import useJob from '@/hooks/useJob';
+import useLocalStorage, { AuthUser } from '@/hooks/useLocalStorage';
 import useModal from '@/hooks/useModal';
 import usePaginationAndSearch from '@/hooks/usePaginationAndSearch';
 import { handleApiError } from '@/services/api.service';
@@ -18,12 +19,13 @@ import { useEffect, useState } from 'react';
 import UpsertJobForm from './jobs.form';
 
 const PosloviPage = () => {
-	const { values, fetchJobs, deleteJob, updateJob, createJob } = useJob();
+	const { values, fetchJobs, deleteJob, updateJob, createJob, applyForJob } = useJob();
 	const { page, rowsPerPage, search, handlePageChange } =
 		usePaginationAndSearch();
 	const { isOpen, toggleModal } = useModal();
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const [data, setData] = useState<any>();
+	const [user] = useLocalStorage<AuthUser | null>('auth.user', null);
 
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const onCreate = async (data: any) => {
@@ -50,6 +52,18 @@ const PosloviPage = () => {
 			handleApiError(error, 'Brisanje nije uspjelo.');
 		}
 	};
+
+	const onApplyForJob = async (jobId: string) => {
+		try {
+			if(!jobId || !user?.email) {
+				handleApiError("Job ID or user email is missing", 'Slanje ponude nije uspjelo.');
+				return;
+			}
+			await applyForJob(jobId, user?.email);
+		} catch (error) {
+			handleApiError(error, 'Slanje ponude nije uspjelo.');
+		}
+	}
 
 	useEffect(() => {
 		fetchJobs();
@@ -101,6 +115,11 @@ const PosloviPage = () => {
 									</Button>
 									<Button onClick={() => onDelete(job.id)}>
 										<Icon type='reject' />
+									</Button>
+
+									{/* Apply for job */}
+									<Button onClick={() => onApplyForJob(job.id)}>
+										<Icon type='upload' />
 									</Button>
 								</TableCell>
 							</TableRow>

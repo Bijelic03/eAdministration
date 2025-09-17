@@ -61,9 +61,6 @@ const PozicijeOglasiPage = () => {
 	return (
 		<Wrap>
 			<Table
-				hasAddButton={true}
-				addButtonOnClick={() => toggleModal()}
-				addButtonLabel='Dodaj novu poziciju/oglas'
 				className='mt-8'
 				paginationProps={{
 					page: page + 1,
@@ -74,32 +71,28 @@ const PozicijeOglasiPage = () => {
 			>
 				<TableHeader>
 					<TableHeaderCell>#</TableHeaderCell>
-					<TableHeaderCell>Gazda</TableHeaderCell>
-					<TableHeaderCell>Naziv</TableHeaderCell>
-					<TableHeaderCell>Opis</TableHeaderCell>
-					<TableHeaderCell>Lokacija</TableHeaderCell>
+					<TableHeaderCell>Posao</TableHeaderCell>
+					<TableHeaderCell>Kandidat</TableHeaderCell>
 					<TableHeaderCell>Akcije</TableHeaderCell>
 				</TableHeader>
 				<tbody>
-					{values?.offers?.length > 0 ? (
+					{values?.jobapplications?.length > 0 ? (
 						// eslint-disable-next-line @typescript-eslint/no-explicit-any
-						values?.offers?.map((job: any) => (
-							<TableRow key={job.id}>
-								<TableCell># {job?.id}</TableCell>
-								<TableCell>{job?.employerId}</TableCell>
-								<TableCell>{job?.title}</TableCell>
-								<TableCell>{job?.description}</TableCell>
-								<TableCell>{job?.location}</TableCell>
+						values?.jobapplications?.map((offer: any) => (
+							<TableRow key={offer.id}>
+								<TableCell># {offer?.id}</TableCell>
+								<TableCell>{offer?.jobid}</TableCell>
+								<TableCell>{offer?.candidateid}</TableCell>
 								<TableCell className='flex gap-4'>
-									<Button
+									{/* <Button
 										onClick={() => {
-											setData(job);
+											setData(offer);
 											toggleModal();
 										}}
 									>
 										<Icon type='edit' />
-									</Button>
-									<Button onClick={() => onDelete(job.id)}>
+									</Button> */}
+									<Button onClick={() => onDelete(offer.id)}>
 										<Icon type='reject' />
 									</Button>
 								</TableCell>
@@ -107,7 +100,7 @@ const PozicijeOglasiPage = () => {
 						))
 					) : (
 						<TableRow>
-							<TableCell colSpan={6}>Nema pozicija/oglasa</TableCell>
+							<TableCell colSpan={6}>Nema prijava na poslove</TableCell>
 						</TableRow>
 					)}
 				</tbody>

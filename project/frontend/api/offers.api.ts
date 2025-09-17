@@ -1,6 +1,6 @@
 import { axiosEmploymentOfficeInstance as axiosInstance } from "@/utils/axios";
 
-const OFFERS_API_PATH = '/employmentOffice/offers';
+const OFFERS_API_PATH = '/employmentOffice/jobapplications';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function createOfferAPI(data: any) {

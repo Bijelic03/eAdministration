@@ -65,13 +65,18 @@ func main() {
 
 	// /api/v1/employmentOffice/jobs
 	jobRepository := repositories.NewJobRepository(conn)
-	jobHandler := handlers.NewJobHandler(jobRepository)
+	jobAppsRepo := repositories.NewJobApplicationRepository(conn)
+	jobHandler := handlers.NewJobHandler(jobRepository, jobAppsRepo, candidateRepository)
 	jobs := api.PathPrefix("/jobs").Subrouter()
+	jobapps := api.PathPrefix("/jobapplications").Subrouter()
 	jobs.Handle("", authMiddleware(http.HandlerFunc(jobHandler.CreateJob))).Methods("POST")
 	jobs.Handle("", authMiddleware(http.HandlerFunc(jobHandler.GetAllJobs))).Methods("GET")
 	jobs.Handle("/{id}", authMiddleware(http.HandlerFunc(jobHandler.GetJobByID))).Methods("GET")
 	jobs.Handle("/{id}", authMiddleware(http.HandlerFunc(jobHandler.UpdateJob))).Methods("PUT")
 	jobs.Handle("/{id}", authMiddleware(http.HandlerFunc(jobHandler.DeleteJob))).Methods("DELETE")
+	jobs.Handle("/{id}/{email}/apply", authMiddleware(http.HandlerFunc(jobHandler.ApplyForJob))).Methods("POST")
+	jobapps.Handle("", authMiddleware(http.HandlerFunc(jobHandler.GetAllJobApplications))).Methods("GET")
+	jobapps.Handle("/{id}", authMiddleware(http.HandlerFunc(jobHandler.DeleteJobApplication))).Methods("DELETE")
 
 	server := &http.Server{
 		Handler: cors(router),

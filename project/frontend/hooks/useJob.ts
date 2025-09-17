@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import {
+	applyForJobAPI,
 	createJobAPI,
 	deleteJobAPI,
 	fetchJobByIdAPI,
@@ -132,6 +133,22 @@ export default function useJob() {
 		}
 	};
 
+	const applyForJob = async (jobId: string, email: string) => {
+		setValues((prev) => ({ ...prev, loading: true, error: null }));
+		try {
+			const response = await applyForJobAPI(jobId, email);
+			return response;
+		} catch (error) {
+			setValues((prev) => ({
+				...prev,
+				error,
+			}));
+			throw error;
+		} finally {
+			setValues((prev) => ({ ...prev, loading: false }));
+		}
+	}
+
 	return {
 		values,
 		setValues,
@@ -140,5 +157,6 @@ export default function useJob() {
 		createJob,
 		updateJob,
 		deleteJob,
+		applyForJob
 	};
 }

@@ -23,6 +23,8 @@ package repositories
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -43,8 +45,22 @@ type JobRepository struct {
 	db *pgxpool.Pool
 }
 
+type JobApplication struct {
+	ID          uuid.UUID `json:"id" db:"id"`
+	JobID       uuid.UUID `json:"jobid" db:"jobid"`
+	CandidateID uuid.UUID `json:"candidateid" db:"candidateid"`
+}
+
+type JobApplicationRepository struct {
+	db *pgxpool.Pool
+}
+
 func NewJobRepository(db *pgxpool.Pool) *JobRepository {
 	return &JobRepository{db: db}
+}
+
+func NewJobApplicationRepository(db *pgxpool.Pool) *JobApplicationRepository {
+	return &JobApplicationRepository{db: db}
 }
 
 // Add new Job
@@ -185,6 +201,108 @@ func (r *JobRepository) Update(ctx context.Context, j *Job) (*Job, error) {
 // Delete job
 func (r *JobRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	query := `DELETE FROM jobs WHERE id = $1`
+	_, err := r.db.Exec(ctx, query, id)
+	return err
+}
+
+// Apply for a job
+func (r *JobApplicationRepository) ApplyForJob(ctx context.Context, j *JobApplication) (*JobApplication, error) {
+	query := `
+		INSERT INTO jobapplications (id, jobid, candidateid)
+		VALUES ($1, $2, $3)
+		RETURNING id, jobid, candidateid
+	`
+
+	j.ID = uuid.New()
+	var created JobApplication
+
+	err := r.db.QueryRow(ctx, query,
+		j.ID,
+		j.JobID,
+		j.CandidateID,
+	).Scan(
+		&created.ID,
+		&created.JobID,
+		&created.CandidateID,
+	)
+
+	if err != nil {
+		if pgErr, ok := err.(*pgconn.PgError); ok {
+			if pgErr.Code == "23505" { // unique_violation
+				return nil, fmt.Errorf("a job with this id already exists")
+			}
+		}
+		return nil, err
+	}
+	return &created, nil
+}
+
+func (r *JobApplicationRepository) GetJobApplicationByCandidateIDAndByJobID(ctx context.Context, jobID, candidateID uuid.UUID) (*JobApplication, error) {
+	query := `SELECT id, jobid, candidateid
+              FROM jobapplications
+              WHERE jobid = $1 AND candidateid = $2`
+
+	var ja JobApplication
+	err := r.db.QueryRow(ctx, query, jobID, candidateID).Scan(
+		&ja.ID,
+		&ja.JobID,
+		&ja.CandidateID,
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &ja, nil
+}
+
+// Get all job apps (paginated)
+func (r *JobApplicationRepository) GetAllJobApplications(ctx context.Context, page, limit int) ([]*JobApplication, int, error) {
+	if page < 1 {
+		page = 1
+	}
+	if limit <= 0 {
+		limit = 10
+	}
+	offset := (page - 1) * limit
+
+	query := `SELECT id, jobid, candidateid
+	          FROM jobapplications
+	          ORDER BY jobid
+	          LIMIT $1 OFFSET $2`
+
+	rows, err := r.db.Query(ctx, query, limit, offset)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer rows.Close()
+
+	jobapps := make([]*JobApplication, 0)
+	for rows.Next() {
+		var j JobApplication
+		if err := rows.Scan(
+			&j.ID,
+			&j.JobID,
+			&j.CandidateID,
+		); err != nil {
+			return nil, 0, err
+		}
+		jobapps = append(jobapps, &j)
+	}
+
+	// total count
+	var totalItems int
+	if err := r.db.QueryRow(ctx, `SELECT COUNT(*) FROM jobapplications`).Scan(&totalItems); err != nil {
+		return nil, 0, err
+	}
+
+	return jobapps, totalItems, nil
+}
+
+// Delete jobapplication
+func (r *JobApplicationRepository) DeleteJobApplication(ctx context.Context, id uuid.UUID) error {
+	query := `DELETE FROM jobapplications WHERE id = $1`
 	_, err := r.db.Exec(ctx, query, id)
 	return err
 }
