@@ -76,7 +76,7 @@ func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 	created, err := h.repo.Register(r.Context(), u)
 	if err != nil {
 		if errors.Is(err, repo.ErrEmailExists) {
-			writeJSON(w, http.StatusConflict, map[string]string{"error": "email already exists"})
+			writeJSON(w, http.StatusConflict, map[string]string{"error":  err.Error()})
 			return
 		}
 		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "failed to register"})
