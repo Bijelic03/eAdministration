@@ -1,63 +1,64 @@
 package handlers
 
 import (
-	"context"
-	"net/http"
-	"strings"
+	"fmt"
+	"time"
+
+	"github.com/golang-jwt/jwt/v5"
 )
 
-type AuthHandler struct {
-	auth *Auth
+type TokenClaims struct {
+	Email string `json:"email"`
+	Role  string `json:"role"`
 }
 
-func NewAuthHandler(secretKey []byte) *AuthHandler {
-	return &AuthHandler{auth: NewAuth(secretKey)}
+type Auth struct {
+	SecretKey []byte
 }
 
-func parseBearerToken(header string) string {
-	const bearerPrefix = "Bearer "
-	if len(header) > len(bearerPrefix) && strings.HasPrefix(header, bearerPrefix) {
-		return header[len(bearerPrefix):]
-	}
-	return ""
+func NewAuth(secretKey []byte) *Auth {
+	return &Auth{SecretKey: secretKey}
 }
 
-type contextKey string
-
-const (
-	UsernameKey contextKey = "username"
-	RoleKey     contextKey = "role"
-)
-
-func (h *AuthHandler) verifyTokenAndSetContext(ctx context.Context, w http.ResponseWriter, r *http.Request, allowedRoles []string) (context.Context, bool) {
-	tokenString := parseBearerToken(r.Header.Get("Authorization"))
-	if tokenString == "" {
-		http.Error(w, `{"error": "Invalid or missing authorization header"}`, http.StatusUnauthorized)
-		return ctx, false
-	}
-
-	tokenClaims, err := h.auth.VerifyToken(tokenString)
+func (a *Auth) VerifyToken(tokenString string) (*TokenClaims, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &jwt.MapClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return a.SecretKey, nil
+	})
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
-		return ctx, false
+		return nil, err
+	}
+	if !token.Valid {
+		return nil, fmt.Errorf("invalid token")
 	}
 
-	if len(allowedRoles) > 0 {
-		roleAllowed := false
-		for _, role := range allowedRoles {
-			if tokenClaims.Role == role {
-				roleAllowed = true
-				break
-			}
-		}
-
-		if !roleAllowed {
-			http.Error(w, `{"error": "Access denied for the required role"}`, http.StatusForbidden)
-			return ctx, false
-		}
+	claims, ok := token.Claims.(*jwt.MapClaims)
+	if !ok {
+		return nil, fmt.Errorf("unable to parse token claims")
 	}
 
-	ctx = context.WithValue(ctx, UsernameKey, tokenClaims.Username)
-	ctx = context.WithValue(ctx, RoleKey, tokenClaims.Role)
-	return ctx, true
+	tc := &TokenClaims{}
+	if email, ok := (*claims)["email"].(string); ok {
+		tc.Email = email
+	}
+	if role, ok := (*claims)["role"].(string); ok {
+		tc.Role = role
+	}
+	return tc, nil
+}
+
+// NEW: generisanje JWT-a (HS256) sa exp
+func (a *Auth) GenerateToken(email string, role string, ttl time.Duration) (string, time.Time, error) {
+	now := time.Now().UTC()
+	exp := now.Add(ttl)
+
+	mc := jwt.MapClaims{
+		"email": email,
+		"role":  role,
+		"iat":   now.Unix(),
+		"exp":   exp.Unix(),
+	}
+
+	t := jwt.NewWithClaims(jwt.SigningMethodHS256, mc)
+	signed, err := t.SignedString(a.SecretKey)
+	return signed, exp, err
 }

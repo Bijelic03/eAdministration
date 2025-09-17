@@ -6,13 +6,14 @@ import (
 )
 
 type Config struct {
-	Host   string
-	Port   string
-	DBHost string
-	DBPort string
-	DBUser string
-	DBName string
-	DBPass string
+	Host          string
+	Port          string
+	SecretKeyAuth string
+	DBHost        string
+	DBPort        string
+	DBUser        string
+	DBName        string
+	DBPass        string
 }
 
 func GetConfig() Config {
