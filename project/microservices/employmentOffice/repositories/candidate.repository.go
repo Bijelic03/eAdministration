@@ -166,7 +166,7 @@ func (r *CandidateRepository) Update(ctx context.Context, cand *Candidate) (*Can
 		UPDATE users
 		SET fullname = $1, email = $2, password = $3, studentid = $4, role = $5
 		WHERE id = $6
-		RETURNING id, fullname, email, password, studentid, role
+		RETURNING id, fullname, email, password, role, studentid
 	`
 
 	var updated Candidate

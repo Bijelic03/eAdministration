@@ -88,7 +88,7 @@ const StudentiPage = () => {
 							<TableRow key={student.id}>
 								<TableCell># {student?.id}</TableCell>
 								<TableCell>{student?.indexno}</TableCell>
-								<TableCell>{student?.name}</TableCell>
+								<TableCell>{student?.fullname}</TableCell>
 								<TableCell>{student?.email}</TableCell>
 								<TableCell>{student?.status}</TableCell>
 								<TableCell className='flex gap-4'>
