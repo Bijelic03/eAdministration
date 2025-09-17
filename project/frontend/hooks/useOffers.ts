@@ -16,14 +16,14 @@ export default function useOffers() {
 
     const [values, setValues] = useState<{
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        offers: any[];
+        jobapplications: any[];
         page: number;
         totalItems: number;
         totalPages: number;
         loading: boolean;
         error: unknown | null;
     }>({
-        offers: [],
+        jobapplications: [],
         page: 1,
         totalItems: 0,
         totalPages: 0,
@@ -40,7 +40,7 @@ export default function useOffers() {
             );
             setValues((prev) => ({
                 ...prev,
-                offers: response.offers,
+                jobapplications: response.jobapplications,
                 page: response.page,
                 totalItems: response.totalItems,
                 totalPages: response.totalPages,
@@ -80,7 +80,7 @@ export default function useOffers() {
             const newOffer = await createOfferAPI(data);
             setValues((prev) => ({
                 ...prev,
-                offers: [...prev.offers, newOffer],
+                jobapplications: [...prev.jobapplications, newOffer],
             }));
             return newOffer;
         } catch (error) {
@@ -101,7 +101,7 @@ export default function useOffers() {
             const updatedOffer = await updateOfferAPI(data);
             setValues((prev) => ({
                 ...prev,
-                offers: prev.offers.map((c) =>
+                jobapplications: prev.jobapplications.map((c) =>
                     c.id === updatedOffer.id ? updatedOffer : c
                 ),
             }));

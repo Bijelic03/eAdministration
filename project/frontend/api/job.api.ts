@@ -37,3 +37,8 @@ export async function deleteJobAPI(id: string) {
 	const response = await axiosInstance.delete(`${JOB_API_PATH}/${id}`);
 	return response.data;
 }
+
+export async function applyForJobAPI(jobId: string, email: string) {
+	const response = await axiosInstance.post(`${JOB_API_PATH}/${jobId}/${email}/apply`, { email });
+	return response.data;
+}

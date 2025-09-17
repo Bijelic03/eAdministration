@@ -103,7 +103,7 @@ const KandidatiPage = () => {
                 <TableCell># {candidate?.id}</TableCell>
                 <TableCell>{candidate?.fullname}</TableCell>
                 <TableCell>{candidate?.email}</TableCell>
-                <TableCell>{candidate?.studentid || "Nije student"}</TableCell>
+                <TableCell>{candidate?.studentid?.String !== "" ? candidate?.studentId?.String : "Nije student"}</TableCell>
                 <TableCell className="flex gap-4">
                   <Button
                     onClick={() => {

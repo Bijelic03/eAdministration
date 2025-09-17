@@ -2,6 +2,13 @@ import { useState, useEffect } from 'react';
 
 type SetValue<T> = (value: T | ((prev: T) => T)) => void;
 
+export interface AuthUser {
+	id: string;
+	fullName: string;
+	email: string;
+	role: string;
+  }
+
 // ==============================|| HOOK - USE LOCAL STORAGE ||============================= //
 
 export default function useLocalStorage<T>(
