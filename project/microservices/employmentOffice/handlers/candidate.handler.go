@@ -8,6 +8,7 @@ import (
 
 	"github.com/Bijelic03/eAdministration/project/microservices/employmentOffice/repositories"
 	"github.com/google/uuid"
+	"github.com/gorilla/mux"
 )
 
 type CandidateListResponse struct {
@@ -46,7 +47,8 @@ func (h *CandidateHandler) CreateCandidate(w http.ResponseWriter, r *http.Reques
 
 // Get candidate by ID
 func (h *CandidateHandler) GetCandidateByID(w http.ResponseWriter, r *http.Request) {
-	idStr := r.URL.Query().Get("id")
+	vars := mux.Vars(r)
+	idStr := vars["id"]
 	id, err := uuid.Parse(idStr)
 	if err != nil {
 		http.Error(w, "invalid id", http.StatusBadRequest)
@@ -155,7 +157,8 @@ func (h *CandidateHandler) UpdateCandidate(w http.ResponseWriter, r *http.Reques
 
 // Delete candidate
 func (h *CandidateHandler) DeleteCandidate(w http.ResponseWriter, r *http.Request) {
-	idStr := r.URL.Query().Get("id")
+	vars := mux.Vars(r)
+	idStr := vars["id"]
 	id, err := uuid.Parse(idStr)
 	if err != nil {
 		http.Error(w, "invalid id", http.StatusBadRequest)

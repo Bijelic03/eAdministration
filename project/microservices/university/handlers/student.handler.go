@@ -44,6 +44,7 @@ import (
 
 	"github.com/Bijelic03/eAdministration/project/microservices/university/repositories"
 	"github.com/google/uuid"
+	"github.com/gorilla/mux"
 )
 
 type StudentListResponse struct {
@@ -82,7 +83,8 @@ func (h *StudentHandler) CreateStudent(w http.ResponseWriter, r *http.Request) {
 
 // Get student by ID
 func (h *StudentHandler) GetStudentByID(w http.ResponseWriter, r *http.Request) {
-	idStr := r.URL.Query().Get("id")
+	vars := mux.Vars(r)
+	idStr := vars["id"]
 	id, err := uuid.Parse(idStr)
 	if err != nil {
 		http.Error(w, "invalid id", http.StatusBadRequest)
@@ -191,7 +193,8 @@ func (h *StudentHandler) UpdateStudent(w http.ResponseWriter, r *http.Request) {
 
 // Delete student
 func (h *StudentHandler) DeleteStudent(w http.ResponseWriter, r *http.Request) {
-	idStr := r.URL.Query().Get("id")
+	vars := mux.Vars(r)
+	idStr := vars["id"]
 	id, err := uuid.Parse(idStr)
 	if err != nil {
 		http.Error(w, "invalid id", http.StatusBadRequest)
