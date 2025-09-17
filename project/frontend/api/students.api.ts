@@ -1,4 +1,4 @@
-import axiosInstance from '@/utils/axios';
+import { axiosUniversityInstance as axiosInstance } from "@/utils/axios";
 
 const STUDENT_API_PATH = '/university/students';
 

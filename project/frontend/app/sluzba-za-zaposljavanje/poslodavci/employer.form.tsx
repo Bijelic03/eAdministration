@@ -11,14 +11,13 @@ interface FormProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onEdit: (data: any) => void;
 }
-const UpsertCandidateForm = ({ data, onCreate, onEdit }: FormProps) => {
+const UpsertEmployerForm = ({ data, onCreate, onEdit }: FormProps) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [formData, setFormData] = useState<any>({
     fullname: data?.fullname || "",
     email: data?.email || "",
-    studentid: data?.studentid || "",
     password: data?.password || "",
-    role: "candidate",
+    role: "employee",
   });
 
   const handleChange = (
@@ -36,7 +35,7 @@ const UpsertCandidateForm = ({ data, onCreate, onEdit }: FormProps) => {
     e.preventDefault();
 
     if (data?.id) {
-      onEdit({ ...formData, id: data.id }); 
+      onEdit({ ...formData, id: data.id });
     } else {
       onCreate(formData);
     }
@@ -54,7 +53,7 @@ const UpsertCandidateForm = ({ data, onCreate, onEdit }: FormProps) => {
             name="fullname"
             value={formData.fullname}
             onChange={handleChange}
-            placeholder="Full name"
+            placeholder="Ime i prezime"
             required
           />
           <Input
@@ -65,13 +64,6 @@ const UpsertCandidateForm = ({ data, onCreate, onEdit }: FormProps) => {
             onChange={handleChange}
             placeholder="email@email.com"
             required
-          />
-          <Input
-            id="studentid"
-            name="studentid"
-            value={formData.studentid}
-            onChange={handleChange}
-            placeholder="Student ID (can be empty)"
           />
           <Input
             type="password"
@@ -95,4 +87,4 @@ const UpsertCandidateForm = ({ data, onCreate, onEdit }: FormProps) => {
   );
 };
 
-export default UpsertCandidateForm;
+export default UpsertEmployerForm;

@@ -1,3 +1,16 @@
+/* 
+// JobOffer - oglas za posao/praksu
+type JobOffer struct {
+	ID                uuid.UUID  `json:"id" db:"id"`
+	EmployerID        uuid.UUID  `json:"employerId" db:"employer_id"`
+	Title             string     `json:"title" db:"title"`
+	Description       string     `json:"description" db:"description"`
+	Location          string     `json:"location" db:"location"`
+	RequiredFaculty   *string    `json:"requiredFaculty" db:"required_faculty"` // opciono: traženi fakultet (naziv)
+	PublishedAt       time.Time  `json:"publishedAt" db:"published_at"`
+}
+*/
+
 "use client";
 import Button from "@/components/button";
 import Input from "@/components/form/input";
@@ -11,14 +24,14 @@ interface FormProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onEdit: (data: any) => void;
 }
-const UpsertCandidateForm = ({ data, onCreate, onEdit }: FormProps) => {
+const UpsertOffersForm = ({ data, onCreate, onEdit }: FormProps) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [formData, setFormData] = useState<any>({
-    fullname: data?.fullname || "",
-    email: data?.email || "",
-    studentid: data?.studentid || "",
-    password: data?.password || "",
-    role: "candidate",
+    employerId: data?.employerId || "",
+    title: data?.title || "",
+    description: data?.description || "",
+    location: data?.location || "",
+    requiredFaculty: data?.requiredFaculty || false,
   });
 
   const handleChange = (
@@ -36,7 +49,7 @@ const UpsertCandidateForm = ({ data, onCreate, onEdit }: FormProps) => {
     e.preventDefault();
 
     if (data?.id) {
-      onEdit({ ...formData, id: data.id }); 
+      onEdit({ ...formData, id: data.id });
     } else {
       onCreate(formData);
     }
@@ -50,36 +63,45 @@ const UpsertCandidateForm = ({ data, onCreate, onEdit }: FormProps) => {
       >
         <div className="grid grid-cols-1 gap-5 w-full">
           <Input
-            id="fullname"
-            name="fullname"
-            value={formData.fullname}
+            id="employerId"
+            name="employerId"
+            value={formData.employerId}
             onChange={handleChange}
-            placeholder="Full name"
+            placeholder="Employer ID"
             required
           />
           <Input
-            type="email"
-            id="email"
-            name="email"
-            value={formData.email}
+            type="text"
+            id="title"
+            name="title"
+            value={formData.title}
             onChange={handleChange}
-            placeholder="email@email.com"
+            placeholder="Title"
             required
           />
           <Input
-            id="studentid"
-            name="studentid"
-            value={formData.studentid}
+            id="description"
+            name="description"
+            value={formData.description}
             onChange={handleChange}
-            placeholder="Student ID (can be empty)"
+            placeholder="Description"
+            required
           />
           <Input
-            type="password"
-            id="password"
-            name="password"
-            value={formData.password}
+            id="location"
+            name="location"
+            value={formData.location}
             onChange={handleChange}
-            placeholder="Password"
+            placeholder="Location"
+            required
+          />
+          <Input
+            id="requiredFaculty"
+            name="requiredFaculty"
+            value={formData.requiredFaculty}
+            onChange={handleChange}
+            placeholder="Required faculty"
+            type="checkbox"
             required
           />
         </div>
@@ -95,4 +117,4 @@ const UpsertCandidateForm = ({ data, onCreate, onEdit }: FormProps) => {
   );
 };
 
-export default UpsertCandidateForm;
+export default UpsertOffersForm;

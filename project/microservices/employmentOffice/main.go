@@ -8,68 +8,75 @@ import (
 	"os/signal"
 	"time"
 
+	"github.com/Bijelic03/eAdministration/project/microservices/employmentOffice/config"
+	"github.com/Bijelic03/eAdministration/project/microservices/employmentOffice/db"
+	"github.com/Bijelic03/eAdministration/project/microservices/employmentOffice/handlers"
+	"github.com/Bijelic03/eAdministration/project/microservices/employmentOffice/repositories"
+
 	handler "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
-//	"github.com/Bijelic03/eAdministration/project/microservices/employmentOffice/config"
-
-//	"github.com/Bijelic03/eAdministration/project/microservices/employmentOffice/db"
 )
 
 func main() {
+	cfg := config.GetConfig()
 
-//	cfg := config.GetConfig()
-
-//	conn, err := db.Connect(cfg.DatabaseURL())
-//	handleErr(err)
+	conn, err := db.Connect(cfg.DatabaseURL())
+	handleErr(err)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
 	address := ":8082"
 
-	// Set up the router
-	router := mux.NewRouter()
-
-	router.Use(mux.CORSMethodMiddleware(router))
-
-//	api := router.PathPrefix("/api/v1").Subrouter()
-
 	cors := handler.CORS(
 		handler.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}),
 		handler.AllowedHeaders([]string{"Authorization", "Content-Type"}),
 		handler.AllowCredentials(),
-		handler.AllowedOrigins([]string{"http://localhost:5173"}),
+		handler.AllowedOrigins([]string{"*"}),
 	)
 
-		// ====== EMPLOYMENT OFFICE ROUTING ======
+	// Set up the router
+	router := mux.NewRouter()
+	router.Use(mux.CORSMethodMiddleware(router))
 
-		employmentOfficeRouter := router.PathPrefix("/employmentOffice").Subrouter()
+	api := router.PathPrefix("/api/v1/employmentOffice").Subrouter()
 
-		// Inicijalizacija candidate handler-a
-		candidateHandler := &handlers.CandidateHandler{
-			Service: &services.CandidateService{
-				Repo: &repositories.CandidateRepository{},
-			},
-		}
-	
-		// Candidate routes (CRUD + dodatne)
-		employmentOfficeRouter.HandleFunc("/candidates", candidateHandler.Create).Methods("POST")
-		employmentOfficeRouter.HandleFunc("/candidates", candidateHandler.GetAll).Methods("GET")
-		employmentOfficeRouter.HandleFunc("/candidates/{id}", candidateHandler.GetByID).Methods("GET")
-		employmentOfficeRouter.HandleFunc("/candidates", candidateHandler.Update).Methods("PUT")
-		employmentOfficeRouter.HandleFunc("/candidates/{id}", candidateHandler.Delete).Methods("DELETE")
-	
-		employmentOfficeRouter.HandleFunc("/candidates/apply", candidateHandler.Apply).Methods("POST")
-		employmentOfficeRouter.HandleFunc("/candidates/verify-education", candidateHandler.VerifyEducation).Methods("GET")
-	
-		// ===================
-	
-		address := ":8082"
-	
-		server := &http.Server{
-			Handler: cors(router),
-			Addr:    address,
-		}
+	// /api/v1/employmentOffice/employees
+	employeeRepository := repositories.NewEmployeeRepository(conn)
+	employeeHandler := handlers.NewEmployeeHandler(employeeRepository)
+	employees := api.PathPrefix("/employees").Subrouter()
+	employees.Handle("", authMiddleware(http.HandlerFunc(employeeHandler.CreateEmployee))).Methods("POST")
+	employees.Handle("", authMiddleware(http.HandlerFunc(employeeHandler.GetAllEmployees))).Methods("GET")
+	employees.Handle("/{id}", authMiddleware(http.HandlerFunc(employeeHandler.GetEmployeeByID))).Methods("GET")
+	employees.Handle("/by-email", authMiddleware(http.HandlerFunc(employeeHandler.GetEmployeeByEmail))).Methods("GET")
+	employees.Handle("/{id}", authMiddleware(http.HandlerFunc(employeeHandler.UpdateEmployee))).Methods("PUT")
+	employees.Handle("/{id}", authMiddleware(http.HandlerFunc(employeeHandler.DeleteEmployee))).Methods("DELETE")
+
+	// /api/v1/employmentOffice/candiates
+	candidateRepository := repositories.NewCandidateRepository(conn)
+	candidateHandler := handlers.NewCandidateHandler(candidateRepository)
+	candidates := api.PathPrefix("/candidates").Subrouter()
+	candidates.Handle("", authMiddleware(http.HandlerFunc(candidateHandler.CreateCandidate))).Methods("POST")
+	candidates.Handle("", authMiddleware(http.HandlerFunc(candidateHandler.GetAllCandidates))).Methods("GET")
+	candidates.Handle("/{id}", authMiddleware(http.HandlerFunc(candidateHandler.GetCandidateByID))).Methods("GET")
+	candidates.Handle("/by-email", authMiddleware(http.HandlerFunc(candidateHandler.GetCandidateByEmail))).Methods("GET")
+	candidates.Handle("/{id}", authMiddleware(http.HandlerFunc(candidateHandler.UpdateCandidate))).Methods("PUT")
+	candidates.Handle("/{id}", authMiddleware(http.HandlerFunc(candidateHandler.DeleteCandidate))).Methods("DELETE")
+
+	// /api/v1/employmentOffice/jobs
+	jobRepository := repositories.NewJobRepository(conn)
+	jobHandler := handlers.NewJobHandler(jobRepository)
+	jobs := api.PathPrefix("/jobs").Subrouter()
+	jobs.Handle("", authMiddleware(http.HandlerFunc(jobHandler.CreateJob))).Methods("POST")
+	jobs.Handle("", authMiddleware(http.HandlerFunc(jobHandler.GetAllJobs))).Methods("GET")
+	jobs.Handle("/{id}", authMiddleware(http.HandlerFunc(jobHandler.GetJobByID))).Methods("GET")
+	jobs.Handle("/{id}", authMiddleware(http.HandlerFunc(jobHandler.UpdateJob))).Methods("PUT")
+	jobs.Handle("/{id}", authMiddleware(http.HandlerFunc(jobHandler.DeleteJob))).Methods("DELETE")
+
+	server := &http.Server{
+		Handler: cors(router),
+		Addr:    address,
+	}
 
 	// Start the server
 	go func() {
@@ -101,4 +108,12 @@ func handleErr(err error) {
 		log.Fatalln(err)
 	}
 
+}
+
+func authMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// TODO: implement api to auth service
+
+		next.ServeHTTP(w, r)
+	})
 }

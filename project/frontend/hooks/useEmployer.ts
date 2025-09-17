@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import {
-    createProfessorAPI,
-    deleteProfessorAPI,
-    fetchProfessorByIdAPI,
-    fetchProfessorsAPI,
-    updateProfessorAPI,
-} from '@/api/professors.api';
+    createEmployerAPI,
+    deleteEmployerAPI,
+    fetchEmployerByIdAPI,
+    fetchEmployersAPI,
+    updateEmployerAPI,
+} from '@/api/employer.api';
 
-export default function useProfessor() {
+export default function useEmployer() {
     const searchParams = useSearchParams();
     const pageParam = searchParams.get('page') || '1';
     const maxParam = searchParams.get('max') || '10';
@@ -16,31 +16,31 @@ export default function useProfessor() {
 
     const [values, setValues] = useState<{
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        professors: any[];
+        employers: any[];
         page: number;
         totalItems: number;
         totalPages: number;
         loading: boolean;
         error: unknown | null;
     }>({
-        professors: [],
+        employers: [],
         page: 1,
         totalItems: 0,
         totalPages: 0,
         loading: false,
         error: null,
     });
-    const fetchProfessors = async (page = pageParam, max = maxParam) => {
+    const fetchEmployers = async (page = pageParam, max = maxParam) => {
         setValues((prev) => ({ ...prev, loading: true, error: null }));
         try {
-            const response = await fetchProfessorsAPI(
+            const response = await fetchEmployersAPI(
                 Number(page),
                 Number(max),
                 search
             );
             setValues((prev) => ({
                 ...prev,
-                professors: response.professors,
+                employers: response.employees,
                 page: response.page,
                 totalItems: response.totalItems,
                 totalPages: response.totalPages,
@@ -55,14 +55,14 @@ export default function useProfessor() {
         }
     };
 
-    const fetchProfessorById = async (id: string) => {
+    const fetchEmployerById = async (id: string) => {
         setValues((prev) => ({ ...prev, loading: true, error: null }));
         try {
-            const professor = await fetchProfessorByIdAPI(id);
+            const emp = await fetchEmployerByIdAPI(id);
             setValues((prev) => ({
                 ...prev,
             }));
-            return professor;
+            return emp;
         } catch (error) {
             setValues((prev) => ({
                 ...prev,
@@ -74,15 +74,15 @@ export default function useProfessor() {
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const createProfessor = async (data: any) => {
+    const createEmployer = async (data: any) => {
         setValues((prev) => ({ ...prev, loading: true, error: null }));
         try {
-            const newProfeessor = await createProfessorAPI(data);
+            const newEmp = await createEmployerAPI(data);
             setValues((prev) => ({
                 ...prev,
-                professors: [...prev.professors, newProfeessor],
+                employers: [...(prev.employers || []), newEmp],
             }));
-            return newProfeessor;
+            return newEmp;
         } catch (error) {
             setValues((prev) => ({
                 ...prev,
@@ -95,17 +95,17 @@ export default function useProfessor() {
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const updateProfessor = async (data: any) => {
+    const updateEmployer = async (data: any) => {
         setValues((prev) => ({ ...prev, loading: true, error: null }));
         try {
-            const updatedProf = await updateProfessorAPI(data);
+            const updatedEmp = await updateEmployerAPI(data);
             setValues((prev) => ({
                 ...prev,
-                professors: prev.professors.map((pro) =>
-                    pro.id === updatedProf.id ? updatedProf : pro
+                employers: prev.employers.map((c) =>
+                    c.id === updatedEmp.id ? updatedEmp : c
                 ),
             }));
-            return updatedProf;
+            return updatedEmp;
         } catch (error) {
             setValues((prev) => ({
                 ...prev,
@@ -117,11 +117,11 @@ export default function useProfessor() {
         }
     };
 
-    const deleteProfessor = async (id: string) => {
+    const deleteEmployer = async (id: string) => {
         setValues((prev) => ({ ...prev, loading: true, error: null }));
         try {
-            await deleteProfessorAPI(id);
-            await fetchProfessors();
+            await deleteEmployerAPI(id);
+            await fetchEmployers();
             setValues((prev) => ({
                 ...prev,
             }));
@@ -139,10 +139,10 @@ export default function useProfessor() {
     return {
         values,
         setValues,
-        fetchProfessors,
-        fetchProfessorById,
-        createProfessor,
-        updateProfessor,
-        deleteProfessor,
+        fetchEmployers,
+        fetchEmployerById,
+        createEmployer,
+        updateEmployer,
+        deleteEmployer,
     };
 }

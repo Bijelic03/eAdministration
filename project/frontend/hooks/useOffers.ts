@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import {
-    createProfessorAPI,
-    deleteProfessorAPI,
-    fetchProfessorByIdAPI,
-    fetchProfessorsAPI,
-    updateProfessorAPI,
-} from '@/api/professors.api';
+    createOfferAPI,
+    deleteOfferAPI,
+    fetchOfferByIdAPI,
+    fetchOffersAPI,
+    updateOfferAPI,
+} from '@/api/offers.api';
 
-export default function useProfessor() {
+export default function useOffers() {
     const searchParams = useSearchParams();
     const pageParam = searchParams.get('page') || '1';
     const maxParam = searchParams.get('max') || '10';
@@ -16,31 +16,31 @@ export default function useProfessor() {
 
     const [values, setValues] = useState<{
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        professors: any[];
+        offers: any[];
         page: number;
         totalItems: number;
         totalPages: number;
         loading: boolean;
         error: unknown | null;
     }>({
-        professors: [],
+        offers: [],
         page: 1,
         totalItems: 0,
         totalPages: 0,
         loading: false,
         error: null,
     });
-    const fetchProfessors = async (page = pageParam, max = maxParam) => {
+    const fetchOffers = async (page = pageParam, max = maxParam) => {
         setValues((prev) => ({ ...prev, loading: true, error: null }));
         try {
-            const response = await fetchProfessorsAPI(
+            const response = await fetchOffersAPI(
                 Number(page),
                 Number(max),
                 search
             );
             setValues((prev) => ({
                 ...prev,
-                professors: response.professors,
+                offers: response.offers,
                 page: response.page,
                 totalItems: response.totalItems,
                 totalPages: response.totalPages,
@@ -55,14 +55,14 @@ export default function useProfessor() {
         }
     };
 
-    const fetchProfessorById = async (id: string) => {
+    const fetchOfferById = async (id: string) => {
         setValues((prev) => ({ ...prev, loading: true, error: null }));
         try {
-            const professor = await fetchProfessorByIdAPI(id);
+            const offer = await fetchOfferByIdAPI(id);
             setValues((prev) => ({
                 ...prev,
             }));
-            return professor;
+            return offer;
         } catch (error) {
             setValues((prev) => ({
                 ...prev,
@@ -74,15 +74,15 @@ export default function useProfessor() {
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const createProfessor = async (data: any) => {
+    const createOffer = async (data: any) => {
         setValues((prev) => ({ ...prev, loading: true, error: null }));
         try {
-            const newProfeessor = await createProfessorAPI(data);
+            const newOffer = await createOfferAPI(data);
             setValues((prev) => ({
                 ...prev,
-                professors: [...prev.professors, newProfeessor],
+                offers: [...prev.offers, newOffer],
             }));
-            return newProfeessor;
+            return newOffer;
         } catch (error) {
             setValues((prev) => ({
                 ...prev,
@@ -95,17 +95,17 @@ export default function useProfessor() {
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const updateProfessor = async (data: any) => {
+    const updateOffer = async (data: any) => {
         setValues((prev) => ({ ...prev, loading: true, error: null }));
         try {
-            const updatedProf = await updateProfessorAPI(data);
+            const updatedOffer = await updateOfferAPI(data);
             setValues((prev) => ({
                 ...prev,
-                professors: prev.professors.map((pro) =>
-                    pro.id === updatedProf.id ? updatedProf : pro
+                offers: prev.offers.map((c) =>
+                    c.id === updatedOffer.id ? updatedOffer : c
                 ),
             }));
-            return updatedProf;
+            return updatedOffer;
         } catch (error) {
             setValues((prev) => ({
                 ...prev,
@@ -117,11 +117,11 @@ export default function useProfessor() {
         }
     };
 
-    const deleteProfessor = async (id: string) => {
+    const deleteOffer = async (id: string) => {
         setValues((prev) => ({ ...prev, loading: true, error: null }));
         try {
-            await deleteProfessorAPI(id);
-            await fetchProfessors();
+            await deleteOfferAPI(id);
+            await fetchOffers();
             setValues((prev) => ({
                 ...prev,
             }));
@@ -139,10 +139,10 @@ export default function useProfessor() {
     return {
         values,
         setValues,
-        fetchProfessors,
-        fetchProfessorById,
-        createProfessor,
-        updateProfessor,
-        deleteProfessor,
+        fetchOffers,
+        fetchOfferById,
+        createOffer,
+        updateOffer,
+        deleteOffer,
     };
 }

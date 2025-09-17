@@ -40,7 +40,7 @@ export default function useCandidate() {
 			);
 			setValues((prev) => ({
 				...prev,
-				attributes: response.data,
+				candidates: response.candidates,
 				page: response.page,
 				totalItems: response.totalItems,
 				totalPages: response.totalPages,
@@ -58,11 +58,11 @@ export default function useCandidate() {
 	const fetchCandidateById = async (id: string) => {
 		setValues((prev) => ({ ...prev, loading: true, error: null }));
 		try {
-			const attribute = await fetchCandidateByIdAPI(id);
+			const candidate = await fetchCandidateByIdAPI(id);
 			setValues((prev) => ({
 				...prev,
 			}));
-			return attribute;
+			return candidate;
 		} catch (error) {
 			setValues((prev) => ({
 				...prev,

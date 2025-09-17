@@ -40,7 +40,7 @@ export default function useStudent() {
 			);
 			setValues((prev) => ({
 				...prev,
-				students: response.data,
+				students: response.students,
 				page: response.page,
 				totalItems: response.totalItems,
 				totalPages: response.totalPages,

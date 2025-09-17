@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import {
-    createProfessorAPI,
-    deleteProfessorAPI,
-    fetchProfessorByIdAPI,
-    fetchProfessorsAPI,
-    updateProfessorAPI,
-} from '@/api/professors.api';
+    createExamAPI,
+    deleteExamAPI,
+    fetchExamByIdAPI,
+    fetchExamsAPI,
+    updateExamAPI,
+} from '@/api/exam.api';
 
-export default function useProfessor() {
+export default function useExam() {
     const searchParams = useSearchParams();
     const pageParam = searchParams.get('page') || '1';
     const maxParam = searchParams.get('max') || '10';
@@ -16,31 +16,31 @@ export default function useProfessor() {
 
     const [values, setValues] = useState<{
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        professors: any[];
+        exams: any[];
         page: number;
         totalItems: number;
         totalPages: number;
         loading: boolean;
         error: unknown | null;
     }>({
-        professors: [],
+        exams: [],
         page: 1,
         totalItems: 0,
         totalPages: 0,
         loading: false,
         error: null,
     });
-    const fetchProfessors = async (page = pageParam, max = maxParam) => {
+    const fetchExams = async (page = pageParam, max = maxParam) => {
         setValues((prev) => ({ ...prev, loading: true, error: null }));
         try {
-            const response = await fetchProfessorsAPI(
+            const response = await fetchExamsAPI(
                 Number(page),
                 Number(max),
                 search
             );
             setValues((prev) => ({
                 ...prev,
-                professors: response.professors,
+                exams: response.exams,
                 page: response.page,
                 totalItems: response.totalItems,
                 totalPages: response.totalPages,
@@ -55,14 +55,14 @@ export default function useProfessor() {
         }
     };
 
-    const fetchProfessorById = async (id: string) => {
+    const fetchExamById = async (id: string) => {
         setValues((prev) => ({ ...prev, loading: true, error: null }));
         try {
-            const professor = await fetchProfessorByIdAPI(id);
+            const exam = await fetchExamByIdAPI(id);
             setValues((prev) => ({
                 ...prev,
             }));
-            return professor;
+            return exam;
         } catch (error) {
             setValues((prev) => ({
                 ...prev,
@@ -74,15 +74,15 @@ export default function useProfessor() {
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const createProfessor = async (data: any) => {
+    const createExam = async (data: any) => {
         setValues((prev) => ({ ...prev, loading: true, error: null }));
         try {
-            const newProfeessor = await createProfessorAPI(data);
+            const newExam = await createExamAPI(data);
             setValues((prev) => ({
                 ...prev,
-                professors: [...prev.professors, newProfeessor],
+                exams: [...prev.exams, newExam],
             }));
-            return newProfeessor;
+            return newExam;
         } catch (error) {
             setValues((prev) => ({
                 ...prev,
@@ -95,17 +95,17 @@ export default function useProfessor() {
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const updateProfessor = async (data: any) => {
+    const updateExam = async (data: any) => {
         setValues((prev) => ({ ...prev, loading: true, error: null }));
         try {
-            const updatedProf = await updateProfessorAPI(data);
+            const updatedExam = await updateExamAPI(data);
             setValues((prev) => ({
                 ...prev,
-                professors: prev.professors.map((pro) =>
-                    pro.id === updatedProf.id ? updatedProf : pro
+                exams: prev.exams.map((c) =>
+                    c.id === updatedExam.id ? updatedExam : c
                 ),
             }));
-            return updatedProf;
+            return updatedExam;
         } catch (error) {
             setValues((prev) => ({
                 ...prev,
@@ -117,11 +117,11 @@ export default function useProfessor() {
         }
     };
 
-    const deleteProfessor = async (id: string) => {
+    const deleteExam = async (id: string) => {
         setValues((prev) => ({ ...prev, loading: true, error: null }));
         try {
-            await deleteProfessorAPI(id);
-            await fetchProfessors();
+            await deleteExamAPI(id);
+            await fetchExams();
             setValues((prev) => ({
                 ...prev,
             }));
@@ -139,10 +139,10 @@ export default function useProfessor() {
     return {
         values,
         setValues,
-        fetchProfessors,
-        fetchProfessorById,
-        createProfessor,
-        updateProfessor,
-        deleteProfessor,
+        fetchExams,
+        fetchExamById,
+        createExam,
+        updateExam,
+        deleteExam,
     };
 }
