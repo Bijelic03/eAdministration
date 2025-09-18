@@ -26,7 +26,7 @@ type Course struct {
   const [formData, setFormData] = useState<any>({
     code: data?.code || "",
     name: data?.name || "",
-    ects: data?.ects || 2,
+    ects: data?.ects || "2",
     active: data?.active || false,
   });
 
