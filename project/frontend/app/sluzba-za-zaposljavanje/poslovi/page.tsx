@@ -88,7 +88,7 @@ const PosloviPage = () => {
 			>
 				<TableHeader>
 					<TableHeaderCell>#</TableHeaderCell>
-					<TableHeaderCell>Gazda</TableHeaderCell>
+					<TableHeaderCell>Gazda ID</TableHeaderCell>
 					<TableHeaderCell>Naziv</TableHeaderCell>
 					<TableHeaderCell>Opis</TableHeaderCell>
 					<TableHeaderCell>Lokacija</TableHeaderCell>
@@ -99,7 +99,7 @@ const PosloviPage = () => {
 						// eslint-disable-next-line @typescript-eslint/no-explicit-any
 						values?.jobs?.map((job: any) => (
 							<TableRow key={job.id}>
-								<TableCell># {job?.id}</TableCell>
+								<TableCell>{job?.id}</TableCell>
 								<TableCell>{job?.employerid}</TableCell>
 								<TableCell>{job?.title}</TableCell>
 								<TableCell>{job?.description}</TableCell>

@@ -86,7 +86,7 @@ const StudentiPage = () => {
 						// eslint-disable-next-line @typescript-eslint/no-explicit-any
 						values?.students?.map((student: any) => (
 							<TableRow key={student.id}>
-								<TableCell># {student?.id}</TableCell>
+								<TableCell>{student?.id}</TableCell>
 								<TableCell>{student?.indexno}</TableCell>
 								<TableCell>{student?.fullname}</TableCell>
 								<TableCell>{student?.email}</TableCell>

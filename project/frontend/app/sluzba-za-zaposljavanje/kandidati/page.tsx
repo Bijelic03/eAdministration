@@ -100,7 +100,7 @@ const KandidatiPage = () => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             values?.candidates?.map((candidate: any) => (
               <TableRow key={candidate.id}>
-                <TableCell># {candidate?.id}</TableCell>
+                <TableCell>{candidate?.id}</TableCell>
                 <TableCell>{candidate?.fullname}</TableCell>
                 <TableCell>{candidate?.email}</TableCell>
                 <TableCell>{candidate?.studentid?.String !== "" ? candidate?.studentId?.String : "Nije student"}</TableCell>

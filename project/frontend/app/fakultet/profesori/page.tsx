@@ -89,7 +89,7 @@ const ProfesoriiPage = () => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             values?.professors?.map((professor: any) => (
               <TableRow key={professor.id}>
-                <TableCell># {professor?.id}</TableCell>
+                <TableCell>{professor?.id}</TableCell>
                 <TableCell>{professor?.fullname}</TableCell>
                 <TableCell>{professor?.email}</TableCell>
                 <TableCell className="flex gap-4">
