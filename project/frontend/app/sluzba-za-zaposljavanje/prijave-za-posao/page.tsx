@@ -15,10 +15,10 @@ import useModal from '@/hooks/useModal';
 import usePaginationAndSearch from '@/hooks/usePaginationAndSearch';
 import { handleApiError } from '@/services/api.service';
 import { useEffect, useState } from 'react';
-import UpsertOffersForm from './offers.form';
+import UpsertInterviewsForm from './interviews.form';
 
 const PozicijeOglasiPage = () => {
-	const { values, fetchOffers, deleteOffer, updateOffer, createOffer } = useOffers();
+	const { values, fetchOffers, deleteOffer, scheduleInterview } = useOffers();
 	const { page, rowsPerPage, search, handlePageChange } =
 		usePaginationAndSearch();
 	const { isOpen, toggleModal } = useModal();
@@ -26,22 +26,24 @@ const PozicijeOglasiPage = () => {
 	const [data, setData] = useState<any>();
 
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	const onCreate = async (data: any) => {
+	const onCreate = async (formData: any) => {
 		try {
-			await createOffer(data);
+			const payload = {jobapplicationid: data?.id, jobid: data?.jobid, candidateid: data?.candidateid, ...formData};
+			await scheduleInterview(payload);
 		} catch (error) {
-			handleApiError(error, 'Kreiranje nije uspjelo');
+			handleApiError(error, 'Zakazivanje nije uspjelo');
 		}
 	};
 
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	const onEdit = async (data: any) => {
-		try {
-			await updateOffer(data);
-		} catch (error) {
-			handleApiError(error, 'Update nije uspio');
-		}
-	};
+	// const onEdit = async (formData: any) => {
+	// 	try {
+	// 		//
+	// 		console.log('Shuold reschedule interview', formData);
+	// 	} catch (error) {
+	// 		handleApiError(error, 'Update nije uspio');
+	// 	}
+	// };
 
 	const onDelete = async (id: string) => {
 		try {
@@ -84,14 +86,14 @@ const PozicijeOglasiPage = () => {
 								<TableCell>{offer?.jobid}</TableCell>
 								<TableCell>{offer?.candidateid}</TableCell>
 								<TableCell className='flex gap-4'>
-									{/* <Button
+									<Button
 										onClick={() => {
 											setData(offer);
 											toggleModal();
 										}}
 									>
-										<Icon type='edit' />
-									</Button> */}
+										<Icon type='interviewSchedule' />
+									</Button>
 									<Button onClick={() => onDelete(offer.id)}>
 										<Icon type='reject' />
 									</Button>
@@ -114,21 +116,17 @@ const PozicijeOglasiPage = () => {
 					toggleModal();
 				}}
 			>
-				{!data?.id ? (
-					<ModalLabel label='Kreiraj poziciju/oglas' />
-				) : (
-					<ModalLabel label='Apdejtuj poziciju/oglas' />
-				)}
-				<UpsertOffersForm
+				<ModalLabel label='Zakazi intervju' />
+				<UpsertInterviewsForm
 					data={data}
-					onCreate={() => {
-						onCreate(data);
+					onCreate={(formData) => {
+						onCreate(formData);
 						toggleModal();
 					}}
-					onEdit={() => {
-						onEdit(data);
-						toggleModal();
-					}}
+					// onEdit={(formData) => {
+					// 	onEdit(formData);
+					// 	toggleModal();
+					// }}
 				/>
 			</FullScreenModal>
 		</Wrap>

@@ -2,7 +2,7 @@ import React, { ChangeEvent } from "react";
 import { formatLabel } from "./form-helper";
 
 interface InputProps {
-  type?: "text" | "email" | "password" | "number" | "tel" | "url" | "checkbox";
+  type?: "text" | "email" | "password" | "number" | "tel" | "url" | "checkbox" | "datetime-local" | "select";
   id: string;
   name: string;
   value: string | number;

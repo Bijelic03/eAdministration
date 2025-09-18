@@ -55,12 +55,30 @@ type JobApplicationRepository struct {
 	db *pgxpool.Pool
 }
 
+type Interview struct {
+	ID               uuid.UUID `json:"id" db:"id"`
+	JobApplicationID uuid.UUID `json:"jobapplicationid" db:"jobapplicationid"`
+	CandidateID      uuid.UUID `json:"candidateid" db:"candidateid"`
+	JobID            uuid.UUID `json:"jobid" db:"jobid"`
+	DateTime         string    `json:"datetime" db:"datetime"`
+	Type             string    `json:"type" db:"type"`
+	Location         string    `json:"location" db:"location"`
+}
+
+type InterviewRepository struct {
+	db *pgxpool.Pool
+}
+
 func NewJobRepository(db *pgxpool.Pool) *JobRepository {
 	return &JobRepository{db: db}
 }
 
 func NewJobApplicationRepository(db *pgxpool.Pool) *JobApplicationRepository {
 	return &JobApplicationRepository{db: db}
+}
+
+func NewJobInterviewRepository(db *pgxpool.Pool) *InterviewRepository {
+	return &InterviewRepository{db: db}
 }
 
 // Add new Job
@@ -303,6 +321,100 @@ func (r *JobApplicationRepository) GetAllJobApplications(ctx context.Context, pa
 // Delete jobapplication
 func (r *JobApplicationRepository) DeleteJobApplication(ctx context.Context, id uuid.UUID) error {
 	query := `DELETE FROM jobapplications WHERE id = $1`
+	_, err := r.db.Exec(ctx, query, id)
+	return err
+}
+
+// Schedule interview
+func (r *InterviewRepository) ScheduleInterview(ctx context.Context, j *Interview) (*Interview, error) {
+	query := `
+		INSERT INTO interviews (id, jobapplicationid, candidateid, jobid, datetime, type, location)
+		VALUES ($1, $2, $3, $4, $5, $6, $7)
+		RETURNING id, jobapplicationid, candidateid, jobid, datetime, type, location
+	`
+
+	j.ID = uuid.New()
+	var created Interview
+
+	err := r.db.QueryRow(ctx, query,
+		j.ID,
+		j.JobApplicationID,
+		j.CandidateID,
+		j.JobID,
+		j.DateTime,
+		j.Type,
+		j.Location,
+	).Scan(
+		&created.ID,
+		&created.JobApplicationID,
+		&created.CandidateID,
+		&created.JobID,
+		&created.DateTime,
+		&created.Type,
+		&created.Location,
+	)
+
+	if err != nil {
+		if pgErr, ok := err.(*pgconn.PgError); ok {
+			if pgErr.Code == "23505" { // unique_violation
+				return nil, fmt.Errorf("a interview with this id already exists")
+			}
+		}
+		return nil, err
+	}
+	return &created, nil
+}
+
+// Get all interviews paginated
+func (r *InterviewRepository) GetAllInterviews(ctx context.Context, page, limit int) ([]*Interview, int, error) {
+	if page < 1 {
+		page = 1
+	}
+	if limit <= 0 {
+		limit = 10
+	}
+	offset := (page - 1) * limit
+
+	query := `SELECT id, jobid, candidateid, jobapplicationid, datetime, type, location
+	          FROM interviews
+	          ORDER BY jobid
+	          LIMIT $1 OFFSET $2`
+
+	rows, err := r.db.Query(ctx, query, limit, offset)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer rows.Close()
+
+	interviews := make([]*Interview, 0)
+	for rows.Next() {
+		var j Interview
+		if err := rows.Scan(
+			&j.ID,
+			&j.JobID,
+			&j.CandidateID,
+			&j.JobApplicationID,
+			&j.DateTime,
+			&j.Type,
+			&j.Location,
+		); err != nil {
+			return nil, 0, err
+		}
+		interviews = append(interviews, &j)
+	}
+
+	// total count
+	var totalItems int
+	if err := r.db.QueryRow(ctx, `SELECT COUNT(*) FROM interviews`).Scan(&totalItems); err != nil {
+		return nil, 0, err
+	}
+
+	return interviews, totalItems, nil
+}
+
+// Delete interview
+func (r *InterviewRepository) DeleteInterview(ctx context.Context, id uuid.UUID) error {
+	query := `DELETE FROM interviews WHERE id = $1`
 	_, err := r.db.Exec(ctx, query, id)
 	return err
 }

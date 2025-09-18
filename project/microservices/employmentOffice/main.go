@@ -78,9 +78,11 @@ func main() {
 	// /api/v1/employmentOffice/jobs
 	jobRepository := repositories.NewJobRepository(conn)
 	jobAppsRepo := repositories.NewJobApplicationRepository(conn)
-	jobHandler := handlers.NewJobHandler(jobRepository, jobAppsRepo, candidateRepository)
+	interviewRepo := repositories.NewJobInterviewRepository(conn)
+	jobHandler := handlers.NewJobHandler(jobRepository, jobAppsRepo, candidateRepository, interviewRepo)
 	jobs := api.PathPrefix("/jobs").Subrouter()
 	jobapps := api.PathPrefix("/jobapplications").Subrouter()
+	jobinterviews := api.PathPrefix("/interviews").Subrouter()
 	jobs.Handle("", authMiddleware(http.HandlerFunc(jobHandler.CreateJob))).Methods("POST")
 	jobs.Handle("", authMiddleware(http.HandlerFunc(jobHandler.GetAllJobs))).Methods("GET")
 	jobs.Handle("/{id}", authMiddleware(http.HandlerFunc(jobHandler.GetJobByID))).Methods("GET")
@@ -89,6 +91,9 @@ func main() {
 	jobs.Handle("/{id}/{email}/apply", authMiddleware(http.HandlerFunc(jobHandler.ApplyForJob))).Methods("POST")
 	jobapps.Handle("", authMiddleware(http.HandlerFunc(jobHandler.GetAllJobApplications))).Methods("GET")
 	jobapps.Handle("/{id}", authMiddleware(http.HandlerFunc(jobHandler.DeleteJobApplication))).Methods("DELETE")
+	jobinterviews.Handle("", authMiddleware(http.HandlerFunc(jobHandler.ScheduleInterview))).Methods("POST")
+	jobinterviews.Handle("", authMiddleware(http.HandlerFunc(jobHandler.GetAllInterviews))).Methods("GET")
+	jobinterviews.Handle("/{id}", authMiddleware(http.HandlerFunc(jobHandler.DeleteInterview))).Methods("DELETE")
 
 	server := &http.Server{
 		Handler: cors(router),

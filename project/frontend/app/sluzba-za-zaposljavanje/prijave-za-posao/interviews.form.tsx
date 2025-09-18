@@ -1,19 +1,7 @@
-/* 
-// JobOffer - oglas za posao/praksu
-type JobOffer struct {
-	ID                uuid.UUID  `json:"id" db:"id"`
-	EmployerID        uuid.UUID  `json:"employerId" db:"employer_id"`
-	Title             string     `json:"title" db:"title"`
-	Description       string     `json:"description" db:"description"`
-	Location          string     `json:"location" db:"location"`
-	RequiredFaculty   *string    `json:"requiredFaculty" db:"required_faculty"` // opciono: traženi fakultet (naziv)
-	PublishedAt       time.Time  `json:"publishedAt" db:"published_at"`
-}
-*/
-
 "use client";
 import Button from "@/components/button";
 import Input from "@/components/form/input";
+import Select from "@/components/form/select";
 import React, { useState } from "react";
 
 interface FormProps {
@@ -22,16 +10,14 @@ interface FormProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onCreate: (data: any) => void;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onEdit: (data: any) => void;
+  // onEdit: (data: any) => void;
 }
-const UpsertOffersForm = ({ data, onCreate, onEdit }: FormProps) => {
+const UpsertInteviewsForm = ({ data, onCreate }: FormProps) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [formData, setFormData] = useState<any>({
-    employerId: data?.employerId || "",
-    title: data?.title || "",
-    description: data?.description || "",
+    datetime: data?.datetime || "",
     location: data?.location || "",
-    requiredFaculty: data?.requiredFaculty || false,
+    type: data?.type || "",
   });
 
   const handleChange = (
@@ -47,12 +33,12 @@ const UpsertOffersForm = ({ data, onCreate, onEdit }: FormProps) => {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    if (data?.id) {
-      onEdit({ ...formData, id: data.id });
-    } else {
-      onCreate(formData);
-    }
+    onCreate(formData);
+    // if (data?.id) {
+    //   onEdit({ ...formData, id: data.id });
+    // } else {
+    //   onCreate(formData);
+    // }
   };
 
   return (
@@ -62,30 +48,14 @@ const UpsertOffersForm = ({ data, onCreate, onEdit }: FormProps) => {
         className="my-10 flex flex-col gap-y-5 items-center justify-center max-w-[40rem] lg:max-w-[50rem] mx-auto"
       >
         <div className="grid grid-cols-1 gap-5 w-full">
-          <Input
-            id="employerId"
-            name="employerId"
-            value={formData.employerId}
+        <Input
+            id="datetime"
+            name="datetime"
+            value={formData.datetime}
             onChange={handleChange}
-            placeholder="Employer ID"
+            placeholder="Vreme i datum"
             required
-          />
-          <Input
-            type="text"
-            id="title"
-            name="title"
-            value={formData.title}
-            onChange={handleChange}
-            placeholder="Title"
-            required
-          />
-          <Input
-            id="description"
-            name="description"
-            value={formData.description}
-            onChange={handleChange}
-            placeholder="Description"
-            required
+            type="datetime-local"
           />
           <Input
             id="location"
@@ -95,14 +65,15 @@ const UpsertOffersForm = ({ data, onCreate, onEdit }: FormProps) => {
             placeholder="Location"
             required
           />
-          <Input
-            id="requiredFaculty"
-            name="requiredFaculty"
-            value={formData.requiredFaculty}
+          <Select
+            id="type"
+            name="type"
+            value={formData.type}
             onChange={handleChange}
-            placeholder="Required faculty"
-            type="checkbox"
-            required
+            options={[
+              { value: "ONLINE", label: "ONLINE" },
+              { value: "IN_PERSON", label: "IN_PERSON" },
+            ]}
           />
         </div>
 
@@ -117,4 +88,4 @@ const UpsertOffersForm = ({ data, onCreate, onEdit }: FormProps) => {
   );
 };
 
-export default UpsertOffersForm;
+export default UpsertInteviewsForm;

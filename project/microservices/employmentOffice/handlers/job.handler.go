@@ -27,14 +27,22 @@ type JobApplicationsListResponse struct {
 	Error           interface{}                    `json:"error"`
 }
 
+type InterviewsListResponse struct {
+	Interviews []*repositories.Interview `json:"interviews"`
+	Page       int                       `json:"page"`
+	TotalItems int                       `json:"totalItems"`
+	TotalPages int                       `json:"totalPages"`
+	Error      interface{}               `json:"error"`
+}
 type JobHandler struct {
 	repo          *repositories.JobRepository
 	jobAppsRepo   *repositories.JobApplicationRepository
 	candidateRepo *repositories.CandidateRepository
+	interviewRepo *repositories.InterviewRepository
 }
 
-func NewJobHandler(repo *repositories.JobRepository, jobAppsRepo *repositories.JobApplicationRepository, candidateRepo *repositories.CandidateRepository) *JobHandler {
-	return &JobHandler{repo: repo, jobAppsRepo: jobAppsRepo, candidateRepo: candidateRepo}
+func NewJobHandler(repo *repositories.JobRepository, jobAppsRepo *repositories.JobApplicationRepository, candidateRepo *repositories.CandidateRepository, interviewRepo *repositories.InterviewRepository) *JobHandler {
+	return &JobHandler{repo: repo, jobAppsRepo: jobAppsRepo, candidateRepo: candidateRepo, interviewRepo: interviewRepo}
 }
 
 // Create job
@@ -258,6 +266,105 @@ func (h *JobHandler) DeleteJobApplication(w http.ResponseWriter, r *http.Request
 	}
 
 	if err := h.jobAppsRepo.DeleteJobApplication(r.Context(), id); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// Schedule interview
+func (h *JobHandler) ScheduleInterview(w http.ResponseWriter, r *http.Request) {
+	var emp repositories.Interview
+	if err := json.NewDecoder(r.Body).Decode(&emp); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// candidate, err := h.candidateRepo.GetByID(r.Context(), emp.CandidateID)
+	// if err != nil {
+	// 	http.Error(w, "candidate not found", http.StatusNotFound)
+	// 	return
+	// }
+
+	// existing, err := h.int.GetJobApplicationByCandidateIDAndByJobID(r.Context(), jobID, candidate.ID)
+	// if err != nil {
+	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
+	// 	return
+	// }
+	// if existing != nil {
+	// 	http.Error(w, "already applied for this job", http.StatusConflict)
+	// 	return
+	// }
+
+	created, err := h.interviewRepo.ScheduleInterview(r.Context(), &emp)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(created)
+}
+
+// Get all interviews
+func (h *JobHandler) GetAllInterviews(w http.ResponseWriter, r *http.Request) {
+	pageStr := r.URL.Query().Get("page")
+	limitStr := r.URL.Query().Get("max")
+
+	page := 1
+	limit := 10
+
+	if pageStr != "" {
+		if p, err := strconv.Atoi(pageStr); err == nil && p > 0 {
+			page = p
+		}
+	}
+	if limitStr != "" {
+		if l, err := strconv.Atoi(limitStr); err == nil && l > 0 {
+			limit = l
+		}
+	}
+
+	ints, totalItems, err := h.interviewRepo.GetAllInterviews(r.Context(), page, limit)
+	if err != nil {
+		resp := JobApplicationsListResponse{
+			JobApplications: nil,
+			Page:            page,
+			TotalItems:      0,
+			TotalPages:      0,
+			Error:           err.Error(),
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	totalPages := (totalItems + limit - 1) / limit
+
+	resp := InterviewsListResponse{
+		Interviews: ints,
+		Page:       page,
+		TotalItems: totalItems,
+		TotalPages: totalPages,
+		Error:      nil,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(resp)
+}
+
+// Delete interview
+func (h *JobHandler) DeleteInterview(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	idStr := vars["id"]
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		http.Error(w, "invalid id", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.interviewRepo.DeleteInterview(r.Context(), id); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

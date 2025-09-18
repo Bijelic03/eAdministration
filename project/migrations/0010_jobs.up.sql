@@ -1,3 +1,5 @@
+DROP TABLE IF EXISTS jobapplications CASCADE;
+
 CREATE TABLE jobapplications (
     id UUID PRIMARY KEY,
     jobid UUID NOT NULL,
