@@ -25,7 +25,7 @@ type Course struct {
 	ID     uuid.UUID `json:"id" db:"id"`
 	Code   string    `json:"code" db:"code"`
 	Name   string    `json:"name" db:"name"`
-	Ects   int       `json:"ects" db:"ects"`
+	Ects   string    `json:"ects" db:"ects"`
 	Active bool      `json:"active" db:"active"`
 }
 

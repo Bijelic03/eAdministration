@@ -1,0 +1,2 @@
+ALTER TABLE courses
+    ALTER COLUMN ects TYPE TEXT USING ects::TEXT;

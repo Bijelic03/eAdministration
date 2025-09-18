@@ -119,6 +119,7 @@ export default function FakultetPage() {
           <LinkButton href="/fakultet/studenti">Studenti</LinkButton>
           <LinkButton href="/fakultet/profesori">Profesori</LinkButton>
           <LinkButton href="/fakultet/kursevi">Kursevi</LinkButton>
+          <LinkButton href="/fakultet/ispiti">Ispiti</LinkButton>
           {/* <LinkButton href="/fakultet/ocjene">Ocjene</LinkButton> */}
           {/* <LinkButton href="/fakultet/gpa">GPA</LinkButton>
           <LinkButton href="/fakultet/alumni">Alumni</LinkButton> */}
