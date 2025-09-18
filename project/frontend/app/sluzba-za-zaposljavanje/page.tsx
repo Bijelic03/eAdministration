@@ -81,9 +81,9 @@ export default function SluzbaZaZaposljavanje() {
           Kandidati
         </LinkButton>
         <LinkButton href="/sluzba-za-zaposljavanje/poslovi">Poslovi</LinkButton>
-        {/* <LinkButton href="/sluzba-za-zaposljavanje/intervjui">
+        <LinkButton href="/sluzba-za-zaposljavanje/intervjui">
           Intervjui
-        </LinkButton> */}
+        </LinkButton>
         {/* <LinkButton href="/sluzba-za-zaposljavanje/ocjene-kandidata">
           Ocjene kandidata
         </LinkButton> */}

@@ -9,6 +9,7 @@ import { WebIcon } from "./WebIcon";
 import { UploadIcon } from "./UploadIcon";
 import { AddressIcon } from "./AddressIcon";
 import { AnalyticsIcon } from "./AnalyticsIcon";
+import { InterviewScheduleIcon } from "./InterviewScheduleIcon";
 
 interface IconProps {
   type:
@@ -22,6 +23,7 @@ interface IconProps {
     | "upload"
     | "address"
     | "analytics"
+    | "interviewSchedule";
   className?: string;
 }
 
@@ -51,6 +53,8 @@ const Icon: React.FC<IconProps> = ({ type, className }) => {
       return <UploadIcon className={className} />;
     case "analytics":
       return <AnalyticsIcon className={className} />
+    case "interviewSchedule":
+      return <InterviewScheduleIcon className={className} />
     default:
       return null;
   }

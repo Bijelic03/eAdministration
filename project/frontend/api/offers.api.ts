@@ -1,6 +1,7 @@
 import { axiosEmploymentOfficeInstance as axiosInstance } from "@/utils/axios";
 
 const OFFERS_API_PATH = '/employmentOffice/jobapplications';
+const INTERVIEWS_API_PATH = '/employmentOffice/interviews';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function createOfferAPI(data: any) {
@@ -35,5 +36,10 @@ export async function updateOfferAPI(data: any) {
 
 export async function deleteOfferAPI(id: string) {
 	const response = await axiosInstance.delete(`${OFFERS_API_PATH}/${id}`);
+	return response.data;
+}
+
+export async function scheduleInterviewAPI(data: { jobapplicationid: string; candidateid: string; jobid: string; datetime: string; type: string; location: string; }) {
+	const response = await axiosInstance.post(`${INTERVIEWS_API_PATH}`, data);
 	return response.data;
 }
