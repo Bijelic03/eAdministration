@@ -30,13 +30,13 @@ const (
 )
 
 type Student struct {
-	ID       uuid.UUID     `json:"id" db:"id"`
-	FullName string        `json:"fullname" db:"fullname"`
-	Email    string        `json:"email" db:"email"`
-	Password string        `json:"password" db:"password"`
-	Role     string        `json:"role" db:"role"`
-	Status   StudentStatus `json:"status" db:"status"`
-	IndexNo  string        `json:"indexno" db:"indexno"`
+	ID       uuid.UUID      `json:"id" db:"id"`
+	FullName string         `json:"fullname" db:"fullname"`
+	Email    string         `json:"email" db:"email"`
+	Password string         `json:"password" db:"password"`
+	Role     string         `json:"role" db:"role"`
+	Status   *StudentStatus `json:"status" db:"status"`
+	IndexNo  *string         `json:"indexno" db:"indexno"`
 }
 
 // Education *EducationRecord `json:"education" db:"-"`

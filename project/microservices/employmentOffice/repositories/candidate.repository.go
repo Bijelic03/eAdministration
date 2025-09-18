@@ -14,7 +14,6 @@ package repositories
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -23,12 +22,12 @@ import (
 )
 
 type Candidate struct {
-	ID        uuid.UUID      `json:"id" db:"id"`
-	FullName  string         `json:"fullname" db:"fullname"`
-	Email     string         `json:"email" db:"email"`
-	Password  string         `json:"password" db:"password"`
-	Role      string         `json:"role" db:"role"`
-	StudentId sql.NullString `json:"studentid,omitempty" db:"studentid"`
+	ID        uuid.UUID `json:"id" db:"id"`
+	FullName  string    `json:"fullname" db:"fullname"`
+	Email     string    `json:"email" db:"email"`
+	Password  string    `json:"password" db:"password"`
+	Role      string    `json:"role" db:"role"`
+	StudentId *string   `json:"studentid,omitempty" db:"studentid"`
 }
 
 type CandidateRepository struct {
