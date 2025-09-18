@@ -26,6 +26,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgconn"
@@ -330,7 +331,7 @@ func (r *InterviewRepository) ScheduleInterview(ctx context.Context, j *Intervie
 	query := `
 		INSERT INTO interviews (id, jobapplicationid, candidateid, jobid, datetime, type, location)
 		VALUES ($1, $2, $3, $4, $5, $6, $7)
-		RETURNING id, jobapplicationid, candidateid, jobid, datetime, type, location
+		RETURNING id, jobapplicationid, candidateid, jobid, to_char(datetime, 'YYYY-MM-DD"T"HH24:MI') AS datetime, type, location
 	`
 
 	j.ID = uuid.New()
@@ -389,17 +390,22 @@ func (r *InterviewRepository) GetAllInterviews(ctx context.Context, page, limit 
 	interviews := make([]*Interview, 0)
 	for rows.Next() {
 		var j Interview
+		var dt time.Time // ← privremeno skeniramo timestamp u time.Time
 		if err := rows.Scan(
 			&j.ID,
 			&j.JobID,
 			&j.CandidateID,
 			&j.JobApplicationID,
-			&j.DateTime,
+			&dt, // scan u time.Time
 			&j.Type,
 			&j.Location,
 		); err != nil {
 			return nil, 0, err
 		}
+
+		// Konvertujemo u string u formatu YYYY-MM-DDTHH:MM
+		j.DateTime = dt.Format("2006-01-02T15:04")
+
 		interviews = append(interviews, &j)
 	}
 

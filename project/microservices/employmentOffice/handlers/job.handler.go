@@ -281,22 +281,25 @@ func (h *JobHandler) ScheduleInterview(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// candidate, err := h.candidateRepo.GetByID(r.Context(), emp.CandidateID)
-	// if err != nil {
-	// 	http.Error(w, "candidate not found", http.StatusNotFound)
-	// 	return
-	// }
+	// Provjeri da li kandidat postoji
+	candidate, err := h.candidateRepo.GetByID(r.Context(), emp.CandidateID)
+	if err != nil {
+		http.Error(w, "candidate not found", http.StatusNotFound)
+		return
+	}
 
-	// existing, err := h.int.GetJobApplicationByCandidateIDAndByJobID(r.Context(), jobID, candidate.ID)
-	// if err != nil {
-	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
-	// 	return
-	// }
-	// if existing != nil {
-	// 	http.Error(w, "already applied for this job", http.StatusConflict)
-	// 	return
-	// }
+	// Provjeri da li kandidat već ima prijavu za ovaj posao
+	jobapp, err := h.jobAppsRepo.GetJobApplicationByCandidateIDAndByJobID(r.Context(), emp.JobID, candidate.ID)
+	if err != nil {
+		http.Error(w, "failed to check existing application: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
 
+	// Ako postoji već prijava, vrati conflict
+	if jobapp != nil {
+		http.Error(w, "candidate already applied for this job", http.StatusConflict)
+		return
+	}
 	created, err := h.interviewRepo.ScheduleInterview(r.Context(), &emp)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

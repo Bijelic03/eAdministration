@@ -22,12 +22,11 @@ import (
 )
 
 type Candidate struct {
-	ID        uuid.UUID `json:"id" db:"id"`
-	FullName  string    `json:"fullname" db:"fullname"`
-	Email     string    `json:"email" db:"email"`
-	Password  string    `json:"password" db:"password"`
-	Role      string    `json:"role" db:"role"`
-	StudentId *string   `json:"studentid,omitempty" db:"studentid"`
+	ID       uuid.UUID `json:"id" db:"id"`
+	FullName string    `json:"fullname" db:"fullname"`
+	Email    string    `json:"email" db:"email"`
+	Password string    `json:"password" db:"password"`
+	Role     string    `json:"role" db:"role"`
 }
 
 type CandidateRepository struct {
@@ -41,9 +40,9 @@ func NewCandidateRepository(db *pgxpool.Pool) *CandidateRepository {
 // Add new Candidate
 func (r *CandidateRepository) Add(ctx context.Context, cand *Candidate) (*Candidate, error) {
 	query := `
-		INSERT INTO users (fullname, email, password, studentid, role)
-		VALUES ($1, $2, $3, $4, $5)
-		RETURNING id, fullname, email, password, studentid, role
+		INSERT INTO users (fullname, email, password, role)
+		VALUES ($1, $2, $3, $4)
+		RETURNING id, fullname, email, password, role
 	`
 
 	cand.ID = uuid.New()
@@ -53,14 +52,12 @@ func (r *CandidateRepository) Add(ctx context.Context, cand *Candidate) (*Candid
 		cand.FullName,
 		cand.Email,
 		cand.Password,
-		cand.StudentId,
 		cand.Role,
 	).Scan(
 		&created.ID,
 		&created.FullName,
 		&created.Email,
 		&created.Password,
-		&created.StudentId,
 		&created.Role,
 	)
 
@@ -77,7 +74,7 @@ func (r *CandidateRepository) Add(ctx context.Context, cand *Candidate) (*Candid
 
 // Get candidate by ID
 func (r *CandidateRepository) GetByID(ctx context.Context, id uuid.UUID) (*Candidate, error) {
-	query := `SELECT id, fullname, email, password, studentid, role FROM users WHERE id = $1`
+	query := `SELECT id, fullname, email, password, role FROM users WHERE id = $1`
 
 	var cand Candidate
 	err := r.db.QueryRow(ctx, query, id).Scan(
@@ -85,7 +82,6 @@ func (r *CandidateRepository) GetByID(ctx context.Context, id uuid.UUID) (*Candi
 		&cand.FullName,
 		&cand.Email,
 		&cand.Password,
-		&cand.StudentId,
 		&cand.Role,
 	)
 	if err != nil {
@@ -96,7 +92,7 @@ func (r *CandidateRepository) GetByID(ctx context.Context, id uuid.UUID) (*Candi
 
 // Get Candidate by email
 func (r *CandidateRepository) GetByEmail(ctx context.Context, email string) (*Candidate, error) {
-	query := `SELECT id, fullname, email, password, studentid, role FROM users WHERE email = $1`
+	query := `SELECT id, fullname, email, password, role FROM users WHERE email = $1`
 
 	var cand Candidate
 	err := r.db.QueryRow(ctx, query, email).Scan(
@@ -104,7 +100,6 @@ func (r *CandidateRepository) GetByEmail(ctx context.Context, email string) (*Ca
 		&cand.FullName,
 		&cand.Email,
 		&cand.Password,
-		&cand.StudentId,
 		&cand.Role,
 	)
 	if err != nil {
@@ -123,7 +118,7 @@ func (r *CandidateRepository) GetAll(ctx context.Context, page, limit int) ([]*C
 	}
 	offset := (page - 1) * limit
 
-	query := `SELECT id, fullname, email, password, studentid, role 
+	query := `SELECT id, fullname, email, password, role 
 	          FROM users 
 			  WHERE role = 'candidate'
 	          ORDER BY fullname 
@@ -143,7 +138,6 @@ func (r *CandidateRepository) GetAll(ctx context.Context, page, limit int) ([]*C
 			&cand.FullName,
 			&cand.Email,
 			&cand.Password,
-			&cand.StudentId,
 			&cand.Role,
 		); err != nil {
 			return nil, 0, err
@@ -164,9 +158,9 @@ func (r *CandidateRepository) GetAll(ctx context.Context, page, limit int) ([]*C
 func (r *CandidateRepository) Update(ctx context.Context, cand *Candidate) (*Candidate, error) {
 	query := `
 		UPDATE users
-		SET fullname = $1, email = $2, password = $3, studentid = $4, role = $5
+		SET fullname = $1, email = $2, password = $3, role = $4
 		WHERE id = $6
-		RETURNING id, fullname, email, password, role, studentid
+		RETURNING id, fullname, email, password, role
 	`
 
 	var updated Candidate
@@ -175,14 +169,12 @@ func (r *CandidateRepository) Update(ctx context.Context, cand *Candidate) (*Can
 		cand.Email,
 		cand.Password,
 		cand.Role,
-		cand.StudentId,
 		cand.ID,
 	).Scan(
 		&updated.ID,
 		&updated.FullName,
 		&updated.Email,
 		&updated.Password,
-		&updated.StudentId,
 		&updated.Role,
 	)
 	if err != nil {
