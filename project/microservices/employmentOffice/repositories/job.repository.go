@@ -318,6 +318,41 @@ func (r *JobApplicationRepository) GetAllJobApplications(ctx context.Context, pa
 	return jobapps, totalItems, nil
 }
 
+func (r *JobApplicationRepository) GetStudentIndicesByJobID(ctx context.Context, jobID uuid.UUID) ([]string, error) {
+	query := `
+		SELECT u.studentid
+		FROM jobapplications ja
+		JOIN users u ON ja.candidateid = u.id
+		WHERE ja.jobid = $1
+	`
+
+	rows, err := r.db.Query(ctx, query, jobID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var indices []string
+	for rows.Next() {
+		var idx *string
+		if err := rows.Scan(&idx); err != nil {
+			return nil, err
+		}
+
+		if idx != nil {
+			indices = append(indices, *idx)
+			fmt.Printf("Found student index: %s\n", *idx)
+		} else {
+			fmt.Println("Found NULL index")
+		}
+	}
+
+	fmt.Printf("Final indices list for job %s: %+v\n", jobID, indices)
+
+	return indices, nil
+}
+
+
 // Delete jobapplication
 func (r *JobApplicationRepository) DeleteJobApplication(ctx context.Context, id uuid.UUID) error {
 	query := `DELETE FROM jobapplications WHERE id = $1`
