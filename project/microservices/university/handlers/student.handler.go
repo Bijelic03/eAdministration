@@ -208,3 +208,28 @@ func (h *StudentHandler) DeleteStudent(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusNoContent)
 }
+
+// Get students by indices with avg grade
+func (h *StudentHandler) GetStudentsByIndicesWithAvg(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		Indices []string `json:"indices"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "invalid JSON", http.StatusBadRequest)
+		return
+	}
+	if len(req.Indices) == 0 {
+		http.Error(w, "indices are required", http.StatusBadRequest)
+		return
+	}
+
+	students, err := h.repo.GetStudentsByIndexWithAvgGrade(r.Context(), req.Indices)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(students)
+}

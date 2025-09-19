@@ -90,6 +90,8 @@ func main() {
 	students.Handle("/{id}", authMiddleware(http.HandlerFunc(studentHandler.UpdateStudent))).Methods("PUT")
 	students.Handle("/{id}", authMiddleware(http.HandlerFunc(studentHandler.DeleteStudent))).Methods("DELETE")
 
+	students.Handle("/avg-grades", authMiddleware(http.HandlerFunc(studentHandler.GetStudentsByIndicesWithAvg))).Methods("POST")
+
 	// /api/v1/university/exams
 	examRepository := repositories.NewExamRepository(conn)
 	examHandler := handlers.NewExamHandler(examRepository)
