@@ -157,11 +157,16 @@ func (r *EmployeeRepository) Update(ctx context.Context, emp *Employee) (*Employ
 		RETURNING id, fullname, email, password, role
 	`
 
+	hash, err := bcrypt.GenerateFromPassword([]byte(emp.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, err
+	}
+
 	var updated Employee
-	err := r.db.QueryRow(ctx, query,
+	err = r.db.QueryRow(ctx, query,
 		emp.FullName,
 		emp.Email,
-		emp.Password,
+		hash,
 		emp.Role,
 		emp.ID,
 	).Scan(

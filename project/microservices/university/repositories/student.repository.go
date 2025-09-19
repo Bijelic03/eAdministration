@@ -245,11 +245,16 @@ func (r *StudentRepository) Update(ctx context.Context, stud *Student) (*Student
 		RETURNING id, fullname, email, password, status, indexno, role
 	`
 
+	hash, err := bcrypt.GenerateFromPassword([]byte(stud.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, err
+	}
+
 	var updated Student
-	err := r.db.QueryRow(ctx, query,
+	err = r.db.QueryRow(ctx, query,
 		stud.FullName,
 		stud.Email,
-		stud.Password,
+		hash,
 		stud.Status,
 		stud.IndexNo,
 		stud.Role,

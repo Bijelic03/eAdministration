@@ -169,11 +169,16 @@ func (r *CandidateRepository) Update(ctx context.Context, cand *Candidate) (*Can
 		RETURNING id, fullname, email, password, role
 	`
 
+	hash, err := bcrypt.GenerateFromPassword([]byte(cand.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, err
+	}
+
 	var updated Candidate
-	err := r.db.QueryRow(ctx, query,
+	err = r.db.QueryRow(ctx, query,
 		cand.FullName,
 		cand.Email,
-		cand.Password,
+		hash,
 		cand.Role,
 		cand.ID,
 	).Scan(

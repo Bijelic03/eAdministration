@@ -50,6 +50,14 @@ func NewJobHandler(repo *repositories.JobRepository, jobAppsRepo *repositories.J
 
 // Create job
 func (h *JobHandler) CreateJob(w http.ResponseWriter, r *http.Request) {
+
+	role, _ := r.Context().Value("role").(string)
+
+	if role != "employee" {
+		http.Error(w, "only employees can create job", http.StatusForbidden)
+		return
+	}
+
 	var emp repositories.Job
 	if err := json.NewDecoder(r.Body).Decode(&emp); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -135,6 +143,14 @@ func (h *JobHandler) GetAllJobs(w http.ResponseWriter, r *http.Request) {
 
 // Update job
 func (h *JobHandler) UpdateJob(w http.ResponseWriter, r *http.Request) {
+
+	role, _ := r.Context().Value("role").(string)
+
+	if role != "employee" {
+		http.Error(w, "only employees can update job", http.StatusForbidden)
+		return
+	}
+
 	var emp repositories.Job
 	if err := json.NewDecoder(r.Body).Decode(&emp); err != nil {
 		http.Error(w, "invalid request", http.StatusBadRequest)
@@ -153,6 +169,14 @@ func (h *JobHandler) UpdateJob(w http.ResponseWriter, r *http.Request) {
 
 // Delete job
 func (h *JobHandler) DeleteJob(w http.ResponseWriter, r *http.Request) {
+
+	role, _ := r.Context().Value("role").(string)
+
+	if role != "employee" {
+		http.Error(w, "only employees can delete job", http.StatusForbidden)
+		return
+	}
+
 	vars := mux.Vars(r)
 	idStr := vars["id"]
 	id, err := uuid.Parse(idStr)
@@ -170,6 +194,14 @@ func (h *JobHandler) DeleteJob(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *JobHandler) ApplyForJob(w http.ResponseWriter, r *http.Request) {
+
+	role, _ := r.Context().Value("role").(string)
+
+	if role != "candidate" {
+		http.Error(w, "only candidates can apply for job", http.StatusForbidden)
+		return
+	}
+
 	vars := mux.Vars(r)
 	idStr := vars["id"]
 	candidateEmailStr := vars["email"]
@@ -259,6 +291,14 @@ func (h *JobHandler) GetAllJobApplications(w http.ResponseWriter, r *http.Reques
 }
 
 func (h *JobHandler) GetCandidatesForJob(w http.ResponseWriter, r *http.Request) {
+
+	role, _ := r.Context().Value("role").(string)
+
+	if role != "employee" {
+		http.Error(w, "only employees can get candidates for job", http.StatusForbidden)
+		return
+	}
+
 	vars := mux.Vars(r)
 	jobIDStr := vars["id"]
 	jobID, err := uuid.Parse(jobIDStr)
@@ -316,6 +356,14 @@ func (h *JobHandler) GetCandidatesForJob(w http.ResponseWriter, r *http.Request)
 
 // Delete jobapplication
 func (h *JobHandler) DeleteJobApplication(w http.ResponseWriter, r *http.Request) {
+
+	role, _ := r.Context().Value("role").(string)
+
+	if role == "employee" || role == "candidate" {
+		http.Error(w, "only employees and candidates can delete job application", http.StatusForbidden)
+		return
+	}
+
 	vars := mux.Vars(r)
 	idStr := vars["id"]
 	id, err := uuid.Parse(idStr)
@@ -334,6 +382,14 @@ func (h *JobHandler) DeleteJobApplication(w http.ResponseWriter, r *http.Request
 
 // Schedule interview
 func (h *JobHandler) ScheduleInterview(w http.ResponseWriter, r *http.Request) {
+
+	role, _ := r.Context().Value("role").(string)
+
+	if role != "candidate" {
+		http.Error(w, "only candidated can schedule interview", http.StatusForbidden)
+		return
+	}
+
 	var emp repositories.Interview
 	if err := json.NewDecoder(r.Body).Decode(&emp); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -418,6 +474,14 @@ func (h *JobHandler) GetAllInterviews(w http.ResponseWriter, r *http.Request) {
 
 // Delete interview
 func (h *JobHandler) DeleteInterview(w http.ResponseWriter, r *http.Request) {
+
+	role, _ := r.Context().Value("role").(string)
+
+	if role != "employee" {
+		http.Error(w, "only employees can delete interview", http.StatusForbidden)
+		return
+	}
+
 	vars := mux.Vars(r)
 	idStr := vars["id"]
 	id, err := uuid.Parse(idStr)

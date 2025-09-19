@@ -31,6 +31,14 @@ func NewExamHandler(repo *repositories.ExamRepository, courseRepo *repositories.
 
 // Create exam
 func (h *ExamHandler) CreateExam(w http.ResponseWriter, r *http.Request) {
+
+	role, _ := r.Context().Value("role").(string)
+
+	if role != "professor" {
+		http.Error(w, "only professors can create exams", http.StatusForbidden)
+		return
+	}
+
 	var exam repositories.Exam
 	if err := json.NewDecoder(r.Body).Decode(&exam); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -152,6 +160,14 @@ func (h *ExamHandler) GetAllExams(w http.ResponseWriter, r *http.Request) {
 
 // Update exam
 func (h *ExamHandler) UpdateExam(w http.ResponseWriter, r *http.Request) {
+
+	role, _ := r.Context().Value("role").(string)
+
+	if role != "professor" {
+		http.Error(w, "only professors can update exams", http.StatusForbidden)
+		return
+	}
+
 	var exam repositories.Exam
 	if err := json.NewDecoder(r.Body).Decode(&exam); err != nil {
 		http.Error(w, "invalid request", http.StatusBadRequest)
@@ -170,6 +186,14 @@ func (h *ExamHandler) UpdateExam(w http.ResponseWriter, r *http.Request) {
 
 // Delete exam
 func (h *ExamHandler) DeleteExam(w http.ResponseWriter, r *http.Request) {
+
+	role, _ := r.Context().Value("role").(string)
+
+	if role != "professor" {
+		http.Error(w, "only professors can delete exams", http.StatusForbidden)
+		return
+	}
+
 	vars := mux.Vars(r)
 	idStr := vars["id"]
 	id, err := uuid.Parse(idStr)

@@ -45,6 +45,14 @@ func NewProfessorHandler(repo *repositories.ProfessorRepository) *ProfessorHandl
 
 // Create professor
 func (h *ProfessorHandler) CreateProfessor(w http.ResponseWriter, r *http.Request) {
+
+	role, _ := r.Context().Value("role").(string)
+
+	if role != "professor" {
+		http.Error(w, "only professors can create professor", http.StatusForbidden)
+		return
+	}
+
 	var emp repositories.Professor
 	if err := json.NewDecoder(r.Body).Decode(&emp); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -155,6 +163,14 @@ func (h *ProfessorHandler) GetAllProfessors(w http.ResponseWriter, r *http.Reque
 
 // Update professor
 func (h *ProfessorHandler) UpdateProfessor(w http.ResponseWriter, r *http.Request) {
+
+	role, _ := r.Context().Value("role").(string)
+
+	if role != "professor" {
+		http.Error(w, "only professors can update professor", http.StatusForbidden)
+		return
+	}
+
 	var emp repositories.Professor
 	if err := json.NewDecoder(r.Body).Decode(&emp); err != nil {
 		http.Error(w, "invalid request", http.StatusBadRequest)

@@ -4,6 +4,7 @@ import Providers from "./providers";
 import "./globals.css";
 import LogoutButton from "@/components/LogoutButton";
 import Protected from "@/components/protected";
+import UserInfo from "@/components/UserInfo";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -51,7 +52,7 @@ export default function RootLayout({
           >
             App
           </a>
-
+          <UserInfo />
           <LogoutButton />
         </header>
         <Providers>
