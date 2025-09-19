@@ -150,7 +150,7 @@ func (h *CandidateHandler) UpdateCandidate(w http.ResponseWriter, r *http.Reques
 
 	role, _ := r.Context().Value("role").(string)
 
-	if role == "employee" || role == "candidate" {
+	if role != "employee" && role != "candidate" {
 		http.Error(w, "only employees and candidates can update candidates", http.StatusForbidden)
 		return
 	}

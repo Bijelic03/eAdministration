@@ -205,7 +205,7 @@ func (h *JobHandler) ApplyForJob(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 	idStr := vars["id"]
-	candidateEmailStr := vars["email"]
+	candidateEmail := vars["email"]
 
 	jobID, err := uuid.Parse(idStr)
 	if err != nil {
@@ -219,11 +219,17 @@ func (h *JobHandler) ApplyForJob(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	candidate, err := h.candidateRepo.GetByEmail(r.Context(), candidateEmail)
+	if err != nil {
+		http.Error(w, "candidate not found", http.StatusNotFound)
+		return
+	}
+
 	if job.RequiredFaculty != nil && *job.RequiredFaculty {
 		client := &http.Client{Timeout: 5 * time.Second}
 		req, err := http.NewRequest(
 			"GET",
-			fmt.Sprintf("http://university:8081/api/v1/university/students/verify-graduation"),
+			fmt.Sprintf("http://university:8081/api/v1/university/students/verify-graduation/%s", *candidate.StudentId),
 			nil,
 		)
 		if err != nil {
@@ -242,7 +248,6 @@ func (h *JobHandler) ApplyForJob(w http.ResponseWriter, r *http.Request) {
 		}
 		defer resp.Body.Close()
 
-		// Čitamo cijeli body prvo
 		body, err := io.ReadAll(resp.Body)
 		if err != nil {
 			http.Error(w, "failed to read response body:", http.StatusNotFound)
@@ -258,7 +263,7 @@ func (h *JobHandler) ApplyForJob(w http.ResponseWriter, r *http.Request) {
 
 		// Provjera statusa
 		graduated := false
-		if status, ok := stud["status"].(string); ok && status == "GRADUATED" {
+		if status, ok := stud["status"].(bool); ok && status {
 			graduated = true
 		}
 
@@ -268,12 +273,6 @@ func (h *JobHandler) ApplyForJob(w http.ResponseWriter, r *http.Request) {
 		} else {
 			http.Error(w, "Verifikacija nije uspjesna - nemate diplomu", http.StatusNotFound)
 		}
-	}
-
-	candidate, err := h.candidateRepo.GetByEmail(r.Context(), candidateEmailStr)
-	if err != nil {
-		http.Error(w, "candidate not found", http.StatusNotFound)
-		return
 	}
 
 	existing, err := h.jobAppsRepo.GetJobApplicationByCandidateIDAndByJobID(r.Context(), jobID, candidate.ID)
@@ -417,7 +416,7 @@ func (h *JobHandler) DeleteJobApplication(w http.ResponseWriter, r *http.Request
 
 	role, _ := r.Context().Value("role").(string)
 
-	if role == "employee" || role == "candidate" {
+	if role != "employee" && role != "candidate" {
 		http.Error(w, "only employees and candidates can delete job application", http.StatusForbidden)
 		return
 	}

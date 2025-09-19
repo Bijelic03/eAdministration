@@ -80,7 +80,7 @@ export default function useCandidate() {
 			const newCandidate = await createCandidateAPI(data);
 			setValues((prev) => ({
 				...prev,
-				candidates: [...prev.candidates, newCandidate],
+				candidates: [...prev.candidates || [], newCandidate],
 			}));
 			return newCandidate;
 		} catch (error) {

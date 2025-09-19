@@ -19,7 +19,7 @@ const UpsertStudentForm = ({ data, onCreate, onEdit }: FormProps) => {
     fullname: data?.fullname || "",
     email: data?.email || "",
     status: data?.status || "",
-    password: data?.password || "",
+    password: "",
     role: "student",
   });
 
