@@ -136,20 +136,16 @@ func (h *StudentHandler) GetStudentByEmail(w http.ResponseWriter, r *http.Reques
 
 // verify graduation check
 func (h *StudentHandler) VerifyGraduation(w http.ResponseWriter, r *http.Request) {
-	email, _ := r.Context().Value("email").(string)
+	vars := mux.Vars(r)
+	studentId := vars["studentId"]
 
-	stud, err := h.repo.GetByEmail(r.Context(), email)
+	stud, err := h.repo.GetByIndexNo(r.Context(), studentId)
 	if err != nil {
-		http.Error(w, "not found", http.StatusNotFound)
+		http.Error(w, "student not found", http.StatusNotFound)
 		return
 	}
 
-	var graduated bool
-	if stud.Status != nil && string(*stud.Status) == "GRADUATED" {
-		graduated = true
-	} else {
-		graduated = false
-	}
+	graduated := stud.Status != nil && *stud.Status == "GRADUATED"
 
 	response := map[string]interface{}{
 		"student": stud,
@@ -157,7 +153,9 @@ func (h *StudentHandler) VerifyGraduation(w http.ResponseWriter, r *http.Request
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		http.Error(w, "failed to encode response", http.StatusInternalServerError)
+	}
 }
 
 // Get all students

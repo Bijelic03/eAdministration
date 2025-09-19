@@ -134,10 +134,10 @@ export default function useJob() {
     }
   };
 
-  const applyForJob = async (jobId: string, email: string) => {
+  const applyForJob = async (jobId: string, studentId: string) => {
     setValues((prev) => ({ ...prev, loading: true, error: null }));
     try {
-      const response = await applyForJobAPI(jobId, email);
+      const response = await applyForJobAPI(jobId, studentId);
       return response;
     } catch (error) {
       setValues((prev) => ({

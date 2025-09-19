@@ -236,6 +236,26 @@ func (r *StudentRepository) GetStudentsByIndexWithAvgGrade(ctx context.Context, 
 	return result, nil
 }
 
+// Get student by index number
+func (r *StudentRepository) GetByIndexNo(ctx context.Context, indexNo string) (*Student, error) {
+	query := `SELECT id, fullname, email, password, status, indexno, role FROM users WHERE indexno = $1`
+
+	var stud Student
+	err := r.db.QueryRow(ctx, query, indexNo).Scan(
+		&stud.ID,
+		&stud.FullName,
+		&stud.Email,
+		&stud.Password,
+		&stud.Status,
+		&stud.IndexNo,
+		&stud.Role,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return &stud, nil
+}
+
 // Update student
 func (r *StudentRepository) Update(ctx context.Context, stud *Student) (*Student, error) {
 	query := `

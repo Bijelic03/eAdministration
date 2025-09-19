@@ -3,6 +3,7 @@ package repositories
 import (
 	"context"
 	"errors"
+	"log"
 	"strings"
 
 	"github.com/google/uuid"
@@ -56,6 +57,8 @@ func (r *userRepository) Login(ctx context.Context, email, password string) (*Us
 		}
 		return nil, err
 	}
+
+	log.Println(bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password)), " poredjenje sifre")
 
 	if bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password)) != nil {
 		return nil, ErrInvalidCredentials

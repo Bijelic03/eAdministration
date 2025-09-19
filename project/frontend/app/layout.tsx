@@ -55,9 +55,7 @@ export default function RootLayout({
           <UserInfo />
           <LogoutButton />
         </header>
-        <Providers>
-          <Protected>{children}</Protected>
-        </Providers>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

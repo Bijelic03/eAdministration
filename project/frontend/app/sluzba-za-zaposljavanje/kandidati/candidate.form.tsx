@@ -16,7 +16,8 @@ const UpsertCandidateForm = ({ data, onCreate, onEdit }: FormProps) => {
   const [formData, setFormData] = useState<any>({
     fullname: data?.fullname || "",
     email: data?.email || "",
-    password: data?.password || "",
+    password: "",
+    studentId: "",
     role: "candidate",
   });
 
@@ -35,7 +36,7 @@ const UpsertCandidateForm = ({ data, onCreate, onEdit }: FormProps) => {
     e.preventDefault();
 
     if (data?.id) {
-      onEdit({ ...formData, id: data.id }); 
+      onEdit({ ...formData, id: data.id });
     } else {
       onCreate(formData);
     }
@@ -63,6 +64,14 @@ const UpsertCandidateForm = ({ data, onCreate, onEdit }: FormProps) => {
             value={formData.email}
             onChange={handleChange}
             placeholder="email@email.com"
+            required
+          />
+          <Input
+            id="studentId"
+            name="studentId"
+            value={formData.studentId}
+            onChange={handleChange}
+            placeholder=""
             required
           />
           <Input

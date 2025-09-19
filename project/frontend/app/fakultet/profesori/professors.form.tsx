@@ -16,7 +16,7 @@ const UpsertProfessorForm = ({ data, onCreate, onEdit }: FormProps) => {
   const [formData, setFormData] = useState<any>({
     fullname: data?.fullname || "",
     email: data?.email || "",
-    password: data?.password || "",
+    password: "",
     role: "professor",
   });
 
