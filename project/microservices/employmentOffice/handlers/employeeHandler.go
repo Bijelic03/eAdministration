@@ -29,6 +29,14 @@ func NewEmployeeHandler(repo *repositories.EmployeeRepository) *EmployeeHandler 
 
 // Create employee
 func (h *EmployeeHandler) CreateEmployee(w http.ResponseWriter, r *http.Request) {
+
+	role, _ := r.Context().Value("role").(string)
+
+	if role != "employee" {
+		http.Error(w, "only employees can create employee", http.StatusForbidden)
+		return
+	}
+
 	var emp repositories.Employee
 	if err := json.NewDecoder(r.Body).Decode(&emp); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -139,6 +147,14 @@ func (h *EmployeeHandler) GetAllEmployees(w http.ResponseWriter, r *http.Request
 
 // Update employee
 func (h *EmployeeHandler) UpdateEmployee(w http.ResponseWriter, r *http.Request) {
+
+	role, _ := r.Context().Value("role").(string)
+
+	if role != "employee" {
+		http.Error(w, "only employees can update employees", http.StatusForbidden)
+		return
+	}
+
 	var emp repositories.Employee
 	if err := json.NewDecoder(r.Body).Decode(&emp); err != nil {
 		http.Error(w, "invalid request", http.StatusBadRequest)
@@ -157,6 +173,14 @@ func (h *EmployeeHandler) UpdateEmployee(w http.ResponseWriter, r *http.Request)
 
 // Delete employee
 func (h *EmployeeHandler) DeleteEmployee(w http.ResponseWriter, r *http.Request) {
+
+	role, _ := r.Context().Value("role").(string)
+
+	if role != "employee" {
+		http.Error(w, "only employees can delete employees", http.StatusForbidden)
+		return
+	}
+
 	vars := mux.Vars(r)
 	idStr := vars["id"]
 	id, err := uuid.Parse(idStr)

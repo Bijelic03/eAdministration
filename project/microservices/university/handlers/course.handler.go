@@ -29,6 +29,14 @@ func NewCourseHandler(repo *repositories.CourseRepository) *CourseHandler {
 
 // Create course
 func (h *CourseHandler) CreateCourse(w http.ResponseWriter, r *http.Request) {
+
+	role, _ := r.Context().Value("role").(string)
+
+	if role != "professor" {
+		http.Error(w, "only professors can create courses", http.StatusForbidden)
+		return
+	}
+
 	var emp repositories.Course
 	if err := json.NewDecoder(r.Body).Decode(&emp); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -114,6 +122,14 @@ func (h *CourseHandler) GetAllCourses(w http.ResponseWriter, r *http.Request) {
 
 // Update course
 func (h *CourseHandler) UpdateCourse(w http.ResponseWriter, r *http.Request) {
+
+	role, _ := r.Context().Value("role").(string)
+
+	if role != "professor" {
+		http.Error(w, "only professors can update courses", http.StatusForbidden)
+		return
+	}
+
 	var emp repositories.Course
 	if err := json.NewDecoder(r.Body).Decode(&emp); err != nil {
 		http.Error(w, "invalid request", http.StatusBadRequest)
@@ -132,6 +148,14 @@ func (h *CourseHandler) UpdateCourse(w http.ResponseWriter, r *http.Request) {
 
 // Delete course
 func (h *CourseHandler) DeleteCourse(w http.ResponseWriter, r *http.Request) {
+
+	role, _ := r.Context().Value("role").(string)
+
+	if role != "professor" {
+		http.Error(w, "only professors can delete courses", http.StatusForbidden)
+		return
+	}
+
 	vars := mux.Vars(r)
 	idStr := vars["id"]
 	id, err := uuid.Parse(idStr)

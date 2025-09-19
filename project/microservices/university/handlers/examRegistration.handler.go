@@ -21,7 +21,7 @@ func NewExamRegistrationHandler(repo *repositories.ExamRegistrationRepository, s
 
 // Register student for exam
 func (h *ExamRegistrationHandler) RegisterExam(w http.ResponseWriter, r *http.Request) {
-	// email i role dolaze iz authMiddleware
+
 	email, _ := r.Context().Value("email").(string)
 	role, _ := r.Context().Value("role").(string)
 
@@ -42,7 +42,6 @@ func (h *ExamRegistrationHandler) RegisterExam(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	// prvo dohvatimo studenta iz emaila
 	stud, err := h.studentRepo.GetByEmail(r.Context(), email)
 	if err != nil {
 		http.Error(w, "student not found", http.StatusNotFound)
@@ -51,7 +50,6 @@ func (h *ExamRegistrationHandler) RegisterExam(w http.ResponseWriter, r *http.Re
 
 	studentID := stud.ID
 
-	// PROVERA: da li je student vec registrovan za ovaj exam
 	existing, err := h.repo.GetByStudentIDAndExamID(r.Context(), studentID, examID)
 	if err != nil {
 		http.Error(w, "error checking existing registration", http.StatusInternalServerError)
@@ -142,7 +140,6 @@ func (h *ExamRegistrationHandler) EnterGrade(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	// Koristimo interface{} za grade da prihvati string ili int
 	var req struct {
 		StudentID string      `json:"studentid"`
 		Grade     interface{} `json:"grade"`
@@ -158,7 +155,6 @@ func (h *ExamRegistrationHandler) EnterGrade(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	// Parsiranje grade
 	var grade int
 	switch v := req.Grade.(type) {
 	case float64:
@@ -175,7 +171,6 @@ func (h *ExamRegistrationHandler) EnterGrade(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	// Opcionalno: validacija raspona ocjene
 	if grade < 1 || grade > 10 {
 		http.Error(w, "grade must be between 1 and 10", http.StatusBadRequest)
 		return

@@ -65,6 +65,14 @@ func NewStudentHandler(repo *repositories.StudentRepository) *StudentHandler {
 
 // Create Student
 func (h *StudentHandler) CreateStudent(w http.ResponseWriter, r *http.Request) {
+
+	role, _ := r.Context().Value("role").(string)
+
+	if role != "professor" {
+		http.Error(w, "only professors can create student", http.StatusForbidden)
+		return
+	}
+
 	var stud repositories.Student
 	if err := json.NewDecoder(r.Body).Decode(&stud); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
