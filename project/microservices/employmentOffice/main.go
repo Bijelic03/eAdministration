@@ -63,6 +63,7 @@ func main() {
 	employees.Handle("/by-email", authMiddleware(http.HandlerFunc(employeeHandler.GetEmployeeByEmail))).Methods("GET")
 	employees.Handle("/{id}", authMiddleware(http.HandlerFunc(employeeHandler.UpdateEmployee))).Methods("PUT")
 	employees.Handle("/{id}", authMiddleware(http.HandlerFunc(employeeHandler.DeleteEmployee))).Methods("DELETE")
+	employees.Handle("/professors/all", authMiddleware(http.HandlerFunc(employeeHandler.GetAllProfessorsFromOtherService))).Methods("GET")
 
 	// /api/v1/employmentOffice/candiates
 	candidateRepository := repositories.NewCandidateRepository(conn)

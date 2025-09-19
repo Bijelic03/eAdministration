@@ -1,10 +1,26 @@
-import { axiosUniversityInstance as axiosInstance } from "@/utils/axios";
+import { axiosUniversityInstance as axiosInstance, axiosEmploymentOfficeInstance as otherServiceInstance } from "@/utils/axios";
 
 const PROFESSORS_API_PATH = '/university/professors';
+const OTHER_SERVICE_FETCH_PROFESSORS = '/employmentOffice/employees/professors/all';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function createProfessorAPI(data: any) {
 	const response = await axiosInstance.post(PROFESSORS_API_PATH, data);
+	return response.data;
+}
+
+export async function fetchProfessorsFromOtherServiceAPI(page = 1, max = 10, search = '') {
+	const params = new URLSearchParams({
+		page: String(page),
+		max: String(max),
+		search: search || '',
+	});
+	console.log(params);
+
+	const response = await otherServiceInstance.get(
+		`${OTHER_SERVICE_FETCH_PROFESSORS}`
+	);
+
 	return response.data;
 }
 

@@ -21,3 +21,7 @@ export function handleApiError(
 export function handleApiSuccess(message: string) {
 	toast.success(message);
 }
+
+export function mockApiLoading(message: string) {
+	toast.info(message);
+}

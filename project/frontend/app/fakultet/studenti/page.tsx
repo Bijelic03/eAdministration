@@ -40,6 +40,7 @@ const StudentiPage = () => {
 	const onEdit = async (data: any) => {
 		try {
 			await updateStudent(data);
+			fetchStudents()
 			handleApiSuccess('Apdejtovanje studenta uspjesno!');
 		} catch (error) {
 			handleApiError(error, 'Update nije uspio');

@@ -14,7 +14,7 @@ import useJob from '@/hooks/useJob';
 import useLocalStorage, { AuthUser } from '@/hooks/useLocalStorage';
 import useModal from '@/hooks/useModal';
 import usePaginationAndSearch from '@/hooks/usePaginationAndSearch';
-import { handleApiError, handleApiSuccess } from '@/services/api.service';
+import { handleApiError, handleApiSuccess, mockApiLoading } from '@/services/api.service';
 import { useEffect, useState } from 'react';
 import UpsertJobForm from './jobs.form';
 import { useRouter } from 'next/navigation';
@@ -58,7 +58,14 @@ const PosloviPage = () => {
 		}
 	};
 
-	const onApplyForJob = async (jobId: string) => {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const onApplyForJob = async (job: any) => {
+		const jobId = job.id;
+		if(job.requiredfaculty === true) {
+			// mimifikacjia kao da cekamo da se potvrdi ustvari cemo samo stavit set timeout ovde..
+			mockApiLoading("Poslali smo zahtjev i ceka se odobrenje za verifikaciju obrazovanja...");
+			await new Promise((resolve) => setTimeout(resolve, 7000));
+		}
 		try {
 			if (!jobId || !user?.email) {
 				handleApiError(
@@ -107,6 +114,7 @@ const PosloviPage = () => {
 					<TableHeaderCell>Naziv</TableHeaderCell>
 					<TableHeaderCell>Opis</TableHeaderCell>
 					<TableHeaderCell>Lokacija</TableHeaderCell>
+					<TableHeaderCell>Verifikacija faksa</TableHeaderCell>
 					<TableHeaderCell>Akcije</TableHeaderCell>
 				</TableHeader>
 				<tbody>
@@ -119,6 +127,7 @@ const PosloviPage = () => {
 								<TableCell>{job?.title}</TableCell>
 								<TableCell>{job?.description}</TableCell>
 								<TableCell>{job?.location}</TableCell>
+								<TableCell><span className="text-green-500 font-bold">{job?.requiredfaculty === true ? 'Da' : 'Ne'}</span></TableCell>
 								<TableCell className='flex gap-4'>
 									<Button
 										onClick={() => {
@@ -133,7 +142,7 @@ const PosloviPage = () => {
 									</Button>
 
 									{/* Apply for job */}
-									<Button onClick={() => onApplyForJob(job.id)}>
+									<Button onClick={() => onApplyForJob(job)}>
 										<Icon type='upload' />
 									</Button>
 

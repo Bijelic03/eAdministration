@@ -72,6 +72,7 @@ func main() {
 	students.Handle("", authMiddleware(http.HandlerFunc(studentHandler.GetAllStudents))).Methods("GET")
 	students.Handle("/{id}", authMiddleware(http.HandlerFunc(studentHandler.GetStudentByID))).Methods("GET")
 	students.Handle("/by-email", authMiddleware(http.HandlerFunc(studentHandler.GetStudentByEmail))).Methods("GET")
+	students.Handle("/verify-graduation", authMiddleware(http.HandlerFunc(studentHandler.VerifyGraduation))).Methods("GET")
 	students.Handle("/{id}", authMiddleware(http.HandlerFunc(studentHandler.UpdateStudent))).Methods("PUT")
 	students.Handle("/{id}", authMiddleware(http.HandlerFunc(studentHandler.DeleteStudent))).Methods("DELETE")
 
