@@ -27,6 +27,30 @@ func NewCourseRegistrationRepository(db *pgxpool.Pool) *CourseRegistrationReposi
 	return &CourseRegistrationRepository{db: db}
 }
 
+func (r *CourseRegistrationRepository) GetByStudentIDAndCourseID(ctx context.Context, studentID, courseID uuid.UUID) (*CourseRegistration, error) {
+	query := `
+		SELECT id, courseid, studentid
+		FROM course_registrations
+		WHERE studentid = $1 AND courseid = $2
+	`
+
+	var reg CourseRegistration
+	err := r.db.QueryRow(ctx, query, studentID, courseID).Scan(
+		&reg.ID,
+		&reg.CourseID,
+		&reg.StudentID,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			// registracija ne postoji
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return &reg, nil
+}
+
 // Register student to course
 func (r *CourseRegistrationRepository) Register(ctx context.Context, courseID uuid.UUID, studentEmail string) (*CourseRegistration, error) {
 	var studentID uuid.UUID

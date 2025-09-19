@@ -5,6 +5,7 @@ import {
     deleteExamAPI,
     fetchExamByIdAPI,
     fetchExamsAPI,
+    onEnterExamAPI,
     updateExamAPI,
 } from '@/api/exam.api';
 
@@ -136,6 +137,20 @@ export default function useExam() {
         }
     };
 
+    const onEnterExam = async (id: string) => {
+        try {
+            await onEnterExamAPI(id);
+        } catch (error) {
+            setValues((prev) => ({
+                ...prev,
+                error,
+            }));
+            throw error;
+        } finally {
+            setValues((prev) => ({ ...prev, loading: false }));
+        }
+    }
+
     return {
         values,
         setValues,
@@ -144,5 +159,6 @@ export default function useExam() {
         createExam,
         updateExam,
         deleteExam,
+        onEnterExam
     };
 }

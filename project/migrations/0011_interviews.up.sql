@@ -1,4 +1,4 @@
-CREATE TABLE interviews (
+CREATE TABLE IF NOT EXISTS interviews (
     id UUID PRIMARY KEY,
     jobapplicationid UUID NOT NULL,
     candidateid UUID NOT NULL,

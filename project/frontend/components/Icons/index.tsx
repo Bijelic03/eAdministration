@@ -10,6 +10,7 @@ import { UploadIcon } from "./UploadIcon";
 import { AddressIcon } from "./AddressIcon";
 import { AnalyticsIcon } from "./AnalyticsIcon";
 import { InterviewScheduleIcon } from "./InterviewScheduleIcon";
+import { EyeIcon } from "./EyeIcon";
 
 interface IconProps {
   type:
@@ -23,7 +24,8 @@ interface IconProps {
     | "upload"
     | "address"
     | "analytics"
-    | "interviewSchedule";
+    | "interviewSchedule"
+    | "view";
   className?: string;
 }
 
@@ -55,6 +57,8 @@ const Icon: React.FC<IconProps> = ({ type, className }) => {
       return <AnalyticsIcon className={className} />
     case "interviewSchedule":
       return <InterviewScheduleIcon className={className} />
+    case "view":
+      return <EyeIcon className={className} />
     default:
       return null;
   }

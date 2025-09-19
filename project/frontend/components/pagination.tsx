@@ -19,7 +19,8 @@ const Pagination: React.FC<PaginationProps> = ({
 	return (
 		<div className='flex justify-between items-center mt-4'>
 			<p className='text-sm text-white'>
-				Page: {page} &mdash; Total items: {total}
+				{/* Page: {page} &mdash; Total items: {total} */}
+				Page: {page}
 			</p>
 			<div className='flex gap-2'>
 				<button

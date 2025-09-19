@@ -20,11 +20,13 @@ type ExamListResponse struct {
 }
 
 type ExamHandler struct {
-	repo *repositories.ExamRepository
+	repo       *repositories.ExamRepository
+	courseRepo *repositories.CourseRepository
+	profRepo   *repositories.ProfessorRepository
 }
 
-func NewExamHandler(repo *repositories.ExamRepository) *ExamHandler {
-	return &ExamHandler{repo: repo}
+func NewExamHandler(repo *repositories.ExamRepository, courseRepo *repositories.CourseRepository, profRepo *repositories.ProfessorRepository) *ExamHandler {
+	return &ExamHandler{repo: repo, courseRepo: courseRepo, profRepo: profRepo}
 }
 
 // Create exam
@@ -32,6 +34,42 @@ func (h *ExamHandler) CreateExam(w http.ResponseWriter, r *http.Request) {
 	var exam repositories.Exam
 	if err := json.NewDecoder(r.Body).Decode(&exam); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Parsiranje CourseID
+	courseUUID, err := uuid.Parse(exam.CourseID)
+	if err != nil {
+		http.Error(w, "invalid course id", http.StatusBadRequest)
+		return
+	}
+
+	// Parsiranje ProfessorID
+	profUUID, err := uuid.Parse(exam.ProfessorID)
+	if err != nil {
+		http.Error(w, "invalid professor id", http.StatusBadRequest)
+		return
+	}
+
+	// PROVERA: validan courseID
+	courseExists, err := h.courseRepo.GetByID(r.Context(), courseUUID)
+	if err != nil {
+		http.Error(w, "error checking course", http.StatusInternalServerError)
+		return
+	}
+	if courseExists == nil {
+		http.Error(w, "course not found", http.StatusBadRequest)
+		return
+	}
+
+	// PROVERA: validan professorID
+	profExists, err := h.profRepo.GetByID(r.Context(), profUUID)
+	if err != nil {
+		http.Error(w, "error checking professor", http.StatusInternalServerError)
+		return
+	}
+	if profExists == nil {
+		http.Error(w, "professor not found", http.StatusBadRequest)
 		return
 	}
 

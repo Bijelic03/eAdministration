@@ -18,12 +18,21 @@ import UpsertCoursesForm from "./courses.form";
 import useCourse from "@/hooks/useCourse";
 
 const KurseviPage = () => {
-  const {values, createCourse, deleteCourse, fetchCourses, updateCourse} = useCourse();
+  const {values, createCourse, deleteCourse, fetchCourses, updateCourse, joinCourse} = useCourse();
   const { page, rowsPerPage, search, handlePageChange } =
     usePaginationAndSearch();
   const { isOpen, toggleModal } = useModal();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [data, setData] = useState<any>();
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const onJoinCourse = async (id: string) => {
+    try {
+      await joinCourse(id);
+    } catch (error) {
+      handleApiError(error, "Ulazak na kurs nije uspjesan!");
+    }
+  };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const onCreate = async (data: any) => {
@@ -91,6 +100,13 @@ const KurseviPage = () => {
                 <TableCell>{course?.ects}</TableCell>
                 <TableCell>{course?.active === true ? 'Da' : 'Ne'}</TableCell>
                 <TableCell className="flex gap-4">
+                <Button
+                    onClick={() => {
+                      onJoinCourse(course?.id);
+                    }}
+                  >
+                    <Icon type="upload" />
+                  </Button>
                   <Button
                     onClick={() => {
                       setData(course);
