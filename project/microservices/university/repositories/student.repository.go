@@ -16,6 +16,9 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/lib/pq"
+	"golang.org/x/crypto/bcrypt"
+
 	"github.com/google/uuid"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -36,7 +39,15 @@ type Student struct {
 	Password string         `json:"password" db:"password"`
 	Role     string         `json:"role" db:"role"`
 	Status   *StudentStatus `json:"status" db:"status"`
-	IndexNo  *string         `json:"indexno" db:"indexno"`
+	IndexNo  *string        `json:"indexno" db:"indexno"`
+}
+
+type StudentWithAvg struct {
+	ID       uuid.UUID `json:"id"`
+	FullName string    `json:"fullname"`
+	Email    string    `json:"email"`
+	IndexNo  *string   `json:"indexno"`
+	AvgGrade *float64  `json:"avggrade"`
 }
 
 // Education *EducationRecord `json:"education" db:"-"`
@@ -70,14 +81,18 @@ func (r *StudentRepository) Add(ctx context.Context, stud *Student) (*Student, e
 		VALUES ($1, $2, $3, $4, $5, $6)
 		RETURNING id, fullname, email, password, status, indexno, role
 	`
+	hash, err := bcrypt.GenerateFromPassword([]byte(stud.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, err
+	}
 
 	stud.ID = uuid.New()
 	var created Student
 
-	err := r.db.QueryRow(ctx, query,
+	err = r.db.QueryRow(ctx, query,
 		stud.FullName,
 		stud.Email,
-		stud.Password,
+		hash,
 		stud.Status,
 		stud.IndexNo,
 		stud.Role,
@@ -188,6 +203,37 @@ func (r *StudentRepository) GetAll(ctx context.Context, page, limit int) ([]*Stu
 	}
 
 	return students, totalItems, nil
+}
+
+func (r *StudentRepository) GetStudentsByIndexWithAvgGrade(ctx context.Context, indices []string) ([]*StudentWithAvg, error) {
+	if len(indices) == 0 {
+		return []*StudentWithAvg{}, nil
+	}
+
+	query := `
+    SELECT u.id, u.fullname, u.email, u.indexno, AVG(er.grade)::float AS avggrade
+    FROM users u
+    LEFT JOIN exam_registrations er ON u.id = er.studentid
+    WHERE u.indexno = ANY($1)
+    GROUP BY u.id, u.fullname, u.email, u.indexno
+    ORDER BY avggrade DESC NULLS LAST
+	`
+
+	rows, err := r.db.Query(ctx, query, pq.Array(indices))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var result []*StudentWithAvg
+	for rows.Next() {
+		var s StudentWithAvg
+		if err := rows.Scan(&s.ID, &s.FullName, &s.Email, &s.IndexNo, &s.AvgGrade); err != nil {
+			return nil, err
+		}
+		result = append(result, &s)
+	}
+	return result, nil
 }
 
 // Update student

@@ -1,10 +1,13 @@
 package handlers
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
+	"io"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/Bijelic03/eAdministration/project/microservices/employmentOffice/repositories"
 	"github.com/google/uuid"
@@ -253,6 +256,62 @@ func (h *JobHandler) GetAllJobApplications(w http.ResponseWriter, r *http.Reques
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(resp)
+}
+
+func (h *JobHandler) GetCandidatesForJob(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	jobIDStr := vars["id"]
+	jobID, err := uuid.Parse(jobIDStr)
+	if err != nil {
+		http.Error(w, "invalid job id", http.StatusBadRequest)
+		return
+	}
+
+	indices, err := h.jobAppsRepo.GetStudentIndicesByJobID(r.Context(), jobID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if len(indices) == 0 {
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`[]`))
+		return
+	}
+
+	reqBody := map[string][]string{"indices": indices}
+	body, _ := json.Marshal(reqBody)
+
+	client := &http.Client{Timeout: 5 * time.Second}
+	req, err := http.NewRequest(
+		"POST",
+		"http://university:8081/api/v1/university/students/avg-grades",
+		bytes.NewBuffer(body),
+	)
+	if err != nil {
+		http.Error(w, "failed to build request", http.StatusInternalServerError)
+		return
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	if authHeader := r.Header.Get("Authorization"); authHeader != "" {
+		req.Header.Set("Authorization", authHeader)
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		http.Error(w, "university service unreachable: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		http.Error(w, "university service returned error", resp.StatusCode)
+		return
+	}
+
+	// forwarduj rezultat direktno
+	w.Header().Set("Content-Type", "application/json")
+	io.Copy(w, resp.Body)
 }
 
 // Delete jobapplication

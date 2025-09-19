@@ -19,6 +19,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type Candidate struct {
@@ -45,13 +46,18 @@ func (r *CandidateRepository) Add(ctx context.Context, cand *Candidate) (*Candid
 		RETURNING id, fullname, email, password, role
 	`
 
+	hash, err := bcrypt.GenerateFromPassword([]byte(cand.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, err
+	}
+
 	cand.ID = uuid.New()
 	var created Candidate
 
-	err := r.db.QueryRow(ctx, query,
+	err = r.db.QueryRow(ctx, query,
 		cand.FullName,
 		cand.Email,
-		cand.Password,
+		hash,
 		cand.Role,
 	).Scan(
 		&created.ID,
