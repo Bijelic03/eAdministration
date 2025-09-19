@@ -83,7 +83,7 @@ const PosloviPage = () => {
 						// eslint-disable-next-line @typescript-eslint/no-explicit-any
 						values?.employers?.map((employer: any) => (
 							<TableRow key={employer.id}>
-								<TableCell># {employer?.id}</TableCell>
+								<TableCell>{employer?.id}</TableCell>
 								<TableCell>{employer?.fullname}</TableCell>
 								<TableCell>{employer?.email}</TableCell>
 								<TableCell className='flex gap-4'>

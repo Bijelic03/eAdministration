@@ -83,7 +83,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <Wrap>
+    <Wrap withGoBack={false}>
       <div className="mx-auto max-w-md p-6">
         <h1 className="text-2xl font-semibold mb-4">Registracija</h1>
 

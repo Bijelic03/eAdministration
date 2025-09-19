@@ -85,7 +85,7 @@ const KurseviPage = () => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             values?.courses?.map((course: any) => (
               <TableRow key={course.id}>
-                <TableCell># {course?.id}</TableCell>
+                <TableCell>{course?.id}</TableCell>
                 <TableCell>{course?.code}</TableCell>
                 <TableCell>{course?.name}</TableCell>
                 <TableCell>{course?.ects}</TableCell>

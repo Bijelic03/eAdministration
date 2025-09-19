@@ -6,7 +6,6 @@ import {
     fetchOfferByIdAPI,
     fetchOffersAPI,
     updateOfferAPI,
-    scheduleInterviewAPI
 } from '@/api/offers.api';
 
 export default function useOffers() {
@@ -137,21 +136,7 @@ export default function useOffers() {
         }
     };
 
-     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-     const scheduleInterview = async (data: any) => {
-        setValues((prev) => ({ ...prev, loading: true, error: null }));
-        try {
-            await scheduleInterviewAPI(data);
-        } catch (error) {
-            setValues((prev) => ({
-                ...prev,
-                error,
-            }));
-            throw error;
-        } finally {
-            setValues((prev) => ({ ...prev, loading: false }));
-        }
-    };
+
 
     return {
         values,
@@ -161,6 +146,5 @@ export default function useOffers() {
         createOffer,
         updateOffer,
         deleteOffer,
-        scheduleInterview
     };
 }
