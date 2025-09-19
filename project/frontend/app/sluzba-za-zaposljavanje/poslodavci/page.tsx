@@ -13,12 +13,18 @@ import Wrap from '@/components/wrap';
 import useEmployer from '@/hooks/useEmployer';
 import useModal from '@/hooks/useModal';
 import usePaginationAndSearch from '@/hooks/usePaginationAndSearch';
-import { handleApiError } from '@/services/api.service';
+import { handleApiError, handleApiSuccess } from '@/services/api.service';
 import { useEffect, useState } from 'react';
 import UpsertEmployerForm from './employer.form';
 
 const PosloviPage = () => {
-	const { values, fetchEmployers, deleteEmployer, updateEmployer, createEmployer } = useEmployer();
+	const {
+		values,
+		fetchEmployers,
+		deleteEmployer,
+		updateEmployer,
+		createEmployer,
+	} = useEmployer();
 	const { page, rowsPerPage, search, handlePageChange } =
 		usePaginationAndSearch();
 	const { isOpen, toggleModal } = useModal();
@@ -29,6 +35,7 @@ const PosloviPage = () => {
 	const onCreate = async (data: any) => {
 		try {
 			await createEmployer(data);
+			handleApiSuccess('Kreiranje zaposlenog uspjesno!');
 		} catch (error) {
 			handleApiError(error, 'Kreiranje nije uspjelo');
 		}
@@ -38,6 +45,7 @@ const PosloviPage = () => {
 	const onEdit = async (data: any) => {
 		try {
 			await updateEmployer(data);
+			handleApiSuccess('Apdejtovanje zaposlenog uspjesno!');
 		} catch (error) {
 			handleApiError(error, 'Update nije uspio');
 		}
@@ -46,6 +54,7 @@ const PosloviPage = () => {
 	const onDelete = async (id: string) => {
 		try {
 			await deleteEmployer(id);
+			handleApiSuccess('Brisanje zaposlenog uspjesno!');
 		} catch (error) {
 			handleApiError(error, 'Brisanje nije uspjelo.');
 		}
@@ -127,11 +136,11 @@ const PosloviPage = () => {
 					onCreate={(formData) => {
 						onCreate(formData);
 						toggleModal();
-					  }}
-					  onEdit={(formData) => {
+					}}
+					onEdit={(formData) => {
 						onEdit(formData);
 						toggleModal();
-					  }}
+					}}
 				/>
 			</FullScreenModal>
 		</Wrap>
