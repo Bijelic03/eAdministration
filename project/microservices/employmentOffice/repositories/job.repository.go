@@ -459,3 +459,24 @@ func (r *InterviewRepository) DeleteInterview(ctx context.Context, id uuid.UUID)
 	_, err := r.db.Exec(ctx, query, id)
 	return err
 }
+
+// Get job app by candidate id and by job id
+func (r *InterviewRepository) GetInterviewByCandidateIDAndByJobID(ctx context.Context, jobID, candidateID uuid.UUID) (*Interview, error) {
+	query := `SELECT id, jobid, candidateid
+              FROM interviews
+              WHERE jobid = $1 AND candidateid = $2`
+
+	var ja Interview
+	err := r.db.QueryRow(ctx, query, jobID, candidateID).Scan(
+		&ja.ID,
+		&ja.JobID,
+		&ja.CandidateID,
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &ja, nil
+}

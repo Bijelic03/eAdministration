@@ -13,7 +13,7 @@ import Wrap from '@/components/wrap';
 import useStudent from '@/hooks/useStudent';
 import useModal from '@/hooks/useModal';
 import usePaginationAndSearch from '@/hooks/usePaginationAndSearch';
-import { handleApiError } from '@/services/api.service';
+import { handleApiError, handleApiSuccess } from '@/services/api.service';
 import { useEffect, useState } from 'react';
 import UpsertStudentForm from './students.form';
 
@@ -30,6 +30,7 @@ const StudentiPage = () => {
 	const onCreate = async (data: any) => {
 		try {
 			await createStudent(data);
+			handleApiSuccess('Kreiranje studenta uspjesno!');
 		} catch (error) {
 			handleApiError(error, 'Kreiranje nije uspjelo');
 		}
@@ -39,6 +40,7 @@ const StudentiPage = () => {
 	const onEdit = async (data: any) => {
 		try {
 			await updateStudent(data);
+			handleApiSuccess('Apdejtovanje studenta uspjesno!');
 		} catch (error) {
 			handleApiError(error, 'Update nije uspio');
 		}
@@ -47,6 +49,7 @@ const StudentiPage = () => {
 	const onDelete = async (id: string) => {
 		try {
 			await deleteStudent(id);
+			handleApiSuccess('Brisanje studenta uspjesno!');
 		} catch (error) {
 			handleApiError(error, 'Brisanje nije uspjelo.');
 		}
@@ -132,11 +135,11 @@ const StudentiPage = () => {
 					onCreate={(formData) => {
 						onCreate(formData);
 						toggleModal();
-					  }}
-					  onEdit={(formData) => {
+					}}
+					onEdit={(formData) => {
 						onEdit(formData);
 						toggleModal();
-					  }}
+					}}
 				/>
 			</FullScreenModal>
 		</Wrap>

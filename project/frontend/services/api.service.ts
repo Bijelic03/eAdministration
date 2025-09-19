@@ -7,7 +7,6 @@ export function handleApiError(
 	fallbackMessage: string = 'Unexpected error',
 	skipToaster = false
 ) {
-	console.log(error, "API EROR");
 	const message =
 		isAxiosError(error) && error.response?.data?.message
 			? error.response.data.message
@@ -17,4 +16,8 @@ export function handleApiError(
 
 	if (skipToaster) return;
 	toast.error(error?.response?.data || message);
+}
+
+export function handleApiSuccess(message: string) {
+	toast.success(message);
 }
