@@ -89,6 +89,7 @@ func main() {
 	jobs.Handle("/{id}", authMiddleware(http.HandlerFunc(jobHandler.UpdateJob))).Methods("PUT")
 	jobs.Handle("/{id}", authMiddleware(http.HandlerFunc(jobHandler.DeleteJob))).Methods("DELETE")
 	jobs.Handle("/{id}/{email}/apply", authMiddleware(http.HandlerFunc(jobHandler.ApplyForJob))).Methods("POST")
+	jobs.Handle("/{id}/candidates", authMiddleware(http.HandlerFunc(jobHandler.GetCandidatesForJob))).Methods("GET")
 	jobapps.Handle("", authMiddleware(http.HandlerFunc(jobHandler.GetAllJobApplications))).Methods("GET")
 	jobapps.Handle("/{id}", authMiddleware(http.HandlerFunc(jobHandler.DeleteJobApplication))).Methods("DELETE")
 	jobinterviews.Handle("", authMiddleware(http.HandlerFunc(jobHandler.ScheduleInterview))).Methods("POST")

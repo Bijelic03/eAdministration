@@ -89,6 +89,7 @@ func main() {
 	courseRegistrationHandler := handlers.NewCourseRegistrationHandler(courseRegistrationRepository, studentRepository)
 	courses.Handle("/{id}/register", authMiddleware(http.HandlerFunc(courseRegistrationHandler.RegisterCourse))).Methods("POST")
 	courses.Handle("/my-registrations", authMiddleware(http.HandlerFunc(courseRegistrationHandler.GetMyCourseRegistrations))).Methods("GET")
+	students.Handle("/avg-grades", authMiddleware(http.HandlerFunc(studentHandler.GetStudentsByIndicesWithAvg))).Methods("POST")
 
 	// /api/v1/university/exams
 	examRepository := repositories.NewExamRepository(conn)

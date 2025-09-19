@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type Professor struct {
@@ -33,13 +34,18 @@ func (r *ProfessorRepository) Add(ctx context.Context, prof *Professor) (*Profes
 		RETURNING id, fullname, email, password, role
 	`
 
+	hash, err := bcrypt.GenerateFromPassword([]byte(prof.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, err
+	}
+
 	prof.ID = uuid.New()
 	var created Professor
 
-	err := r.db.QueryRow(ctx, query,
+	err = r.db.QueryRow(ctx, query,
 		prof.FullName,
 		prof.Email,
-		prof.Password,
+		hash,
 		prof.Role,
 	).Scan(
 		&created.ID,
