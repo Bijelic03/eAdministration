@@ -10,11 +10,12 @@ import (
 )
 
 type CourseRegistrationHandler struct {
-	repo *repositories.CourseRegistrationRepository
+	repo     *repositories.CourseRegistrationRepository
+	studRepo *repositories.StudentRepository
 }
 
-func NewCourseRegistrationHandler(repo *repositories.CourseRegistrationRepository) *CourseRegistrationHandler {
-	return &CourseRegistrationHandler{repo: repo}
+func NewCourseRegistrationHandler(repo *repositories.CourseRegistrationRepository, studRepo *repositories.StudentRepository) *CourseRegistrationHandler {
+	return &CourseRegistrationHandler{repo: repo, studRepo: studRepo}
 }
 
 // Register student for course
@@ -36,6 +37,26 @@ func (h *CourseRegistrationHandler) RegisterCourse(w http.ResponseWriter, r *htt
 	courseID, err := uuid.Parse(courseIDStr)
 	if err != nil {
 		http.Error(w, "invalid course id", http.StatusBadRequest)
+		return
+	}
+
+	// prvo dohvatimo studenta iz emaila
+	stud, err := h.studRepo.GetByEmail(r.Context(), email)
+	if err != nil {
+		http.Error(w, "student not found", http.StatusNotFound)
+		return
+	}
+
+	studentID := stud.ID
+
+	// PROVERA: da li je student vec registrovan za ovaj course
+	existing, err := h.repo.GetByStudentIDAndCourseID(r.Context(), studentID, courseID)
+	if err != nil {
+		http.Error(w, "error checking existing registration", http.StatusInternalServerError)
+		return
+	}
+	if existing != nil {
+		http.Error(w, "vec ste prijavljeni za ovaj kurs", http.StatusConflict)
 		return
 	}
 

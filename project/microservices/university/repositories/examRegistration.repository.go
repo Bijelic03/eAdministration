@@ -61,6 +61,86 @@ func (r *ExamRegistrationRepository) Register(ctx context.Context, examID uuid.U
 	return reg, nil
 }
 
+func (r *ExamRegistrationRepository) GetByID(ctx context.Context, id uuid.UUID) (*ExamRegistration, error) {
+	query := `
+		SELECT id, examid, studentid, createdat, grade
+		FROM exam_registrations
+		WHERE id = $1
+	`
+
+	var reg ExamRegistration
+	err := r.db.QueryRow(ctx, query, id).Scan(
+		&reg.ID,
+		&reg.ExamID,
+		&reg.StudentID,
+		&reg.CreatedAt,
+		&reg.Grade,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, fmt.Errorf("exam registration with id %s not found", id)
+		}
+		return nil, err
+	}
+
+	return &reg, nil
+}
+
+func (r *ExamRegistrationRepository) GetByExamID(ctx context.Context, id uuid.UUID) ([]*ExamRegistration, error) {
+	query := `
+		SELECT id, examid, studentid, createdat, grade
+		FROM exam_registrations
+		WHERE examid = $1
+	`
+
+	rows, err := r.db.Query(ctx, query, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var regs []*ExamRegistration
+	for rows.Next() {
+		var reg ExamRegistration
+		if err := rows.Scan(&reg.ID, &reg.ExamID, &reg.StudentID, &reg.CreatedAt, &reg.Grade); err != nil {
+			return nil, err
+		}
+		regs = append(regs, &reg)
+	}
+
+	if len(regs) == 0 {
+		return nil, fmt.Errorf("no registrations found for exam %s", id)
+	}
+
+	return regs, nil
+}
+
+func (r *ExamRegistrationRepository) GetByStudentIDAndExamID(ctx context.Context, studentID, examID uuid.UUID) (*ExamRegistration, error) {
+	query := `
+		SELECT id, examid, studentid, createdat, grade
+		FROM exam_registrations
+		WHERE studentid = $1 AND examid = $2
+	`
+
+	var reg ExamRegistration
+	err := r.db.QueryRow(ctx, query, studentID, examID).Scan(
+		&reg.ID,
+		&reg.ExamID,
+		&reg.StudentID,
+		&reg.CreatedAt,
+		&reg.Grade,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			// registracija ne postoji
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return &reg, nil
+}
+
 func (r *ExamRegistrationRepository) GetByStudentEmail(ctx context.Context, email string) ([]*ExamRegistration, error) {
 	var studentID uuid.UUID
 	q := `SELECT id FROM users WHERE email = $1 AND role = 'student'`

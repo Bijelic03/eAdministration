@@ -11,6 +11,8 @@ interface InputProps {
   error?: string;
   required?: boolean;
   className?: string;
+  min?: number | string;
+  max?: number | string;
 }
 const Input: React.FC<InputProps> = ({
   type = "text",
@@ -21,6 +23,7 @@ const Input: React.FC<InputProps> = ({
   placeholder,
   error,
   required = false,
+  min, max,
   className = "",
   ...props
 }) => {
@@ -49,6 +52,8 @@ const Input: React.FC<InputProps> = ({
           onChange={onChange}
           placeholder={placeholder}
           required={required}
+          min={min}
+          max={max} 
           className={`mt-1 w-full h-12 bg-darkGray px-4 transition-all duration-100 border-1 ${
             error ? "border-2 border-red-500" : ""
           } ${className}`}

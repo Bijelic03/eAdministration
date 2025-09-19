@@ -53,21 +53,6 @@ func main() {
 
 	api := router.PathPrefix("/api/v1/university").Subrouter()
 
-	// /api/v1/university/courses
-	courseRepository := repositories.NewCourseRepository(conn)
-	courseHandler := handlers.NewCourseHandler(courseRepository)
-	courses := api.PathPrefix("/courses").Subrouter()
-	courses.Handle("", authMiddleware(http.HandlerFunc(courseHandler.CreateCourse))).Methods("POST")
-	courses.Handle("", authMiddleware(http.HandlerFunc(courseHandler.GetAllCourses))).Methods("GET")
-	courses.Handle("/{id}", authMiddleware(http.HandlerFunc(courseHandler.GetCourseByID))).Methods("GET")
-	courses.Handle("/{id}", authMiddleware(http.HandlerFunc(courseHandler.UpdateCourse))).Methods("PUT")
-	courses.Handle("/{id}", authMiddleware(http.HandlerFunc(courseHandler.DeleteCourse))).Methods("DELETE")
-
-	courseRegistrationRepository := repositories.NewCourseRegistrationRepository(conn)
-	courseRegistrationHandler := handlers.NewCourseRegistrationHandler(courseRegistrationRepository)
-	courses.Handle("/{id}/register", authMiddleware(http.HandlerFunc(courseRegistrationHandler.RegisterCourse))).Methods("POST")
-	courses.Handle("/my-registrations", authMiddleware(http.HandlerFunc(courseRegistrationHandler.GetMyCourseRegistrations))).Methods("GET")
-
 	// /api/v1/university/professors
 	professorRepository := repositories.NewProfessorRepository(conn)
 	professorHandler := handlers.NewProfessorHandler(professorRepository)
@@ -90,9 +75,24 @@ func main() {
 	students.Handle("/{id}", authMiddleware(http.HandlerFunc(studentHandler.UpdateStudent))).Methods("PUT")
 	students.Handle("/{id}", authMiddleware(http.HandlerFunc(studentHandler.DeleteStudent))).Methods("DELETE")
 
+	// /api/v1/university/courses
+	courseRepository := repositories.NewCourseRepository(conn)
+	courseHandler := handlers.NewCourseHandler(courseRepository)
+	courses := api.PathPrefix("/courses").Subrouter()
+	courses.Handle("", authMiddleware(http.HandlerFunc(courseHandler.CreateCourse))).Methods("POST")
+	courses.Handle("", authMiddleware(http.HandlerFunc(courseHandler.GetAllCourses))).Methods("GET")
+	courses.Handle("/{id}", authMiddleware(http.HandlerFunc(courseHandler.GetCourseByID))).Methods("GET")
+	courses.Handle("/{id}", authMiddleware(http.HandlerFunc(courseHandler.UpdateCourse))).Methods("PUT")
+	courses.Handle("/{id}", authMiddleware(http.HandlerFunc(courseHandler.DeleteCourse))).Methods("DELETE")
+
+	courseRegistrationRepository := repositories.NewCourseRegistrationRepository(conn)
+	courseRegistrationHandler := handlers.NewCourseRegistrationHandler(courseRegistrationRepository, studentRepository)
+	courses.Handle("/{id}/register", authMiddleware(http.HandlerFunc(courseRegistrationHandler.RegisterCourse))).Methods("POST")
+	courses.Handle("/my-registrations", authMiddleware(http.HandlerFunc(courseRegistrationHandler.GetMyCourseRegistrations))).Methods("GET")
+
 	// /api/v1/university/exams
 	examRepository := repositories.NewExamRepository(conn)
-	examHandler := handlers.NewExamHandler(examRepository)
+	examHandler := handlers.NewExamHandler(examRepository, courseRepository, professorRepository)
 	exams := api.PathPrefix("/exams").Subrouter()
 	exams.Handle("", authMiddleware(http.HandlerFunc(examHandler.CreateExam))).Methods("POST")
 	exams.Handle("", authMiddleware(http.HandlerFunc(examHandler.GetAllExams))).Methods("GET")
@@ -101,10 +101,11 @@ func main() {
 	exams.Handle("/{id}", authMiddleware(http.HandlerFunc(examHandler.DeleteExam))).Methods("DELETE")
 
 	examRegistrationRepository := repositories.NewExamRegistrationRepository(conn)
-	examRegistrationHandler := handlers.NewExamRegistrationHandler(examRegistrationRepository)
+	examRegistrationHandler := handlers.NewExamRegistrationHandler(examRegistrationRepository, studentRepository)
 	exams.Handle("/{id}/register", authMiddleware(http.HandlerFunc(examRegistrationHandler.RegisterExam))).Methods("POST")
 	exams.Handle("/{id}/grade", authMiddleware(http.HandlerFunc(examRegistrationHandler.EnterGrade))).Methods("PUT")
 	exams.Handle("/my-registrations", authMiddleware(http.HandlerFunc(examRegistrationHandler.GetMyRegistrations))).Methods("GET")
+	exams.Handle("/{id}/examregistrations", authMiddleware(http.HandlerFunc(examRegistrationHandler.GetExamRegistrations))).Methods("GET")
 
 	// Set up the server
 	server := &http.Server{

@@ -37,3 +37,8 @@ export async function deleteExamAPI(id: string) {
 	const response = await axiosInstance.delete(`${EXAM_API_PATH}/${id}`);
 	return response.data;
 }
+
+export async function onEnterExamAPI(id: string) {
+	const response = await axiosInstance.post(`${EXAM_API_PATH}/${id}/register`)
+	return response.data;
+}

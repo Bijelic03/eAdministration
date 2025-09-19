@@ -42,7 +42,7 @@ const Table: React.FC<TableProps> = ({
 					</table>
 				</div>
 			</div>
-
+{/* 
 			{paginationProps && (
 				<Pagination
 					page={paginationProps.page}
@@ -50,7 +50,7 @@ const Table: React.FC<TableProps> = ({
 					limit={paginationProps.limit}
 					onPageChange={paginationProps.onPageChange}
 				/>
-			)}
+			)} */}
 		</>
 	);
 };

@@ -8,6 +8,12 @@ export async function createCourseAPI(data: any) {
 	return response.data;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function joinCourseAPI(id: string) {
+	const response = await axiosInstance.post(`${COURSE_API_PATH}/${id}/register`);
+	return response.data;
+}
+
 export async function fetchCoursesAPI(page = 1, max = 10, search = '') {
 	const params = new URLSearchParams({
 		page: String(page),

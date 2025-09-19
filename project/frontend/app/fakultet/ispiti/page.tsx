@@ -18,7 +18,14 @@ import UpsertExamsForm from "./exams.form";
 import useExam from "@/hooks/useExam";
 
 const IspitiPage = () => {
-  const { values, createExam, deleteExam, fetchExams, updateExam } = useExam();
+  const {
+    values,
+    createExam,
+    deleteExam,
+    fetchExams,
+    updateExam,
+    onEnterExam,
+  } = useExam();
   const { page, rowsPerPage, search, handlePageChange } =
     usePaginationAndSearch();
   const { isOpen, toggleModal } = useModal();
@@ -31,6 +38,14 @@ const IspitiPage = () => {
       await createExam(data);
     } catch (error) {
       handleApiError(error, "Kreiranje nije uspjelo");
+    }
+  };
+
+  const enterExam = async (id: string) => {
+    try {
+      await onEnterExam(id);
+    } catch (error) {
+      handleApiError(error, "Prijava ispita nije uspjela.");
     }
   };
 
@@ -74,10 +89,9 @@ const IspitiPage = () => {
       >
         <TableHeader>
           <TableHeaderCell>#</TableHeaderCell>
-          <TableHeaderCell>Kod</TableHeaderCell>
-          <TableHeaderCell>Naziv</TableHeaderCell>
-          <TableHeaderCell>ECTS bodovi</TableHeaderCell>
-          <TableHeaderCell>Aktivan</TableHeaderCell>
+          <TableHeaderCell>Vrijeme</TableHeaderCell>
+          <TableHeaderCell>Kurs ID</TableHeaderCell>
+          <TableHeaderCell>Profesor ID</TableHeaderCell>
           <TableHeaderCell>Akcije</TableHeaderCell>
         </TableHeader>
         <tbody>
@@ -86,11 +100,16 @@ const IspitiPage = () => {
             values?.exams?.map((exam: any) => (
               <TableRow key={exam.id}>
                 <TableCell># {exam?.id}</TableCell>
-                <TableCell>{exam?.code}</TableCell>
-                <TableCell>{exam?.name}</TableCell>
-                <TableCell>{exam?.ects}</TableCell>
-                <TableCell>{exam?.active === true ? "Da" : "Ne"}</TableCell>
+                <TableCell>{exam?.examtime}</TableCell>
+                <TableCell>{exam?.courseid}</TableCell>
+                <TableCell>{exam?.professorid}</TableCell>
                 <TableCell className="flex gap-4">
+                <Button onClick={() => (window.location.href = `/fakultet/ispitne-prijave/${exam?.id}`)}>
+  <Icon type="view" />
+</Button>
+                  <Button onClick={() => enterExam(exam.id)}>
+                    <Icon type="interviewSchedule" />
+                  </Button>
                   <Button
                     onClick={() => {
                       setData(exam);
