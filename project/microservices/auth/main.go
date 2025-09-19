@@ -1,3 +1,4 @@
+// main.go
 package main
 
 import (
@@ -8,73 +9,88 @@ import (
 	"os/signal"
 	"time"
 
+	"github.com/Bijelic03/eAdministration/project/microservices/auth/config"
+	"github.com/Bijelic03/eAdministration/project/microservices/auth/db"
+	"github.com/Bijelic03/eAdministration/project/microservices/auth/handlers"
+	"github.com/Bijelic03/eAdministration/project/microservices/auth/repositories"
 	handler "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
-//	"github.com/Bijelic03/eAdministration/project/microservices/employmentOffice/config"
-
-//	"github.com/Bijelic03/eAdministration/project/microservices/employmentOffice/db"
 )
 
 func main() {
+	cfg := config.GetConfig()
 
-//	cfg := config.GetConfig()
+	conn, err := db.Connect(cfg.DatabaseURL())
+	handleErr(err)
+	defer conn.Close()
 
-//	conn, err := db.Connect(cfg.DatabaseURL())
-//	handleErr(err)
+	// secret za JWT
+	secretKey := []byte(cfg.SecretKeyAuth)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
+	// repo + handler
+	userRepo := repositories.NewUserRepository(conn)
+	userHandler := handlers.NewUserHandler(userRepo, secretKey)
 
 	address := ":8083"
 
-	// Set up the router
+	// Router
 	router := mux.NewRouter()
-
 	router.Use(mux.CORSMethodMiddleware(router))
+	router.Use(jsonContentTypeMiddleware) // setuje Content-Type: application/json
 
-//	api := router.PathPrefix("/api/v1").Subrouter()
+	api := router.PathPrefix("/api/v1").Subrouter()
 
+	// CORS
 	cors := handler.CORS(
 		handler.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}),
 		handler.AllowedHeaders([]string{"Authorization", "Content-Type"}),
 		handler.AllowCredentials(),
-		handler.AllowedOrigins([]string{"http://localhost:5173"}),
+		handler.AllowedOrigins([]string{"*"}),
 	)
 
-	// Set up the server
+	// AUTH ROUTES
+	api.HandleFunc("/auth/register", userHandler.Register).Methods("POST")
+	api.HandleFunc("/auth/login", userHandler.Login).Methods("POST")
+
+	// AUTH CHECK ROUTES
+	api.HandleFunc("/auth/verify", userHandler.Verify).Methods("GET", "HEAD")
+	api.HandleFunc("/auth/authorize", userHandler.Authorize).Methods("GET")
+
+	// HTTP Server
 	server := &http.Server{
 		Handler: cors(router),
 		Addr:    address,
 	}
 
-	// Start the server
 	go func() {
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("Could not listen on %s: %v\n", address, err)
 		}
 	}()
 
-	// Set up signal handling for graceful shutdown
+	// Graceful shutdown
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, os.Interrupt, os.Kill)
-
-	// Wait for shutdown signal
 	sig := <-sigCh
 	log.Println("Received terminate, graceful shutdown", sig)
 
-	// Shutdown the server gracefully
-	ctx, cancelShutdown := context.WithTimeout(context.Background(), 30*time.Second)
+	ctxShutdown, cancelShutdown := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancelShutdown()
-	if err := server.Shutdown(ctx); err != nil {
+	if err := server.Shutdown(ctxShutdown); err != nil {
 		log.Fatal("Cannot gracefully shutdown:", err)
 	}
 	log.Println("Server stopped")
 }
 
-// handleErr is a helper function for error handling
 func handleErr(err error) {
 	if err != nil {
 		log.Fatalln(err)
 	}
+}
 
+func jsonContentTypeMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		next.ServeHTTP(w, r)
+	})
 }
