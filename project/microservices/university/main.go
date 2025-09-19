@@ -103,7 +103,7 @@ func main() {
 	exams.Handle("/{id}", authMiddleware(http.HandlerFunc(examHandler.DeleteExam))).Methods("DELETE")
 
 	examRegistrationRepository := repositories.NewExamRegistrationRepository(conn)
-	examRegistrationHandler := handlers.NewExamRegistrationHandler(examRegistrationRepository, studentRepository)
+	examRegistrationHandler := handlers.NewExamRegistrationHandler(examRegistrationRepository, studentRepository, courseRegistrationRepository, examRepository)
 	exams.Handle("/{id}/register", authMiddleware(http.HandlerFunc(examRegistrationHandler.RegisterExam))).Methods("POST")
 	exams.Handle("/{id}/grade", authMiddleware(http.HandlerFunc(examRegistrationHandler.EnterGrade))).Methods("PUT")
 	exams.Handle("/my-registrations", authMiddleware(http.HandlerFunc(examRegistrationHandler.GetMyRegistrations))).Methods("GET")

@@ -13,10 +13,13 @@ import (
 type ExamRegistrationHandler struct {
 	repo        *repositories.ExamRegistrationRepository
 	studentRepo *repositories.StudentRepository
+	coursesRepo *repositories.CourseRegistrationRepository
+	examRepo    *repositories.ExamRepository
 }
 
-func NewExamRegistrationHandler(repo *repositories.ExamRegistrationRepository, studentRepo *repositories.StudentRepository) *ExamRegistrationHandler {
-	return &ExamRegistrationHandler{repo: repo, studentRepo: studentRepo}
+func NewExamRegistrationHandler(repo *repositories.ExamRegistrationRepository, studentRepo *repositories.StudentRepository, coursesRepo *repositories.CourseRegistrationRepository,
+	examRepo *repositories.ExamRepository) *ExamRegistrationHandler {
+	return &ExamRegistrationHandler{repo: repo, studentRepo: studentRepo, coursesRepo: coursesRepo, examRepo: examRepo}
 }
 
 // Register student for exam
@@ -42,6 +45,12 @@ func (h *ExamRegistrationHandler) RegisterExam(w http.ResponseWriter, r *http.Re
 		return
 	}
 
+	exam, err := h.examRepo.GetByID(r.Context(), examID)
+	if err != nil {
+		http.Error(w, "exam not found", http.StatusNotFound)
+		return
+	}
+
 	stud, err := h.studentRepo.GetByEmail(r.Context(), email)
 	if err != nil {
 		http.Error(w, "student not found", http.StatusNotFound)
@@ -49,6 +58,22 @@ func (h *ExamRegistrationHandler) RegisterExam(w http.ResponseWriter, r *http.Re
 	}
 
 	studentID := stud.ID
+	kursID, err := uuid.Parse(exam.CourseID)
+	if err != nil {
+		http.Error(w, "invalid course id", http.StatusBadRequest)
+		return
+	}
+
+	coursesReg, err := h.coursesRepo.GetByStudentIDAndCourseID(r.Context(), studentID, kursID)
+	if err != nil {
+		http.Error(w, "Greška prilikom provjere course registration:", http.StatusNotFound)
+		return
+	}
+
+	if coursesReg == nil {
+		http.Error(w, "Student nije registrovan na ovaj kurs:", http.StatusNotFound)
+		return
+	}
 
 	existing, err := h.repo.GetByStudentIDAndExamID(r.Context(), studentID, examID)
 	if err != nil {
