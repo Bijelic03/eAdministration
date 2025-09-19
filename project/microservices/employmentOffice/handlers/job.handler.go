@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"strconv"
@@ -178,6 +179,63 @@ func (h *JobHandler) ApplyForJob(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, "invalid job id", http.StatusBadRequest)
 		return
+	}
+
+	job, err := h.repo.GetByID(r.Context(), jobID)
+	if err != nil {
+		http.Error(w, "job not found", http.StatusNotFound)
+		return
+	}
+
+	if job.RequiredFaculty != nil && *job.RequiredFaculty {
+		client := &http.Client{Timeout: 5 * time.Second}
+		req, err := http.NewRequest(
+			"GET",
+			fmt.Sprintf("http://university:8081/api/v1/university/students/verify-graduation"),
+			nil,
+		)
+		if err != nil {
+			http.Error(w, "failed to build request:", http.StatusNotFound)
+			return
+		}
+		req.Header.Set("Content-Type", "application/json")
+		if authHeader := r.Header.Get("Authorization"); authHeader != "" {
+			req.Header.Set("Authorization", authHeader)
+		}
+
+		resp, err := client.Do(req)
+		if err != nil {
+			http.Error(w, "university service unreachable:", http.StatusNotFound)
+			return
+		}
+		defer resp.Body.Close()
+
+		// Čitamo cijeli body prvo
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			http.Error(w, "failed to read response body:", http.StatusNotFound)
+			return
+		}
+
+		// Dekodiranje u mapu
+		var stud map[string]interface{}
+		if err := json.Unmarshal(body, &stud); err != nil {
+			http.Error(w, "failed to decode student response:", http.StatusNotFound)
+			return
+		}
+
+		// Provjera statusa
+		graduated := false
+		if status, ok := stud["status"].(string); ok && status == "GRADUATED" {
+			graduated = true
+		}
+
+		// Sada graduated ima true/false
+		if graduated {
+			fmt.Println("Student je diplomirao!")
+		} else {
+			http.Error(w, "Verifikacija nije uspjesna - nemate diplomu", http.StatusNotFound)
+		}
 	}
 
 	candidate, err := h.candidateRepo.GetByEmail(r.Context(), candidateEmailStr)

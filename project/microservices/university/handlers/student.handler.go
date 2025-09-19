@@ -126,6 +126,32 @@ func (h *StudentHandler) GetStudentByEmail(w http.ResponseWriter, r *http.Reques
 	json.NewEncoder(w).Encode(stud)
 }
 
+// verify graduation check
+func (h *StudentHandler) VerifyGraduation(w http.ResponseWriter, r *http.Request) {
+	email, _ := r.Context().Value("email").(string)
+
+	stud, err := h.repo.GetByEmail(r.Context(), email)
+	if err != nil {
+		http.Error(w, "not found", http.StatusNotFound)
+		return
+	}
+
+	var graduated bool
+	if stud.Status != nil && string(*stud.Status) == "GRADUATED" {
+		graduated = true
+	} else {
+		graduated = false
+	}
+
+	response := map[string]interface{}{
+		"student": stud,
+		"status":  graduated,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
 // Get all students
 func (h *StudentHandler) GetAllStudents(w http.ResponseWriter, r *http.Request) {
 	pageStr := r.URL.Query().Get("page")

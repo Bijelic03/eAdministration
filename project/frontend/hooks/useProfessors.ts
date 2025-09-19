@@ -5,6 +5,7 @@ import {
   deleteProfessorAPI,
   fetchProfessorByIdAPI,
   fetchProfessorsAPI,
+  fetchProfessorsFromOtherServiceAPI,
   updateProfessorAPI,
 } from "@/api/professors.api";
 
@@ -54,6 +55,33 @@ export default function useProfessor() {
       setValues((prev) => ({ ...prev, loading: false }));
     }
   };
+
+
+  const fetchProfessorsFromOtherService = async (page = pageParam, max = maxParam) => {
+    setValues((prev) => ({ ...prev, loading: true, error: null }));
+    try {
+      const response = await fetchProfessorsFromOtherServiceAPI(
+        Number(page),
+        Number(max),
+        search
+      );
+      setValues((prev) => ({
+        ...prev,
+        professors: response.professors,
+        page: response.page,
+        totalItems: response.totalItems,
+        totalPages: response.totalPages,
+      }));
+    } catch (error) {
+      setValues((prev) => ({
+        ...prev,
+        error,
+      }));
+    } finally {
+      setValues((prev) => ({ ...prev, loading: false }));
+    }
+  };
+
 
   const fetchProfessorById = async (id: string) => {
     setValues((prev) => ({ ...prev, loading: true, error: null }));
@@ -140,6 +168,7 @@ export default function useProfessor() {
     values,
     setValues,
     fetchProfessors,
+    fetchProfessorsFromOtherService,
     fetchProfessorById,
     createProfessor,
     updateProfessor,

@@ -1,2 +1,0 @@
-ALTER TABLE courses
-    ALTER COLUMN ects TYPE INT USING ects::INT;
