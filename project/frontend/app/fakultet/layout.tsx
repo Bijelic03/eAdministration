@@ -6,6 +6,8 @@ export default function FakultetLayout({
   children: React.ReactNode;
 }) {
   return (
-    <Protected allowedRoles={["student", "professor"]}>{children}</Protected>
+    <Protected allowedRoles={["student", "professor", "facultyadmin"]}>
+      {children}
+    </Protected>
   );
 }

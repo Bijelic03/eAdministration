@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faRightFromBracket } from "@fortawesome/free-solid-svg-icons";
 
 export default function LogoutButton() {
   const pathname = usePathname();
@@ -36,16 +38,10 @@ export default function LogoutButton() {
   return (
     <button
       onClick={handleClick}
-      style={{
-        border: "1px solid #000",
-        background: "#000",
-        color: "#fff",
-        borderRadius: "8px",
-        padding: "8px 12px",
-        cursor: "pointer",
-      }}
+      className="hover:cursor-pointer flex items-center gap-2 bg-blue-500 hover:bg-blue-600 shadow-md text-white px-4 py-2 font-bold rounded-lg transition duration-300 transform hover:-translate-y-0.5"
     >
-      Logout
+      <FontAwesomeIcon icon={faRightFromBracket} className="w-4 h-4" />
+      Izloguj se
     </button>
   );
 }

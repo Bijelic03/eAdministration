@@ -18,7 +18,7 @@ export default function RegisterPage() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("student");
+  const [role, setRole] = useState("sszadmin");
   const [showPwd, setShowPwd] = useState(false);
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState<{ kind: "error" | "ok"; text: string } | null>(
@@ -52,9 +52,7 @@ export default function RegisterPage() {
 
       const data = (await res
         .json()
-        .catch(() => ({}))) as Partial<RegisterResponse> & {
-        error?: string;
-      };
+        .catch(() => ({}))) as Partial<RegisterResponse> & { error?: string };
 
       if (!res.ok) {
         setMsg({
@@ -84,123 +82,113 @@ export default function RegisterPage() {
 
   return (
     <Wrap withGoBack={false}>
-      <div className="mx-auto max-w-md p-6">
-        <h1 className="text-2xl font-semibold mb-4">Registracija</h1>
+      <div className="flex items-center justify-center min-h-[70vh] !bg-gray-600 p-6">
+        <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8">
+          <h1 className="text-3xl font-semibold mb-6 text-center text-gray-800">
+            Registracija
+          </h1>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm mb-1" htmlFor="fullName">
-              Ime i prezime
-            </label>
-            <input
-              id="fullName"
-              type="text"
-              className="w-full rounded-lg border px-3 py-2 outline-none"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              disabled={loading}
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm mb-1" htmlFor="email">
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              autoComplete="email"
-              className="w-full rounded-lg border px-3 py-2 outline-none"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={loading}
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm mb-1" htmlFor="password">
-              Lozinka
-            </label>
-            <div className="relative">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Ime i prezime
+              </label>
               <input
-                id="password"
-                type={showPwd ? "text" : "password"}
-                autoComplete="new-password"
-                className="w-full rounded-lg border px-3 py-2 pr-20 outline-none"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                type="text"
+                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-400 outline-none text-black"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
                 disabled={loading}
                 required
               />
-              <button
-                type="button"
-                onClick={() => setShowPwd((s) => !s)}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-sm underline"
-                tabIndex={-1}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Email
+              </label>
+              <input
+                type="email"
+                autoComplete="email"
+                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-400 outline-none text-black"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={loading}
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Lozinka
+              </label>
+              <div className="relative">
+                <input
+                  type={showPwd ? "text" : "password"}
+                  autoComplete="new-password"
+                  className="w-full rounded-lg border border-gray-300 px-4 py-2 pr-20 focus:ring-2 focus:ring-blue-400 outline-none text-black"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  disabled={loading}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPwd((s) => !s)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-medium text-blue-600 hover:text-blue-800 text-black"
+                  tabIndex={-1}
+                >
+                  {showPwd ? "Sakrij" : "Prikaži"}
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1 !text-black">
+                Uloga
+              </label>
+              <select
+                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-400 outline-none"
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+                disabled={loading}
               >
-                {showPwd ? "Sakrij" : "Prikaži"}
-              </button>
+                <option value="sszadmin">SSZ Admin</option>
+                <option value="facultyadmin">Fakultet Admin</option>
+              </select>
             </div>
-          </div>
 
-          <div>
-            <label className="block text-sm mb-1" htmlFor="role">
-              Uloga
-            </label>
-            <select
-              id="role"
-              className="w-full rounded-lg border px-3 py-2 outline-none "
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
+            {msg && (
+              <div
+                className={`rounded-lg px-4 py-2 text-sm ${
+                  msg.kind === "error"
+                    ? "bg-red-50 text-red-700"
+                    : "bg-green-50 text-green-700"
+                }`}
+              >
+                {msg.text}
+              </div>
+            )}
+
+            <button
+              type="submit"
               disabled={loading}
+              className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 px-4 py-2 text-white font-semibold hover:from-blue-700 hover:to-blue-600 transition disabled:opacity-60"
             >
-              <option className="text-black" value="student">
-                Student
-              </option>
-              <option className="text-black" value="professor">
-                Profesor
-              </option>
-              <option className="text-black" value="employee">
-                Zaposleni
-              </option>
-              <option className="text-black" value="candidate">
-                Kandidat
-              </option>
-            </select>
-          </div>
+              {loading ? "Registrujem…" : "Registruj se"}
+            </button>
+          </form>
 
-          {msg && (
-            <div
-              className={`rounded-lg px-3 py-2 text-sm ${
-                msg.kind === "error"
-                  ? "bg-red-50 text-red-700"
-                  : "bg-green-50 text-green-700"
-              }`}
+          <p className="mt-6 text-center text-gray-600 text-sm">
+            Već imaš nalog?{" "}
+            <a
+              href="/auth/login"
+              className="text-blue-600 hover:text-blue-800 underline font-medium"
             >
-              {msg.text}
-            </div>
-          )}
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-lg bg-black px-4 py-2 text-white disabled:opacity-60"
-          >
-            {loading ? "Registrujem…" : "Registruj se"}
-          </button>
-        </form>
-
-        <p className="mt-4 text-sm text-white">
-          Već imaš nalog?{" "}
-          <a
-            href="/auth/login"
-            className="text-blue-600 underline hover:text-blue-800"
-          >
-            Prijavi se
-          </a>
-        </p>
+              Prijavi se
+            </a>
+          </p>
+        </div>
       </div>
     </Wrap>
   );

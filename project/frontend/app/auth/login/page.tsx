@@ -44,9 +44,7 @@ export default function LoginPage() {
 
       const data = (await res
         .json()
-        .catch(() => ({}))) as Partial<LoginResponse> & {
-        error?: string;
-      };
+        .catch(() => ({}))) as Partial<LoginResponse> & { error?: string };
 
       if (!res.ok) {
         setMsg({ kind: "error", text: data?.error || "Neuspešna prijava." });
@@ -63,8 +61,17 @@ export default function LoginPage() {
       window.dispatchEvent(new Event("auth:changed"));
 
       setMsg({ kind: "ok", text: "Uspešno logovanje. Preusmeravam…" });
-      router.push("/");
-    } catch (err) {
+
+      const _role = data?.user?.role;
+      const isFaculty = ["professor", "student", "facultyadmin"].includes(
+        _role!
+      );
+      if (isFaculty) {
+        router.push("/fakultet");
+      } else {
+        router.push("/sluzba-za-zaposljavanje");
+      }
+    } catch {
       setMsg({ kind: "error", text: "Greška u mreži. Pokušaj ponovo." });
     } finally {
       setLoading(false);
@@ -73,83 +80,92 @@ export default function LoginPage() {
 
   return (
     <Wrap withGoBack={false}>
-      <div className="mx-auto max-w-md p-6">
-        <h1 className="text-2xl font-semibold mb-4">Prijava</h1>
+      <div className="flex items-center min-h-[70vh] justify-center !bg-gray-600 p-6">
+        <div className="w-full max-w-md bg-gray-50 rounded-2xl shadow-xl p-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-6 text-center">
+            Prijava
+          </h1>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm mb-1" htmlFor="email">
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              autoComplete="email"
-              className="w-full rounded-lg border px-3 py-2 outline-none"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={loading}
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm mb-1" htmlFor="password">
-              Lozinka
-            </label>
-            <div className="relative">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <label
+                className="block text-sm font-medium text-gray-700 mb-1"
+                htmlFor="email"
+              >
+                Email
+              </label>
               <input
-                id="password"
-                type={showPwd ? "text" : "password"}
-                autoComplete="current-password"
-                className="w-full rounded-lg border px-3 py-2 pr-20 outline-none"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                id="email"
+                type="email"
+                autoComplete="email"
+                className="text-black w-full rounded-xl border border-gray-300 px-4 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 disabled={loading}
                 required
               />
-              <button
-                type="button"
-                onClick={() => setShowPwd((s) => !s)}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-sm underline"
-                tabIndex={-1}
+            </div>
+
+            <div>
+              <label
+                className="block text-sm font-medium text-gray-700 mb-1"
+                htmlFor="password"
               >
-                {showPwd ? "Sakrij" : "Prikaži"}
-              </button>
+                Lozinka
+              </label>
+              <div className="relative">
+                <input
+                  id="password"
+                  type={showPwd ? "text" : "password"}
+                  autoComplete="current-password"
+                  className="text-black w-full rounded-xl border border-gray-300 px-4 py-2 pr-24 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  disabled={loading}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPwd((s) => !s)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-medium text-blue-600 hover:text-blue-800"
+                  tabIndex={-1}
+                >
+                  {showPwd ? "Sakrij" : "Prikaži"}
+                </button>
+              </div>
             </div>
-          </div>
 
-          {msg && (
-            <div
-              className={`rounded-lg px-3 py-2 text-sm ${
-                msg.kind === "error"
-                  ? "bg-red-50 text-red-700"
-                  : "bg-green-50 text-green-700"
-              }`}
+            {msg && (
+              <div
+                className={`rounded-lg px-4 py-2 text-sm font-medium ${
+                  msg.kind === "error"
+                    ? "bg-red-50 text-red-700 border border-red-100"
+                    : "bg-green-50 text-green-700 border border-green-100"
+                }`}
+              >
+                {msg.text}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 px-4 py-2 text-white font-semibold hover:from-blue-700 hover:to-blue-600 transition disabled:opacity-60"
             >
-              {msg.text}
-            </div>
-          )}
+              {loading ? "Prijavljivanje…" : "Prijavi se"}
+            </button>
+          </form>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-lg bg-black px-4 py-2 text-white disabled:opacity-60"
-          >
-            {loading ? "Prijavljivanje…" : "Prijavi se"}
-          </button>
-        </form>
-
-        {/* Link ka registraciji */}
-        <p className="mt-4 text-sm text-white">
-          Nemaš nalog?{" "}
-          <a
-            href="/auth/register"
-            className="text-blue-600 underline hover:text-blue-800"
-          >
-            Registruj se
-          </a>
-        </p>
+          <p className="mt-6 text-center text-gray-600 text-sm">
+            Nemaš nalog?{" "}
+            <a
+              href="/auth/register"
+              className="text-blue-600 font-medium underline hover:text-blue-800"
+            >
+              Registruj se
+            </a>
+          </p>
+        </div>
       </div>
     </Wrap>
   );

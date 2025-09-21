@@ -24,7 +24,7 @@ export default function UserInfo() {
   if (!user?.email) return null;
 
   return (
-    <span style={{ fontSize: "0.9rem", color: "#ffffff" }}>
+    <span style={{ fontSize: "0.9rem", color: "black" }}>
       {user.fullName} ({user.role}) – {user.email}
     </span>
   );

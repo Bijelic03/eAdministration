@@ -54,8 +54,8 @@ func (h *JobHandler) CreateJob(w http.ResponseWriter, r *http.Request) {
 
 	role, _ := r.Context().Value("role").(string)
 
-	if role != "employee" {
-		http.Error(w, "only employees can create job", http.StatusForbidden)
+	if role != "sszadmin" {
+		http.Error(w, "only sszadmin can create job", http.StatusForbidden)
 		return
 	}
 
@@ -147,8 +147,8 @@ func (h *JobHandler) UpdateJob(w http.ResponseWriter, r *http.Request) {
 
 	role, _ := r.Context().Value("role").(string)
 
-	if role != "employee" {
-		http.Error(w, "only employees can update job", http.StatusForbidden)
+	if role != "sszadmin" {
+		http.Error(w, "only sszadmin can update job", http.StatusForbidden)
 		return
 	}
 
@@ -173,8 +173,8 @@ func (h *JobHandler) DeleteJob(w http.ResponseWriter, r *http.Request) {
 
 	role, _ := r.Context().Value("role").(string)
 
-	if role != "employee" {
-		http.Error(w, "only employees can delete job", http.StatusForbidden)
+	if role != "sszadmin" {
+		http.Error(w, "only sszadmin can delete job", http.StatusForbidden)
 		return
 	}
 
@@ -351,8 +351,8 @@ func (h *JobHandler) GetCandidatesForJob(w http.ResponseWriter, r *http.Request)
 
 	role, _ := r.Context().Value("role").(string)
 
-	if role != "employee" {
-		http.Error(w, "only employees can get candidates for job", http.StatusForbidden)
+	if role != "sszadmin" {
+		http.Error(w, "only sszadmin can get candidates for job", http.StatusForbidden)
 		return
 	}
 
@@ -416,8 +416,8 @@ func (h *JobHandler) DeleteJobApplication(w http.ResponseWriter, r *http.Request
 
 	role, _ := r.Context().Value("role").(string)
 
-	if role != "employee" && role != "candidate" {
-		http.Error(w, "only employees and candidates can delete job application", http.StatusForbidden)
+	if role != "sszadmin" && role != "candidate" {
+		http.Error(w, "only sszadmin and candidates can delete job application", http.StatusForbidden)
 		return
 	}
 
@@ -534,8 +534,8 @@ func (h *JobHandler) DeleteInterview(w http.ResponseWriter, r *http.Request) {
 
 	role, _ := r.Context().Value("role").(string)
 
-	if role != "employee" {
-		http.Error(w, "only employees can delete interview", http.StatusForbidden)
+	if role != "sszadmin" {
+		http.Error(w, "only sszadmin can delete interview", http.StatusForbidden)
 		return
 	}
 

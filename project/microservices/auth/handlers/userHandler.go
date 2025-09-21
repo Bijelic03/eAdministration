@@ -62,10 +62,6 @@ func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 		badRequest(w, "fullName, email and password are required")
 		return
 	}
-	if req.Role != repo.RoleStudent && req.Role != repo.RoleProfessor && req.Role != repo.RoleEmployee && req.Role != repo.RoleCandidate {
-		badRequest(w, "invalid role")
-		return
-	}
 
 	u := repo.User{
 		FullName: req.FullName,

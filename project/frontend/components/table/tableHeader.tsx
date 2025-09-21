@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface TableHeaderProps {
   children: React.ReactNode;
@@ -6,7 +6,7 @@ interface TableHeaderProps {
 
 const TableHeader: React.FC<TableHeaderProps> = ({ children }) => {
   return (
-    <thead className="bg-white text-black">
+    <thead className="bg-gray-900 text-gray-200">
       <tr>{children}</tr>
     </thead>
   );

@@ -32,8 +32,8 @@ func (h *CandidateHandler) CreateCandidate(w http.ResponseWriter, r *http.Reques
 
 	role, _ := r.Context().Value("role").(string)
 
-	if role != "employee" {
-		http.Error(w, "only employees can create candidates", http.StatusForbidden)
+	if role != "sszadmin" {
+		http.Error(w, "only sszadmin can create candidates", http.StatusForbidden)
 		return
 	}
 
@@ -150,8 +150,8 @@ func (h *CandidateHandler) UpdateCandidate(w http.ResponseWriter, r *http.Reques
 
 	role, _ := r.Context().Value("role").(string)
 
-	if role != "employee" && role != "candidate" {
-		http.Error(w, "only employees and candidates can update candidates", http.StatusForbidden)
+	if role != "sszadmin" && role != "candidate" {
+		http.Error(w, "only sszadmin and candidates can update candidate", http.StatusForbidden)
 		return
 	}
 
@@ -176,8 +176,8 @@ func (h *CandidateHandler) DeleteCandidate(w http.ResponseWriter, r *http.Reques
 
 	role, _ := r.Context().Value("role").(string)
 
-	if role != "employee" {
-		http.Error(w, "only employees can delete candidates", http.StatusForbidden)
+	if role != "sszadmin" {
+		http.Error(w, "only sszadmin can delete candidate", http.StatusForbidden)
 		return
 	}
 

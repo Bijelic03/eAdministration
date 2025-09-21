@@ -160,6 +160,56 @@ func (r *EmployeeRepository) GetAll(ctx context.Context, page, limit int) ([]*Em
 	return employees, totalItems, nil
 }
 
+
+// Get all employees by job ID
+func (r *EmployeeRepository) GetAllByJobId(ctx context.Context, page, limit int, jobid uuid.UUID) ([]*Employee, int, error) {
+	if page < 1 {
+		page = 1
+	}
+	if limit <= 0 {
+		limit = 10
+	}
+	offset := (page - 1) * limit
+
+	query := `SELECT id, fullname, email, password, role, jobid, indexno
+	          FROM users 
+			  WHERE role = 'employee' AND jobid = $3
+	          ORDER BY fullname 
+	          LIMIT $1 OFFSET $2`
+
+	rows, err := r.db.Query(ctx, query, limit, offset, jobid)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer rows.Close()
+
+	employees := make([]*Employee, 0)
+	for rows.Next() {
+		var emp Employee
+		if err := rows.Scan(
+			&emp.ID,
+			&emp.FullName,
+			&emp.Email,
+			&emp.Password,
+			&emp.Role,
+			&emp.JobID,
+			&emp.IndexNo,
+		); err != nil {
+			return nil, 0, err
+		}
+		employees = append(employees, &emp)
+	}
+
+	// total count for pagination
+	var totalItems int
+	if err := r.db.QueryRow(ctx, `SELECT COUNT(*) FROM users WHERE role = 'employee' AND jobid = $1`, jobid).Scan(&totalItems); err != nil {
+		return nil, 0, err
+	}
+
+	return employees, totalItems, nil
+}
+
+
 // Update employee
 func (r *EmployeeRepository) Update(ctx context.Context, emp *Employee) (*Employee, error) {
 	query := `

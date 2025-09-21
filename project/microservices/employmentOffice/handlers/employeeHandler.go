@@ -34,8 +34,8 @@ func (h *EmployeeHandler) CreateEmployee(w http.ResponseWriter, r *http.Request)
 
 	role, _ := r.Context().Value("role").(string)
 
-	if role != "employee" {
-		http.Error(w, "only employees can create employee", http.StatusForbidden)
+	if role != "sszadmin" {
+		http.Error(w, "only sszadmin can create employee", http.StatusForbidden)
 		return
 	}
 
@@ -119,32 +119,74 @@ func (h *EmployeeHandler) GetAllEmployees(w http.ResponseWriter, r *http.Request
 		}
 	}
 
-	employees, totalItems, err := h.repo.GetAll(r.Context(), page, limit)
-	if err != nil {
-		resp := EmployeeListResponse{
-			Employees:  nil,
-			Page:       page,
-			TotalItems: 0,
-			TotalPages: 0,
-			Error:      err.Error(),
+	role, _ := r.Context().Value("role").(string)
+	email, _ := r.Context().Value("email").(string)
+
+	var emp *repositories.Employee
+
+    if role == "employee" {
+        var err error
+        emp, err = h.repo.GetByEmail(r.Context(), email)
+        if err != nil {
+            http.Error(w, "not found", http.StatusNotFound)
+            return
+        }
+
+		employees, totalItems, err := h.repo.GetAllByJobId(r.Context(), page, limit, *emp.JobID)
+		if err != nil {
+			resp := EmployeeListResponse{
+				Employees:  nil,
+				Page:       page,
+				TotalItems: 0,
+				TotalPages: 0,
+				Error:      err.Error(),
+			}
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(resp)
+			return
 		}
+	
+		totalPages := (totalItems + limit - 1) / limit
+	
+		resp := EmployeeListResponse{
+			Employees:  employees,
+			Page:       page,
+			TotalItems: totalItems,
+			TotalPages: totalPages,
+			Error:      nil,
+		}
+	
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(resp)
-		return
+    } else {
+		employees, totalItems, err := h.repo.GetAll(r.Context(), page, limit)
+		if err != nil {
+			resp := EmployeeListResponse{
+				Employees:  nil,
+				Page:       page,
+				TotalItems: 0,
+				TotalPages: 0,
+				Error:      err.Error(),
+			}
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(resp)
+			return
+		}
+	
+		totalPages := (totalItems + limit - 1) / limit
+	
+		resp := EmployeeListResponse{
+			Employees:  employees,
+			Page:       page,
+			TotalItems: totalItems,
+			TotalPages: totalPages,
+			Error:      nil,
+		}
+	
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(resp)
 	}
-
-	totalPages := (totalItems + limit - 1) / limit
-
-	resp := EmployeeListResponse{
-		Employees:  employees,
-		Page:       page,
-		TotalItems: totalItems,
-		TotalPages: totalPages,
-		Error:      nil,
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(resp)
+	
 }
 
 // get all pofesors
@@ -186,8 +228,8 @@ func (h *EmployeeHandler) UpdateEmployee(w http.ResponseWriter, r *http.Request)
 
 	role, _ := r.Context().Value("role").(string)
 
-	if role != "employee" {
-		http.Error(w, "only employees can update employees", http.StatusForbidden)
+	if role != "employee" && role != "sszadmin"  {
+		http.Error(w, "only sszadmin and employees can update employees", http.StatusForbidden)
 		return
 	}
 
@@ -212,8 +254,8 @@ func (h *EmployeeHandler) DeleteEmployee(w http.ResponseWriter, r *http.Request)
 
 	role, _ := r.Context().Value("role").(string)
 
-	if role != "employee" {
-		http.Error(w, "only employees can delete employees", http.StatusForbidden)
+	if role != "sszadmin" {
+		http.Error(w, "only sszadmin can delete employees", http.StatusForbidden)
 		return
 	}
 

@@ -1,40 +1,44 @@
-'use client';
+"use client";
 
-import React from 'react';
+import React from "react";
 
 type FullScreenModalProps = {
-	isOpen: boolean;
-	onClose: () => void;
-	children: React.ReactNode;
+  isOpen: boolean;
+  onClose: () => void;
+  children: React.ReactNode;
 };
 
 const FullScreenModal: React.FC<FullScreenModalProps> = ({
-	isOpen,
-	onClose,
-	children,
+  isOpen,
+  onClose,
+  children,
 }) => {
-	if (!isOpen) return null;
+  if (!isOpen) return null;
 
-	return (
-		<div className='fixed inset-0 z-50 flex items-center justify-center bg-black/60'>
-			<div className='relative w-[95vw] h-[95vh] bg-gray-900 rounded-lg shadow-lg overflow-auto p-6'>
-				<button
-					onClick={onClose}
-					className='hover:cursor-pointer absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-2xl'
-				>
-					X
-				</button>
-				{children}
-			</div>
-		</div>
-	);
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity">
+      <div className="relative w-[95vw] max-w-4xl h-[95vh] bg-gray-800 rounded-xl shadow-2xl overflow-auto p-8 animate-slide-in">
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-gray-400 hover:text-white text-3xl font-bold transition-colors"
+        >
+          ×
+        </button>
+        {children}
+      </div>
+    </div>
+  );
 };
 
 export default FullScreenModal;
 
 interface ModalLabelProps {
-	label: string;
+  label: string;
 }
 export const ModalLabel = ({ label }: ModalLabelProps) => {
-	return <p className='text-2xl py-4 font-bold text-center'>{label}</p>;
+  return (
+    <p className="text-3xl md:text-4xl font-extrabold text-center text-white mb-6">
+      {label}
+    </p>
+  );
 };

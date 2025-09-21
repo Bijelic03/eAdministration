@@ -1,129 +1,42 @@
+"use client";
+
 import Wrap from "@/components/wrap";
 import LinkButton from "@/components/link-button";
 
-/* 
-1️⃣ Studenti (student.handler + student.repository)
-
-Lista studenata (sa paginacijom i filterima)
-Dodavanje novog studenta
-Edit/Update studenta
-Brisanje studenta
-Enrolment u kurseve / dodavanje kursa studentu
-Praćenje statusa (aktivni, diplomirani, pauza)
-
-2️⃣ Profesori (professor.handler + professor.repository)
-
-Lista profesora
-Dodavanje novog profesora
-Edit/Update profesora
-Brisanje profesora
-Dodeljivanje kurseva profesoru
-Praćenje opterećenja (koliko kurseva vodi)
-
-3️⃣ Kursevi (course.repository)
-
-Lista kurseva
-Dodavanje novog kursa
-Edit/Update kursa
-Brisanje kursa
-Prikaz rasporeda kurseva / semestri
-Prikaz povezanih profesora i studenata
-
-4️⃣ Ocjene (grade.repository)
-
-Upis ocjena za studente
-Edit/Update ocjena
-Brisanje ocjena
-Prikaz ocjena po studentu / kursu
-Filtriranje po semestru ili akademskoj godini
-
-5️⃣ GPA (gpa.handler)
-
-Izračunavanje GPA po studentu
-Prikaz GPA liste studenata
-Praćenje napretka kroz semestre
-
-6️⃣ Alumni (alumni.handler + alumni.repository)
-
-Lista alumni
-Dodavanje novog alumni
-Edit/Update alumni podataka
-Brisanje alumni
-Praćenje karijere nakon diplomiranja
-
-...............
-
-1️⃣ Landing stranica Fakultet
-
-Stranica /fakultet
-
-Sadrži dugmad (LinkButton) za svaku glavnu funkcionalnost:
-
-Studenti
-Profesori
-Kursevi
-Ocjene
-GPA
-Alumni
-
-2️⃣ Stranice za svaku funkcionalnost
-a) Studenti
-
-Stranica /fakultet/studenti
-Lista studenata (tabela/grid)
-Dugmad: Dodaj, Edit, Delete
-Modal/forma za dodavanje ili edit studenta
-Filteri i paginacija
-
-b) Profesori
-
-Stranica /fakultet/profesori
-Lista profesora
-Dugmad: Dodaj, Edit, Delete
-Modal/forma za dodeljivanje kurseva profesoru
-Filteri
-
-c) Kursevi
-
-Stranica /fakultet/kursovi
-Lista kurseva
-Dugmad: Dodaj, Edit, Delete
-Prikaz povezanih profesora i studenata
-
-d) Ocjene
-
-Stranica /fakultet/ocjene
-Lista ocjena po studentu i kursu
-Dugmad: Upis, Edit, Delete ocjene
-Filter po semestru / akademskoj godini
-
-e) GPA
-
-Stranica /fakultet/gpa
-Lista studenata sa GPA
-Prikaz kroz grafove ili tabelu
-Mogućnost filtriranja po semestru
-
-f) Alumni
-
-Stranica /fakultet/alumni
-Lista alumni
-Dugmad: Dodaj, Edit, Delete
-Praćenje karijere i kontakta
-*/
 export default function FakultetPage() {
+  const buttons = [
+    { label: "Studenti", href: "/fakultet/studenti" },
+    { label: "Profesori", href: "/fakultet/profesori" },
+    { label: "Kursevi", href: "/fakultet/kursevi" },
+    { label: "Ispiti", href: "/fakultet/ispiti" },
+    // { label: "Ocjene", href: "/fakultet/ocjene" },
+    // { label: "GPA", href: "/fakultet/gpa" },
+    // { label: "Alumni", href: "/fakultet/alumni" },
+  ];
+
   return (
-      <Wrap>
-        <h1 className="text-4xl font-bold">Fakultet - odaberite opciju</h1>
-        <div className="flex flex-col gap-y-4 mt-8">
-          <LinkButton href="/fakultet/studenti">Studenti</LinkButton>
-          <LinkButton href="/fakultet/profesori">Profesori</LinkButton>
-          <LinkButton href="/fakultet/kursevi">Kursevi</LinkButton>
-          <LinkButton href="/fakultet/ispiti">Ispiti</LinkButton>
-          {/* <LinkButton href="/fakultet/ocjene">Ocjene</LinkButton> */}
-          {/* <LinkButton href="/fakultet/gpa">GPA</LinkButton>
-          <LinkButton href="/fakultet/alumni">Alumni</LinkButton> */}
+    <Wrap>
+      <div className="flex flex-col items-center min-h-[70vh] justify-center p-6 bg-gradient-to-b from-gray-50 to-gray-100">
+        <h1 className="text-5xl font-extrabold text-gray-900 text-center">
+          Fakultet
+        </h1>
+        <p className="mt-2 text-gray-600 text-center text-lg">
+          Odaberite opciju ispod da nastavite
+        </p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mt-10 w-full max-w-5xl">
+          {buttons.map((btn) => (
+            <LinkButton
+              key={btn.href}
+              href={btn.href}
+              className="group relative flex items-center justify-center p-4 rounded-xl bg-blue-500 text-white text-lg font-semibold shadow-lg transform transition duration-300 hover:scale-105 hover:shadow-2xl"
+            >
+              <span className="absolute inset-0 rounded-xl opacity-0 bg-white/10 group-hover:opacity-100 transition duration-300"></span>
+              {btn.label}
+            </LinkButton>
+          ))}
         </div>
-      </Wrap>
+      </div>
+    </Wrap>
   );
 }

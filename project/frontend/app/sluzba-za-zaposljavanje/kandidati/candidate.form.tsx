@@ -17,7 +17,7 @@ const UpsertCandidateForm = ({ data, onCreate, onEdit }: FormProps) => {
     fullname: data?.fullname || "",
     email: data?.email || "",
     password: "",
-    studentId: "",
+    indexno: "",
     role: "candidate",
   });
 
@@ -67,9 +67,9 @@ const UpsertCandidateForm = ({ data, onCreate, onEdit }: FormProps) => {
             required
           />
           <Input
-            id="studentId"
-            name="studentId"
-            value={formData.studentId}
+            id="indexno"
+            name="indexno"
+            value={formData.indexno}
             onChange={handleChange}
             placeholder=""
             required
