@@ -16,7 +16,6 @@ type StudentStatus string
 const (
 	StudentActive     StudentStatus = "ACTIVE"
 	StudentGraduated  StudentStatus = "GRADUATED"
-	StudentSuspended  StudentStatus = "SUSPENDED" // dodaj/izbaci po potrebi
 )
 
 type Student struct {

@@ -17,6 +17,7 @@ type CourseRegistration struct {
 	CourseID  uuid.UUID `json:"courseid" db:"courseid"`
 	StudentID uuid.UUID `json:"studentid" db:"studentid"`
 	CreatedAt time.Time `json:"createdat" db:"createdat"`
+	Passed    bool      `json:"passed" db:"passed"` 
 }
 
 type CourseRegistrationRepository struct {
@@ -29,7 +30,7 @@ func NewCourseRegistrationRepository(db *pgxpool.Pool) *CourseRegistrationReposi
 
 func (r *CourseRegistrationRepository) GetByStudentIDAndCourseID(ctx context.Context, studentID, courseID uuid.UUID) (*CourseRegistration, error) {
 	query := `
-		SELECT id, courseid, studentid
+		SELECT id, courseid, studentid, passed
 		FROM course_registrations
 		WHERE studentid = $1 AND courseid = $2
 	`
@@ -39,6 +40,7 @@ func (r *CourseRegistrationRepository) GetByStudentIDAndCourseID(ctx context.Con
 		&reg.ID,
 		&reg.CourseID,
 		&reg.StudentID,
+		&reg.Passed,
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -66,12 +68,13 @@ func (r *CourseRegistrationRepository) Register(ctx context.Context, courseID uu
 		ID:        uuid.New(),
 		CourseID:  courseID,
 		StudentID: studentID,
+		Passed: false,
 	}
 
 	ins := `
-        INSERT INTO course_registrations (id, courseid, studentid)
-        VALUES ($1, $2, $3)
-        RETURNING id, courseid, studentid, createdat
+        INSERT INTO course_registrations (id, courseid, studentid, passed)
+        VALUES ($1, $2, $3, $4)
+        RETURNING id, courseid, studentid, createdat, passed
     `
 	if err := r.db.QueryRow(ctx, ins,
 		reg.ID, reg.CourseID, reg.StudentID,
@@ -97,7 +100,7 @@ func (r *CourseRegistrationRepository) GetByStudentEmail(ctx context.Context, em
 	}
 
 	query := `
-		SELECT id, courseid, studentid, createdat
+		SELECT id, courseid, studentid, createdat, passed
 		FROM course_registrations
 		WHERE studentid = $1
 		ORDER BY createdat DESC
@@ -112,7 +115,7 @@ func (r *CourseRegistrationRepository) GetByStudentEmail(ctx context.Context, em
 	var regs []*CourseRegistration
 	for rows.Next() {
 		var reg CourseRegistration
-		if err := rows.Scan(&reg.ID, &reg.CourseID, &reg.StudentID, &reg.CreatedAt); err != nil {
+		if err := rows.Scan(&reg.ID, &reg.CourseID, &reg.StudentID, &reg.CreatedAt, &reg.Passed); err != nil {
 			return nil, err
 		}
 		regs = append(regs, &reg)

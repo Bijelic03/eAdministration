@@ -18,6 +18,7 @@ type ExamRegistration struct {
 	StudentID uuid.UUID `json:"studentid" db:"studentid"`
 	CreatedAt time.Time `json:"createdat" db:"createdat"`
 	Grade     *int      `json:"grade,omitempty" db:"grade"`
+	Passed    bool      `json:"passed" db:"passed"` 
 }
 
 type ExamRegistrationRepository struct {
@@ -42,12 +43,13 @@ func (r *ExamRegistrationRepository) Register(ctx context.Context, examID uuid.U
 		ID:        uuid.New(),
 		ExamID:    examID,
 		StudentID: studentID,
+		Passed: false,
 	}
 
 	ins := `
-        INSERT INTO exam_registrations (id, examid, studentid)
-        VALUES ($1, $2, $3)
-        RETURNING id, examid, studentid, createdat
+        INSERT INTO exam_registrations (id, examid, studentid, passed)
+        VALUES ($1, $2, $3, $4)
+        RETURNING id, examid, studentid, createdat, passed
     `
 	if err := r.db.QueryRow(ctx, ins,
 		reg.ID, reg.ExamID, reg.StudentID,
@@ -63,7 +65,7 @@ func (r *ExamRegistrationRepository) Register(ctx context.Context, examID uuid.U
 
 func (r *ExamRegistrationRepository) GetByID(ctx context.Context, id uuid.UUID) (*ExamRegistration, error) {
 	query := `
-		SELECT id, examid, studentid, createdat, grade
+		SELECT id, examid, studentid, createdat, grade, passed
 		FROM exam_registrations
 		WHERE id = $1
 	`
@@ -75,6 +77,7 @@ func (r *ExamRegistrationRepository) GetByID(ctx context.Context, id uuid.UUID) 
 		&reg.StudentID,
 		&reg.CreatedAt,
 		&reg.Grade,
+		&reg.Passed,
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -88,7 +91,7 @@ func (r *ExamRegistrationRepository) GetByID(ctx context.Context, id uuid.UUID) 
 
 func (r *ExamRegistrationRepository) GetByExamID(ctx context.Context, id uuid.UUID) ([]*ExamRegistration, error) {
 	query := `
-		SELECT id, examid, studentid, createdat, grade
+		SELECT id, examid, studentid, createdat, grade, passed
 		FROM exam_registrations
 		WHERE examid = $1
 	`
@@ -102,7 +105,7 @@ func (r *ExamRegistrationRepository) GetByExamID(ctx context.Context, id uuid.UU
 	var regs []*ExamRegistration
 	for rows.Next() {
 		var reg ExamRegistration
-		if err := rows.Scan(&reg.ID, &reg.ExamID, &reg.StudentID, &reg.CreatedAt, &reg.Grade); err != nil {
+		if err := rows.Scan(&reg.ID, &reg.ExamID, &reg.StudentID, &reg.CreatedAt, &reg.Grade, &reg.Passed); err != nil {
 			return nil, err
 		}
 		regs = append(regs, &reg)
@@ -117,7 +120,7 @@ func (r *ExamRegistrationRepository) GetByExamID(ctx context.Context, id uuid.UU
 
 func (r *ExamRegistrationRepository) GetByStudentIDAndExamID(ctx context.Context, studentID, examID uuid.UUID) (*ExamRegistration, error) {
 	query := `
-		SELECT id, examid, studentid, createdat, grade
+		SELECT id, examid, studentid, createdat, grade, passed
 		FROM exam_registrations
 		WHERE studentid = $1 AND examid = $2
 	`
@@ -129,6 +132,7 @@ func (r *ExamRegistrationRepository) GetByStudentIDAndExamID(ctx context.Context
 		&reg.StudentID,
 		&reg.CreatedAt,
 		&reg.Grade,
+		&reg.Passed,
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -152,7 +156,7 @@ func (r *ExamRegistrationRepository) GetByStudentEmail(ctx context.Context, emai
 	}
 
 	query := `
-	SELECT id, examid, studentid, createdat, grade
+	SELECT id, examid, studentid, createdat, grade, passed
 	FROM exam_registrations
 	WHERE studentid = $1
 	ORDER BY createdat DESC
@@ -179,9 +183,10 @@ func (r *ExamRegistrationRepository) GetByStudentEmail(ctx context.Context, emai
 func (r *ExamRegistrationRepository) EnterGrade(ctx context.Context, examID, studentID uuid.UUID, grade int) (*ExamRegistration, error) {
 	query := `
 		UPDATE exam_registrations
-		SET grade = $1
+		SET grade = $1,
+		    passed = CASE WHEN $1 >= 6 THEN TRUE ELSE FALSE END
 		WHERE examid = $2 AND studentid = $3
-		RETURNING id, examid, studentid, createdat, grade
+		RETURNING id, examid, studentid, createdat, grade, passed
 	`
 
 	var reg ExamRegistration
@@ -191,7 +196,9 @@ func (r *ExamRegistrationRepository) EnterGrade(ctx context.Context, examID, stu
 		&reg.StudentID,
 		&reg.CreatedAt,
 		&reg.Grade,
+		&reg.Passed,
 	)
+	// ovde jos mora povezat studentu da se poveca ects ako polozi tj ocjena 6+
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, fmt.Errorf("registration not found for exam %s and student %s", examID, studentID)

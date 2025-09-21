@@ -137,9 +137,9 @@ func (h *StudentHandler) GetStudentByEmail(w http.ResponseWriter, r *http.Reques
 // verify graduation check
 func (h *StudentHandler) VerifyGraduation(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	studentId := vars["studentId"]
+	indexno := vars["indexno"]
 
-	stud, err := h.repo.GetByIndexNo(r.Context(), studentId)
+	stud, err := h.repo.GetByIndexNo(r.Context(), indexno)
 	if err != nil {
 		http.Error(w, "student not found", http.StatusNotFound)
 		return

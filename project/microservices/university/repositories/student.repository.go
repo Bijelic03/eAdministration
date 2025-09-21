@@ -29,7 +29,6 @@ type StudentStatus string
 const (
 	StudentActive    StudentStatus = "ACTIVE"
 	StudentGraduated StudentStatus = "GRADUATED"
-	StudentSuspended StudentStatus = "SUSPENDED"
 )
 
 type Student struct {
@@ -40,6 +39,7 @@ type Student struct {
 	Role     string         `json:"role" db:"role"`
 	Status   *StudentStatus `json:"status" db:"status"`
 	IndexNo  *string        `json:"indexno" db:"indexno"`
+	Ects   *string    `json:"ects" db:"ects"`
 }
 
 type StudentWithAvg struct {

@@ -16,7 +16,8 @@ type Candidate struct {
 	Email     string    `json:"email" db:"email"`
 	Password  string    `json:"password" db:"password"`
 	Role      string    `json:"role" db:"role"`
-	StudentId *string   `json:"studentid" db:"studentid"` // može biti null
+	IndexNo *string   `json:"indexno" db:"indexno"` // može biti null
+	JobID    *uuid.UUID `json:"jobid" db:"jobid"`
 }
 
 type CandidateRepository struct {
@@ -30,9 +31,9 @@ func NewCandidateRepository(db *pgxpool.Pool) *CandidateRepository {
 // Add new Candidate
 func (r *CandidateRepository) Add(ctx context.Context, cand *Candidate) (*Candidate, error) {
 	query := `
-		INSERT INTO users (fullname, email, password, role, studentid)
-		VALUES ($1, $2, $3, $4, $5)
-		RETURNING id, fullname, email, password, role, studentid
+		INSERT INTO users (fullname, email, password, role, indexno, jobid)
+		VALUES ($1, $2, $3, $4, $5, $6)
+		RETURNING id, fullname, email, password, role, indexno, jobid
 	`
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(cand.Password), bcrypt.DefaultCost)
@@ -48,14 +49,16 @@ func (r *CandidateRepository) Add(ctx context.Context, cand *Candidate) (*Candid
 		cand.Email,
 		hash,
 		cand.Role,
-		cand.StudentId, // može biti nil
+		cand.IndexNo, // može biti nil
+		cand.JobID,
 	).Scan(
 		&created.ID,
 		&created.FullName,
 		&created.Email,
 		&created.Password,
 		&created.Role,
-		&created.StudentId,
+		&created.IndexNo,
+		&created.JobID,
 	)
 
 	if err != nil {
@@ -71,7 +74,7 @@ func (r *CandidateRepository) Add(ctx context.Context, cand *Candidate) (*Candid
 
 // Get candidate by ID
 func (r *CandidateRepository) GetByID(ctx context.Context, id uuid.UUID) (*Candidate, error) {
-	query := `SELECT id, fullname, email, password, role, studentid FROM users WHERE id = $1`
+	query := `SELECT id, fullname, email, password, role, indexno, jobid FROM users WHERE id = $1`
 
 	var cand Candidate
 	err := r.db.QueryRow(ctx, query, id).Scan(
@@ -80,7 +83,8 @@ func (r *CandidateRepository) GetByID(ctx context.Context, id uuid.UUID) (*Candi
 		&cand.Email,
 		&cand.Password,
 		&cand.Role,
-		&cand.StudentId, // pointer dozvoljava NULL
+		&cand.IndexNo, // pointer dozvoljava NULL
+		&cand.JobID,
 	)
 	if err != nil {
 		return nil, err
@@ -90,7 +94,7 @@ func (r *CandidateRepository) GetByID(ctx context.Context, id uuid.UUID) (*Candi
 
 // Get Candidate by email
 func (r *CandidateRepository) GetByEmail(ctx context.Context, email string) (*Candidate, error) {
-	query := `SELECT id, fullname, email, password, role, studentid FROM users WHERE email = $1`
+	query := `SELECT id, fullname, email, password, role, indexno, jobid FROM users WHERE email = $1`
 
 	var cand Candidate
 	err := r.db.QueryRow(ctx, query, email).Scan(
@@ -99,7 +103,8 @@ func (r *CandidateRepository) GetByEmail(ctx context.Context, email string) (*Ca
 		&cand.Email,
 		&cand.Password,
 		&cand.Role,
-		&cand.StudentId,
+		&cand.IndexNo,
+		&cand.JobID,
 	)
 	if err != nil {
 		return nil, err
@@ -117,7 +122,7 @@ func (r *CandidateRepository) GetAll(ctx context.Context, page, limit int) ([]*C
 	}
 	offset := (page - 1) * limit
 
-	query := `SELECT id, fullname, email, password, role, studentid
+	query := `SELECT id, fullname, email, password, role, indexno, jobid
 	          FROM users 
 			  WHERE role = 'candidate'
 	          ORDER BY fullname 
@@ -138,7 +143,8 @@ func (r *CandidateRepository) GetAll(ctx context.Context, page, limit int) ([]*C
 			&cand.Email,
 			&cand.Password,
 			&cand.Role,
-			&cand.StudentId,
+			&cand.IndexNo,
+			&cand.JobID,
 		); err != nil {
 			return nil, 0, err
 		}
@@ -154,18 +160,19 @@ func (r *CandidateRepository) GetAll(ctx context.Context, page, limit int) ([]*C
 	return candidates, totalItems, nil
 }
 
-// Get candidate by StudentId
-func (r *CandidateRepository) GetByStudentId(ctx context.Context, studentId string) (*Candidate, error) {
-	query := `SELECT id, fullname, email, password, role, studentid FROM users WHERE studentid = $1`
+// Get candidate by IndexNo
+func (r *CandidateRepository) GetByIndexNo(ctx context.Context, indexNo string) (*Candidate, error) {
+	query := `SELECT id, fullname, email, password, role, indexno, jobid FROM users WHERE indexno = $1`
 
 	var cand Candidate
-	err := r.db.QueryRow(ctx, query, studentId).Scan(
+	err := r.db.QueryRow(ctx, query, indexNo).Scan(
 		&cand.ID,
 		&cand.FullName,
 		&cand.Email,
 		&cand.Password,
 		&cand.Role,
-		&cand.StudentId,
+		&cand.IndexNo,
+		&cand.JobID,
 	)
 	if err != nil {
 		return nil, err
@@ -177,9 +184,9 @@ func (r *CandidateRepository) GetByStudentId(ctx context.Context, studentId stri
 func (r *CandidateRepository) Update(ctx context.Context, cand *Candidate) (*Candidate, error) {
 	query := `
 		UPDATE users
-		SET fullname = $1, email = $2, password = $3, role = $4, studentid = $5
+		SET fullname = $1, email = $2, password = $3, role = $4, indexno = $5, jobid = $6
 		WHERE id = $6
-		RETURNING id, fullname, email, password, role, studentid
+		RETURNING id, fullname, email, password, role, indexno, jobid
 	`
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(cand.Password), bcrypt.DefaultCost)
@@ -193,15 +200,17 @@ func (r *CandidateRepository) Update(ctx context.Context, cand *Candidate) (*Can
 		cand.Email,
 		hash,
 		cand.Role,
-		cand.StudentId,
+		cand.IndexNo,
 		cand.ID,
+		cand.JobID,
 	).Scan(
 		&updated.ID,
 		&updated.FullName,
 		&updated.Email,
 		&updated.Password,
 		&updated.Role,
-		&updated.StudentId,
+		&updated.IndexNo,
+		&updated.JobID,
 	)
 	if err != nil {
 		return nil, err

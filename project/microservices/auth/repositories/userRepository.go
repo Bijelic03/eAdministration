@@ -20,6 +20,8 @@ const (
 	RoleProfessor UserRole = "professor"
 	RoleEmployee  UserRole = "employee"
 	RoleCandidate UserRole = "candidate"
+	RoleFacultyAdmin UserRole = "facultyadmin"
+	RoleSSZAdmin UserRole = "sszadmin"
 )
 
 type User struct {

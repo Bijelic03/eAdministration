@@ -29,6 +29,13 @@ type Course struct {
 	Active bool      `json:"active" db:"active"`
 }
 
+type Singleton struct {
+	ID      uuid.UUID `json:"id" db:"id"`
+	Name    string    `json:"name" db:"name"`
+	Ects    string    `json:"ects" db:"ects"`
+	Courses []Course  `json:"courses"`
+}
+
 type CourseRepository struct {
 	db *pgxpool.Pool
 }

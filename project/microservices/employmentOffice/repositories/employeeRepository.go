@@ -16,6 +16,8 @@ type Employee struct {
 	Email    string    `json:"email" db:"email"`
 	Password string    `json:"password" db:"password"`
 	Role     string    `json:"role" db:"role"`
+	JobID    *uuid.UUID `json:"jobid" db:"jobid"`
+	IndexNo *string   `json:"indexno" db:"indexno"`
 }
 
 type EmployeeRepository struct {
@@ -29,9 +31,9 @@ func NewEmployeeRepository(db *pgxpool.Pool) *EmployeeRepository {
 // Add new employee
 func (r *EmployeeRepository) Add(ctx context.Context, emp *Employee) (*Employee, error) {
 	query := `
-		INSERT INTO users (fullname, email, password, role)
-		VALUES ($1, $2, $3, $4)
-		RETURNING id, fullname, email, password, role
+		INSERT INTO users (fullname, email, password, role, jobid, indexno)
+		VALUES ($1, $2, $3, $4, $5)
+		RETURNING id, fullname, email, password, role, jobid, indexno
 	`
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(emp.Password), bcrypt.DefaultCost)
@@ -47,12 +49,16 @@ func (r *EmployeeRepository) Add(ctx context.Context, emp *Employee) (*Employee,
 		emp.Email,
 		hash,
 		emp.Role,
+		emp.JobID,
+		emp.IndexNo,
 	).Scan(
 		&created.ID,
 		&created.FullName,
 		&created.Email,
 		&created.Password,
 		&created.Role,
+		&created.JobID,
+		&created.IndexNo,
 	)
 
 	if err != nil {
@@ -68,7 +74,7 @@ func (r *EmployeeRepository) Add(ctx context.Context, emp *Employee) (*Employee,
 
 // Get employee by ID
 func (r *EmployeeRepository) GetByID(ctx context.Context, id uuid.UUID) (*Employee, error) {
-	query := `SELECT id, fullname, email, password, role FROM users WHERE id = $1`
+	query := `SELECT id, fullname, email, password, role, jobid, indexno FROM users WHERE id = $1`
 
 	var emp Employee
 	err := r.db.QueryRow(ctx, query, id).Scan(
@@ -77,6 +83,8 @@ func (r *EmployeeRepository) GetByID(ctx context.Context, id uuid.UUID) (*Employ
 		&emp.Email,
 		&emp.Password,
 		&emp.Role,
+		&emp.JobID,
+		&emp.IndexNo,
 	)
 	if err != nil {
 		return nil, err
@@ -86,7 +94,7 @@ func (r *EmployeeRepository) GetByID(ctx context.Context, id uuid.UUID) (*Employ
 
 // Get employee by email
 func (r *EmployeeRepository) GetByEmail(ctx context.Context, email string) (*Employee, error) {
-	query := `SELECT id, fullname, email, password, role FROM users WHERE email = $1`
+	query := `SELECT id, fullname, email, password, role, jobid, indexno FROM users WHERE email = $1`
 
 	var emp Employee
 	err := r.db.QueryRow(ctx, query, email).Scan(
@@ -95,6 +103,8 @@ func (r *EmployeeRepository) GetByEmail(ctx context.Context, email string) (*Emp
 		&emp.Email,
 		&emp.Password,
 		&emp.Role,
+		&emp.JobID,
+		&emp.IndexNo,
 	)
 	if err != nil {
 		return nil, err
@@ -112,7 +122,7 @@ func (r *EmployeeRepository) GetAll(ctx context.Context, page, limit int) ([]*Em
 	}
 	offset := (page - 1) * limit
 
-	query := `SELECT id, fullname, email, password, role 
+	query := `SELECT id, fullname, email, password, role, jobid, indexno
 	          FROM users 
 			  WHERE role = 'employee'
 	          ORDER BY fullname 
@@ -133,6 +143,8 @@ func (r *EmployeeRepository) GetAll(ctx context.Context, page, limit int) ([]*Em
 			&emp.Email,
 			&emp.Password,
 			&emp.Role,
+			&emp.JobID,
+			&emp.IndexNo,
 		); err != nil {
 			return nil, 0, err
 		}
@@ -152,9 +164,9 @@ func (r *EmployeeRepository) GetAll(ctx context.Context, page, limit int) ([]*Em
 func (r *EmployeeRepository) Update(ctx context.Context, emp *Employee) (*Employee, error) {
 	query := `
 		UPDATE users
-		SET fullname = $1, email = $2, password = $3, role = $4
+		SET fullname = $1, email = $2, password = $3, role = $4, jobid = $5, indexno = $6
 		WHERE id = $5
-		RETURNING id, fullname, email, password, role
+		RETURNING id, fullname, email, password, role, jobid, indexno
 	`
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(emp.Password), bcrypt.DefaultCost)
@@ -169,12 +181,16 @@ func (r *EmployeeRepository) Update(ctx context.Context, emp *Employee) (*Employ
 		hash,
 		emp.Role,
 		emp.ID,
+		emp.JobID,
+		emp.IndexNo,
 	).Scan(
 		&updated.ID,
 		&updated.FullName,
 		&updated.Email,
 		&updated.Password,
 		&updated.Role,
+		&updated.JobID,
+		&updated.IndexNo,
 	)
 	if err != nil {
 		return nil, err

@@ -229,7 +229,7 @@ func (h *JobHandler) ApplyForJob(w http.ResponseWriter, r *http.Request) {
 		client := &http.Client{Timeout: 5 * time.Second}
 		req, err := http.NewRequest(
 			"GET",
-			fmt.Sprintf("http://university:8081/api/v1/university/students/verify-graduation/%s", *candidate.StudentId),
+			fmt.Sprintf("http://university:8081/api/v1/university/students/verify-graduation/%s", *candidate.IndexNo),
 			nil,
 		)
 		if err != nil {

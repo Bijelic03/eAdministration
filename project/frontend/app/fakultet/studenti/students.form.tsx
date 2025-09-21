@@ -84,7 +84,6 @@ const UpsertStudentForm = ({ data, onCreate, onEdit }: FormProps) => {
             options={[
               { value: "ACTIVE", label: "ACTIVE" },
               { value: "GRADUATED", label: "GRADUATED" },
-              { value: "SUSPENDED", label: "SUSPENDED" },
             ]}
           />
           <Input
