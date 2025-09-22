@@ -72,7 +72,6 @@ const UpsertCandidateForm = ({ data, onCreate, onEdit }: FormProps) => {
             value={formData.indexno}
             onChange={handleChange}
             placeholder=""
-            required
           />
           <Input
             type="password"

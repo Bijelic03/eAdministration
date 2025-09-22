@@ -52,3 +52,10 @@ export async function fetchCandidatesByJobIdAPI(jobId: string) {
   );
   return response.data;
 }
+
+export async function fetchZaposleniByJobIdAPI(jobId: string) {
+  const response = await axiosInstance.get(
+    `${JOB_API_PATH}/${jobId}/employees`
+  );
+  return response.data;
+}

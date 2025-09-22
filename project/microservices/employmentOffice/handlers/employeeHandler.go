@@ -189,6 +189,8 @@ func (h *EmployeeHandler) GetAllEmployees(w http.ResponseWriter, r *http.Request
 	
 }
 
+
+
 // get all pofesors
 func (h *EmployeeHandler) GetAllProfessorsFromOtherService(w http.ResponseWriter, r *http.Request) {
 	client := &http.Client{Timeout: 5 * time.Second}
@@ -268,6 +270,26 @@ func (h *EmployeeHandler) DeleteEmployee(w http.ResponseWriter, r *http.Request)
 	}
 
 	if err := h.repo.Delete(r.Context(), id); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+
+// Delete employee
+func (h *EmployeeHandler) QuitJob(w http.ResponseWriter, r *http.Request) {
+
+	email, _ := r.Context().Value("email").(string)
+
+    _, err := h.repo.GetByEmail(r.Context(), email)
+    if err != nil {
+        http.Error(w, "not found", http.StatusNotFound)
+        return
+    }
+
+	if err := h.repo.QuitJob(r.Context(), email); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

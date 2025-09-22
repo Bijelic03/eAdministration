@@ -32,7 +32,7 @@ func NewEmployeeRepository(db *pgxpool.Pool) *EmployeeRepository {
 func (r *EmployeeRepository) Add(ctx context.Context, emp *Employee) (*Employee, error) {
 	query := `
 		INSERT INTO users (fullname, email, password, role, jobid, indexno)
-		VALUES ($1, $2, $3, $4, $5)
+		VALUES ($1, $2, $3, $4, $5, $6)
 		RETURNING id, fullname, email, password, role, jobid, indexno
 	`
 
@@ -210,12 +210,11 @@ func (r *EmployeeRepository) GetAllByJobId(ctx context.Context, page, limit int,
 }
 
 
-// Update employee
 func (r *EmployeeRepository) Update(ctx context.Context, emp *Employee) (*Employee, error) {
 	query := `
 		UPDATE users
 		SET fullname = $1, email = $2, password = $3, role = $4, jobid = $5, indexno = $6
-		WHERE id = $5
+		WHERE id = $7
 		RETURNING id, fullname, email, password, role, jobid, indexno
 	`
 
@@ -230,9 +229,9 @@ func (r *EmployeeRepository) Update(ctx context.Context, emp *Employee) (*Employ
 		emp.Email,
 		hash,
 		emp.Role,
-		emp.ID,
 		emp.JobID,
 		emp.IndexNo,
+		emp.ID, // sada ispravno kao $7
 	).Scan(
 		&updated.ID,
 		&updated.FullName,
@@ -252,5 +251,16 @@ func (r *EmployeeRepository) Update(ctx context.Context, emp *Employee) (*Employ
 func (r *EmployeeRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	query := `DELETE FROM users WHERE id = $1`
 	_, err := r.db.Exec(ctx, query, id)
+	return err
+}
+
+// QuitJob sets jobid to NULL and changes role to 'candidate'
+func (r *EmployeeRepository) QuitJob(ctx context.Context, email string) error {
+	query := `
+		UPDATE users
+		SET jobid = NULL, role = 'candidate'
+		WHERE email = $1
+	`
+	_, err := r.db.Exec(ctx, query, email)
 	return err
 }

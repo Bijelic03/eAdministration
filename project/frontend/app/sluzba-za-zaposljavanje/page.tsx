@@ -3,10 +3,13 @@
 import Wrap from "@/components/wrap";
 import LinkButton from "@/components/link-button";
 import useLocalStorage, { AuthUser } from "@/hooks/useLocalStorage";
+import Button from "@/components/button";
+import useEmployer from "@/hooks/useEmployer";
 
 export default function SluzbaZaZaposljavanje() {
   const [user] = useLocalStorage<AuthUser | null>("auth.user", null);
   const role = user?.role;
+  const { quitJob } = useEmployer();
 
   const buttons = [
     {
@@ -20,12 +23,12 @@ export default function SluzbaZaZaposljavanje() {
       roles: ["sszadmin"],
     },
     {
-      label: "Kolege",
+      label: "Vidi Kolege",
       href: "/sluzba-za-zaposljavanje/kolege",
-      roles: ["zaposleni"],
+      roles: ["employee"],
     },
     {
-      label: "Poslovi",
+      label: "Svi Poslovi",
       href: "/sluzba-za-zaposljavanje/poslovi",
       roles: ["sszadmin", "candidate"],
     },
@@ -39,16 +42,16 @@ export default function SluzbaZaZaposljavanje() {
       href: "/sluzba-za-zaposljavanje/intervjui",
       roles: ["sszadmin"],
     },
-    {
-      label: "Zaposleni profesori sa faksa",
-      href: "/sluzba-za-zaposljavanje/zaposleni-profesori-sa-faksa",
-      roles: ["sszadmin", "zaposleni", "candidate"],
-    },
+    // {
+    //   label: "Zaposleni profesori sa faksa",
+    //   href: "/sluzba-za-zaposljavanje/zaposleni-profesori-sa-faksa",
+    //   roles: ["sszadmin", "employee", "candidate"],
+    // },
   ];
 
   return (
     <Wrap>
-      <div className="flex flex-col items-center min-h-[70vh] justify-center p-6 bg-gradient-to-b from-gray-50 to-gray-100">
+      <div className="flex flex-col items-center min-h-[70vh] justify-center p-6 bg-gray-100 rounded-2xl">
         <h1 className="text-5xl font-extrabold text-gray-900 text-center">
           Sistem za zapošljavanje
         </h1>
@@ -56,7 +59,7 @@ export default function SluzbaZaZaposljavanje() {
           Odaberite opciju ispod da nastavite
         </p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mt-10 w-full max-w-5xl">
+        <div className="flex flex-wrap justify-center gap-8 mt-10 w-full max-w-5xl">
           {buttons.map(
             (btn) =>
               btn.roles.includes(role ?? "") && (
@@ -69,6 +72,22 @@ export default function SluzbaZaZaposljavanje() {
                   {btn.label}
                 </LinkButton>
               )
+          )}
+
+          {role === "employee" && (
+            <>
+              <Button
+                onClick={async () => {
+                  await quitJob();
+                  localStorage.removeItem("auth.token");
+                  localStorage.removeItem("auth.user");
+                  window.location.href = "/auth/login";
+                }}
+                className="group relative flex items-center justify-center p-4 rounded-xl bg-red-500 text-white text-lg font-semibold shadow-lg transform transition duration-300 hover:scale-105 hover:shadow-2xl"
+              >
+                Daj otkaz
+              </Button>
+            </>
           )}
         </div>
       </div>

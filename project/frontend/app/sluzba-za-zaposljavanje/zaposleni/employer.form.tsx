@@ -1,7 +1,9 @@
 "use client";
 import Button from "@/components/button";
 import Input from "@/components/form/input";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import useJob from "@/hooks/useJob";
+import Select from "@/components/form/select";
 
 interface FormProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -12,8 +14,12 @@ interface FormProps {
   onEdit: (data: any) => void;
 }
 const UpsertEmployerForm = ({ data, onCreate, onEdit }: FormProps) => {
+  const { values, fetchJobs } = useJob();
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [formData, setFormData] = useState<any>({
+    jobid: data?.jobid || "",
+    indexno: data?.indexno || "",
     fullname: data?.fullname || "",
     email: data?.email || "",
     password: "",
@@ -23,11 +29,11 @@ const UpsertEmployerForm = ({ data, onCreate, onEdit }: FormProps) => {
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
-    const { name, type, value, checked } = e.target as HTMLInputElement;
+    const { name, value } = e.target;
 
     setFormData({
       ...formData,
-      [name]: type === "checkbox" ? checked : value,
+      [name]: value,
     });
   };
 
@@ -41,6 +47,33 @@ const UpsertEmployerForm = ({ data, onCreate, onEdit }: FormProps) => {
     }
   };
 
+  useEffect(() => {
+    fetchJobs();
+  }, []);
+
+  useEffect(() => {
+    if (
+      data !== undefined &&
+      data?.jobid !== undefined &&
+      data?.jobid !== null
+    ) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      setFormData((prev: any) => ({
+        ...prev,
+        jobid: data.jobid,
+      }));
+    }
+  }, []);
+
+  // Pretvaramo values u array objekata { value, label } i dodajemo default opciju
+  const JOB_OPTIONS = [
+    { value: "", label: "Odaberi posao" }, // default opcija
+    ...(values?.jobs?.map((job: { id: string; title: string }) => ({
+      value: job.id,
+      label: job.title,
+    })) || []),
+  ];
+
   return (
     <>
       <form
@@ -48,6 +81,24 @@ const UpsertEmployerForm = ({ data, onCreate, onEdit }: FormProps) => {
         className="my-10 flex flex-col gap-y-5 items-center justify-center max-w-[40rem] lg:max-w-[50rem] mx-auto"
       >
         <div className="grid grid-cols-1 gap-5 w-full">
+          <Select
+            id="jobid"
+            name="jobid"
+            value={formData.jobid}
+            onChange={handleChange}
+            options={JOB_OPTIONS}
+            required
+          />
+
+          <Input
+            id="indexno"
+            name="indexno"
+            value={formData.indexno}
+            onChange={handleChange}
+            placeholder="Indeks NO."
+            required
+          />
+
           <Input
             id="fullname"
             name="fullname"

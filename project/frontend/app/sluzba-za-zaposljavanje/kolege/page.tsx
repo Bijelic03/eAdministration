@@ -25,6 +25,7 @@ const PosloviPage = () => {
 
   return (
     <Wrap>
+      <h1 className="text-xl font-bold mb-4">Kolege</h1>
       <Table
         className="mt-8"
         paginationProps={{
@@ -35,7 +36,6 @@ const PosloviPage = () => {
         }}
       >
         <TableHeader>
-          <TableHeaderCell>#</TableHeaderCell>
           <TableHeaderCell>Ime i prezime</TableHeaderCell>
           <TableHeaderCell>Email</TableHeaderCell>
         </TableHeader>
@@ -44,7 +44,6 @@ const PosloviPage = () => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             values?.employers?.map((employer: any) => (
               <TableRow key={employer.id}>
-                <TableCell>{employer?.id}</TableCell>
                 <TableCell>{employer?.fullname}</TableCell>
                 <TableCell>{employer?.email}</TableCell>
               </TableRow>

@@ -62,6 +62,7 @@ func main() {
 	employees.Handle("/{id}", authMiddleware(http.HandlerFunc(employeeHandler.GetEmployeeByID))).Methods("GET")
 	employees.Handle("/by-email", authMiddleware(http.HandlerFunc(employeeHandler.GetEmployeeByEmail))).Methods("GET")
 	employees.Handle("/{id}", authMiddleware(http.HandlerFunc(employeeHandler.UpdateEmployee))).Methods("PUT")
+	employees.Handle("/quit/job", authMiddleware(http.HandlerFunc(employeeHandler.QuitJob))).Methods("PUT")
 	employees.Handle("/{id}", authMiddleware(http.HandlerFunc(employeeHandler.DeleteEmployee))).Methods("DELETE")
 	employees.Handle("/professors/all", authMiddleware(http.HandlerFunc(employeeHandler.GetAllProfessorsFromOtherService))).Methods("GET")
 

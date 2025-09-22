@@ -8,6 +8,7 @@ import {
   fetchJobsAPI,
   updateJobAPI,
   fetchCandidatesByJobIdAPI,
+  fetchZaposleniByJobIdAPI,
 } from "@/api/job.api";
 
 export default function useJob() {
@@ -166,6 +167,22 @@ export default function useJob() {
     }
   };
 
+  const fetchZaposleniForJob = async (jobId: string) => {
+    setValues((prev) => ({ ...prev, loading: true, error: null }));
+    try {
+      const Zaposleni = await fetchZaposleniByJobIdAPI(jobId);
+      return Zaposleni;
+    } catch (error) {
+      setValues((prev) => ({
+        ...prev,
+        error,
+      }));
+      throw error;
+    } finally {
+      setValues((prev) => ({ ...prev, loading: false }));
+    }
+  };
+
   return {
     values,
     setValues,
@@ -176,5 +193,6 @@ export default function useJob() {
     deleteJob,
     applyForJob,
     fetchCandidatesForJob,
+    fetchZaposleniForJob,
   };
 }

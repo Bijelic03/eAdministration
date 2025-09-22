@@ -16,7 +16,7 @@ export default function FakultetPage() {
 
   return (
     <Wrap>
-      <div className="flex flex-col items-center min-h-[70vh] justify-center p-6 bg-gradient-to-b from-gray-50 to-gray-100">
+      <div className="flex flex-col items-center min-h-[70vh] justify-center p-6 bg-gray-100 rounded-2xl">
         <h1 className="text-5xl font-extrabold text-gray-900 text-center">
           Fakultet
         </h1>
