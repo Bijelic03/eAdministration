@@ -30,23 +30,25 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased !bg-gray-800 min-h-screen`}
       >
-        {/* Header */}
-        <header className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-white shadow-sm">
-          <a
-            href="/"
-            className="text-lg font-semibold text-gray-900 hover:text-gray-700 transition"
-          >
-            App
-          </a>
+        <Providers>
+          {/* Header */}
+          <header className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-white shadow-sm">
+            <a
+              href="/"
+              className="text-lg font-semibold text-gray-900 hover:text-gray-700 transition"
+            >
+              App
+            </a>
 
-          <div className="flex items-center gap-3">
-            <UserInfo />
-            <LogoutButton />
-          </div>
-        </header>
+            <div className="flex items-center gap-3">
+              <UserInfo />
+              <LogoutButton />
+            </div>
+          </header>
 
-        {/* Main content */}
-        <main className="container mx-auto p-6">{children}</main>
+          {/* Main content */}
+          <main className="container mx-auto p-6">{children}</main>
+        </Providers>
       </body>
     </html>
   );

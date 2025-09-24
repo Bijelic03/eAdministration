@@ -185,9 +185,9 @@ func (r *CandidateRepository) Update(ctx context.Context, cand *Candidate) (*Can
 	query := `
 		UPDATE users
 		SET fullname = $1, email = $2, password = $3, role = $4, indexno = $5, jobid = $6
-		WHERE id = $6
+		WHERE id = $7
 		RETURNING id, fullname, email, password, role, indexno, jobid
-	`
+		`
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(cand.Password), bcrypt.DefaultCost)
 	if err != nil {
@@ -196,13 +196,13 @@ func (r *CandidateRepository) Update(ctx context.Context, cand *Candidate) (*Can
 
 	var updated Candidate
 	err = r.db.QueryRow(ctx, query,
-		cand.FullName,
-		cand.Email,
-		hash,
-		cand.Role,
-		cand.IndexNo,
-		cand.ID,
-		cand.JobID,
+		cand.FullName, // $1
+		cand.Email,    // $2
+		hash,          // $3
+		cand.Role,     // $4
+		cand.IndexNo,  // $5
+		cand.JobID,    // $6
+		cand.ID,       // $7
 	).Scan(
 		&updated.ID,
 		&updated.FullName,
@@ -218,9 +218,21 @@ func (r *CandidateRepository) Update(ctx context.Context, cand *Candidate) (*Can
 	return &updated, nil
 }
 
-// Delete candidate
-func (r *CandidateRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	query := `DELETE FROM users WHERE id = $1`
-	_, err := r.db.Exec(ctx, query, id)
-	return err
+func (r *CandidateRepository) Delete(ctx context.Context, candidateID uuid.UUID) error {
+    _, err := r.db.Exec(ctx, `DELETE FROM interviews WHERE candidateid = $1`, candidateID)
+    if err != nil {
+        return err
+    }
+
+    _, err = r.db.Exec(ctx, `DELETE FROM jobapplications WHERE candidateid = $1`, candidateID)
+    if err != nil {
+        return err
+    }
+
+    _, err = r.db.Exec(ctx, `DELETE FROM users WHERE id = $1`, candidateID)
+    if err != nil {
+        return err
+    }
+
+    return nil
 }

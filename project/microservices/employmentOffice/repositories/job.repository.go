@@ -64,6 +64,7 @@ type Interview struct {
 	DateTime         string    `json:"datetime" db:"datetime"`
 	Type             string    `json:"type" db:"type"`
 	Location         string    `json:"location" db:"location"`
+	Accepted bool `json:"accepted" db:"accepted"`
 }
 
 type InterviewRepository struct {
@@ -139,6 +140,56 @@ func (r *JobRepository) GetByID(ctx context.Context, id uuid.UUID) (*Job, error)
 	}
 	return &job, nil
 }
+
+// GetAllInterviewsByCandidate vraća sve intervjue za određenog kandidata (paginated)
+func (r *InterviewRepository) GetAllInterviewsByCandidate(ctx context.Context, candidateId uuid.UUID, page, limit int) ([]*Interview, int, error) {
+	if page < 1 {
+		page = 1
+	}
+	if limit <= 0 {
+		limit = 10
+	}
+	offset := (page - 1) * limit
+
+	query := `SELECT id, jobid, candidateid, jobapplicationid, datetime, type, location, accepted
+	          FROM interviews
+	          WHERE candidateid = $1
+	          ORDER BY id
+	          LIMIT $2 OFFSET $3`
+
+	rows, err := r.db.Query(ctx, query, candidateId, limit, offset)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer rows.Close()
+	var dt time.Time
+	interviews := make([]*Interview, 0)
+	for rows.Next() {
+		var j Interview
+		if err := rows.Scan(
+			&j.ID,
+			&j.JobID,
+			&j.CandidateID,
+			&j.JobApplicationID,
+			&dt,
+			&j.Type,
+			&j.Location,
+			&j.Accepted,
+		); err != nil {
+			return nil, 0, err
+		}
+		interviews = append(interviews, &j)
+	}
+
+	// total count za ovog kandidata
+	var totalItems int
+	if err := r.db.QueryRow(ctx, `SELECT COUNT(*) FROM interviews WHERE candidateid = $1`, candidateId).Scan(&totalItems); err != nil {
+		return nil, 0, err
+	}
+
+	return interviews, totalItems, nil
+}
+
 
 // Get all jobs (paginated)
 func (r *JobRepository) GetAll(ctx context.Context, page, limit int) ([]*Job, int, error) {
@@ -217,13 +268,29 @@ func (r *JobRepository) Update(ctx context.Context, j *Job) (*Job, error) {
 	return &updated, nil
 }
 
-// Delete job
-func (r *JobRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	query := `DELETE FROM jobs WHERE id = $1`
-	_, err := r.db.Exec(ctx, query, id)
-	return err
-}
+func (r *JobRepository) Delete(ctx context.Context, jobID uuid.UUID) error {
+    _, err := r.db.Exec(ctx, `DELETE FROM interviews WHERE jobid = $1`, jobID)
+    if err != nil {
+        return err
+    }
 
+    _, err = r.db.Exec(ctx, `DELETE FROM jobapplications WHERE jobid = $1`, jobID)
+    if err != nil {
+        return err
+    }
+
+    _, err = r.db.Exec(ctx, `UPDATE users SET role = 'candidate', jobid = NULL WHERE jobid = $1`, jobID)
+    if err != nil {
+        return err
+    }
+
+    _, err = r.db.Exec(ctx, `DELETE FROM jobs WHERE id = $1`, jobID)
+    if err != nil {
+        return err
+    }
+
+    return nil
+}
 // Apply for a job
 func (r *JobApplicationRepository) ApplyForJob(ctx context.Context, j *JobApplication) (*JobApplication, error) {
 	query := `
@@ -364,9 +431,9 @@ func (r *JobApplicationRepository) DeleteJobApplication(ctx context.Context, id 
 // Schedule interview
 func (r *InterviewRepository) ScheduleInterview(ctx context.Context, j *Interview) (*Interview, error) {
 	query := `
-		INSERT INTO interviews (id, jobapplicationid, candidateid, jobid, datetime, type, location)
-		VALUES ($1, $2, $3, $4, $5, $6, $7)
-		RETURNING id, jobapplicationid, candidateid, jobid, to_char(datetime, 'YYYY-MM-DD"T"HH24:MI') AS datetime, type, location
+		INSERT INTO interviews (id, jobapplicationid, candidateid, jobid, datetime, type, location, accepted)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+		RETURNING id, jobapplicationid, candidateid, jobid, to_char(datetime, 'YYYY-MM-DD"T"HH24:MI') AS datetime, type, location, accepted
 	`
 
 	j.ID = uuid.New()
@@ -380,6 +447,7 @@ func (r *InterviewRepository) ScheduleInterview(ctx context.Context, j *Intervie
 		j.DateTime,
 		j.Type,
 		j.Location,
+		j.Accepted,
 	).Scan(
 		&created.ID,
 		&created.JobApplicationID,
@@ -388,6 +456,7 @@ func (r *InterviewRepository) ScheduleInterview(ctx context.Context, j *Intervie
 		&created.DateTime,
 		&created.Type,
 		&created.Location,
+		&created.Accepted,
 	)
 
 	if err != nil {
@@ -411,7 +480,7 @@ func (r *InterviewRepository) GetAllInterviews(ctx context.Context, page, limit 
 	}
 	offset := (page - 1) * limit
 
-	query := `SELECT id, jobid, candidateid, jobapplicationid, datetime, type, location
+	query := `SELECT id, jobid, candidateid, jobapplicationid, datetime, type, location, accepted
 	          FROM interviews
 	          ORDER BY jobid
 	          LIMIT $1 OFFSET $2`
@@ -434,6 +503,7 @@ func (r *InterviewRepository) GetAllInterviews(ctx context.Context, page, limit 
 			&dt, // scan u time.Time
 			&j.Type,
 			&j.Location,
+			&j.Accepted,
 		); err != nil {
 			return nil, 0, err
 		}
@@ -453,12 +523,91 @@ func (r *InterviewRepository) GetAllInterviews(ctx context.Context, page, limit 
 	return interviews, totalItems, nil
 }
 
-// Delete interview
-func (r *InterviewRepository) DeleteInterview(ctx context.Context, id uuid.UUID) error {
-	query := `DELETE FROM interviews WHERE id = $1`
+func (r *InterviewRepository) DeleteInterview(ctx context.Context, interviewID uuid.UUID) error {
+    var jobAppID uuid.UUID
+    err := r.db.QueryRow(ctx, `SELECT jobapplicationid FROM interviews WHERE id = $1`, interviewID).Scan(&jobAppID)
+    if err != nil {
+        return err
+    }
+
+    _, err = r.db.Exec(ctx, `DELETE FROM interviews WHERE id = $1`, interviewID)
+    if err != nil {
+        return err
+    }
+
+    _, err = r.db.Exec(ctx, `DELETE FROM jobapplications WHERE id = $1`, jobAppID)
+    if err != nil {
+        return err
+    }
+
+    return nil
+}
+
+
+// accept interview
+func (r *InterviewRepository) AcceptInterview(ctx context.Context, id uuid.UUID) error {
+	query := `UPDATE interviews SET accepted = true WHERE id = $1`
 	_, err := r.db.Exec(ctx, query, id)
 	return err
 }
+
+
+func (r *InterviewRepository) Odbij(ctx context.Context, candidateID uuid.UUID) error {
+    var interviewID, jobAppID uuid.UUID
+    err := r.db.QueryRow(ctx, `SELECT id, jobapplicationid FROM interviews WHERE candidateid = $1 LIMIT 1`, candidateID).
+        Scan(&interviewID, &jobAppID)
+    if err != nil {
+        return err
+    }
+
+    _, err = r.db.Exec(ctx, `DELETE FROM interviews WHERE id = $1`, interviewID)
+    if err != nil {
+        return err
+    }
+
+    _, err = r.db.Exec(ctx, `DELETE FROM jobapplications WHERE id = $1`, jobAppID)
+    if err != nil {
+        return err
+    }
+
+    return nil
+}
+
+
+func (r *InterviewRepository) Zaposli(ctx context.Context, candidateID uuid.UUID, jobID uuid.UUID) error {
+    query := `UPDATE users 
+              SET role = 'employee', jobid = $2
+              WHERE id = $1`
+    _, err := r.db.Exec(ctx, query, candidateID, jobID)
+    if err != nil {
+        return err
+    }
+
+    var interviewID, jobAppID uuid.UUID
+    err = r.db.QueryRow(ctx, `
+        SELECT id, jobapplicationid 
+        FROM interviews 
+        WHERE candidateid = $1 AND jobid = $2
+        LIMIT 1
+    `, candidateID, jobID).Scan(&interviewID, &jobAppID)
+    if err != nil {
+        return err
+    }
+
+    _, err = r.db.Exec(ctx, `DELETE FROM interviews WHERE id = $1`, interviewID)
+    if err != nil {
+        return err
+    }
+
+    _, err = r.db.Exec(ctx, `DELETE FROM jobapplications WHERE id = $1`, jobAppID)
+    if err != nil {
+        return err
+    }
+
+    return nil
+}
+
+
 
 // Get job app by candidate id and by job id
 func (r *InterviewRepository) GetInterviewByCandidateIDAndByJobID(ctx context.Context, jobID, candidateID uuid.UUID) (*Interview, error) {

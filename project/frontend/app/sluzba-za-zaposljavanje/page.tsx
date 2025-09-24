@@ -40,7 +40,7 @@ export default function SluzbaZaZaposljavanje() {
     {
       label: "Intervjui",
       href: "/sluzba-za-zaposljavanje/intervjui",
-      roles: ["sszadmin"],
+      roles: ["sszadmin", "candidate"],
     },
     // {
     //   label: "Zaposleni profesori sa faksa",

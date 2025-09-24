@@ -41,7 +41,7 @@ func main() {
 	address := ":8082"
 
 	cors := handler.CORS(
-		handler.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}),
+		handler.AllowedMethods([]string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"}),
 		handler.AllowedHeaders([]string{"Authorization", "Content-Type"}),
 		handler.AllowCredentials(),
 		handler.AllowedOrigins([]string{"*"}),
@@ -97,6 +97,9 @@ func main() {
 	jobinterviews.Handle("", authMiddleware(http.HandlerFunc(jobHandler.ScheduleInterview))).Methods("POST")
 	jobinterviews.Handle("", authMiddleware(http.HandlerFunc(jobHandler.GetAllInterviews))).Methods("GET")
 	jobinterviews.Handle("/{id}", authMiddleware(http.HandlerFunc(jobHandler.DeleteInterview))).Methods("DELETE")
+	jobinterviews.Handle("/{id}", authMiddleware(http.HandlerFunc(jobHandler.AcceptInterview))).Methods("PATCH")
+	jobinterviews.Handle("/{id}/odbij", authMiddleware(http.HandlerFunc(jobHandler.Odbij))).Methods("DELETE")
+	jobinterviews.Handle("/{candidateid}/zaposli/{jobid}", authMiddleware(http.HandlerFunc(jobHandler.Zaposli))).Methods("PATCH")
 
 	server := &http.Server{
 		Handler: cors(router),

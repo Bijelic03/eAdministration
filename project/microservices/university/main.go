@@ -72,9 +72,10 @@ func main() {
 	students.Handle("", authMiddleware(http.HandlerFunc(studentHandler.GetAllStudents))).Methods("GET")
 	students.Handle("/{id}", authMiddleware(http.HandlerFunc(studentHandler.GetStudentByID))).Methods("GET")
 	students.Handle("/by-email", authMiddleware(http.HandlerFunc(studentHandler.GetStudentByEmail))).Methods("GET")
-	students.Handle("/verify-graduation/{studentId}", authMiddleware(http.HandlerFunc(studentHandler.VerifyGraduation))).Methods("GET")
+	students.Handle("/verify-graduation/{indexno}", authMiddleware(http.HandlerFunc(studentHandler.VerifyGraduation))).Methods("GET")
 	students.Handle("/{id}", authMiddleware(http.HandlerFunc(studentHandler.UpdateStudent))).Methods("PUT")
 	students.Handle("/{id}", authMiddleware(http.HandlerFunc(studentHandler.DeleteStudent))).Methods("DELETE")
+	students.Handle("/get/indexno/all", authMiddleware(http.HandlerFunc(studentHandler.GetAllIndexNumbersHandler))).Methods("GET")
 
 	// /api/v1/university/courses
 	courseRepository := repositories.NewCourseRepository(conn)

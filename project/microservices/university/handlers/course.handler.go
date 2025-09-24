@@ -32,8 +32,8 @@ func (h *CourseHandler) CreateCourse(w http.ResponseWriter, r *http.Request) {
 
 	role, _ := r.Context().Value("role").(string)
 
-	if role != "professor" {
-		http.Error(w, "only professors can create courses", http.StatusForbidden)
+	if role != "facultyadmin" {
+		http.Error(w, "only facultyadmi can create courses", http.StatusForbidden)
 		return
 	}
 
@@ -125,8 +125,8 @@ func (h *CourseHandler) UpdateCourse(w http.ResponseWriter, r *http.Request) {
 
 	role, _ := r.Context().Value("role").(string)
 
-	if role != "professor" {
-		http.Error(w, "only professors can update courses", http.StatusForbidden)
+	if role != "facultyadmin" {
+		http.Error(w, "only facultyadmin can update courses", http.StatusForbidden)
 		return
 	}
 
@@ -151,8 +151,8 @@ func (h *CourseHandler) DeleteCourse(w http.ResponseWriter, r *http.Request) {
 
 	role, _ := r.Context().Value("role").(string)
 
-	if role != "professor" {
-		http.Error(w, "only professors can delete courses", http.StatusForbidden)
+	if role != "facultyadmin" {
+		http.Error(w, "only facultyadmin can delete courses", http.StatusForbidden)
 		return
 	}
 

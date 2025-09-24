@@ -17,15 +17,22 @@ import { handleApiError, handleApiSuccess } from "@/services/api.service";
 import { useEffect, useState } from "react";
 import UpsertInterviewsForm from "./interviews.form";
 import useInterviews from "@/hooks/useInterviews";
+import useJob from "@/hooks/useJob";
+import useCandidate from "@/hooks/useCandidate";
 
 const PozicijeOglasiPage = () => {
   const { values, fetchOffers, deleteOffer } = useOffers();
   const { scheduleInterview } = useInterviews();
+  const { fetchJobById } = useJob();
+  const { fetchCandidateById } = useCandidate();
   const { page, rowsPerPage, search, handlePageChange } =
     usePaginationAndSearch();
   const { isOpen, toggleModal } = useModal();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [data, setData] = useState<any>();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [enrichedApplications, setEnrichedApplications] = useState<any[]>([]);
+  const [trigger, setTrigger] = useState(false);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const onCreate = async (formData: any) => {
@@ -40,6 +47,9 @@ const PozicijeOglasiPage = () => {
       handleApiSuccess("Zakazivanje intervjua uspjesno!");
     } catch (error) {
       handleApiError(error, "Zakazivanje nije uspjelo");
+    } finally {
+      setTrigger((prev) => !prev);
+      // window.location.href = '/sluzba-za-zaposljavanje/prijave-za-posao';
     }
   };
 
@@ -49,6 +59,9 @@ const PozicijeOglasiPage = () => {
       handleApiSuccess("Brisanje ponude uspjesno!");
     } catch (error) {
       handleApiError(error, "Brisanje nije uspjelo.");
+    } finally {
+      setTrigger((prev) => !prev);
+      // window.location.href = '/sluzba-za-zaposljavanje/prijave-za-posao';
     }
   };
 
@@ -56,6 +69,29 @@ const PozicijeOglasiPage = () => {
     fetchOffers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, rowsPerPage, search]);
+
+  useEffect(() => {
+    const enrichApplications = async () => {
+      if (!values.jobapplications || values.jobapplications.length === 0)
+        return;
+
+      const enriched = await Promise.all(
+        values.jobapplications.map(async (app) => {
+          const job = await fetchJobById(app.jobid);
+          const candidate = await fetchCandidateById(app.candidateid);
+          return {
+            ...app,
+            jobTitle: job?.title || "Nepoznat posao",
+            candidateName: `${candidate?.fullname}` || "Nepoznat kandidat",
+          };
+        })
+      );
+
+      setEnrichedApplications(enriched);
+    };
+
+    enrichApplications();
+  }, [values.jobapplications, trigger]);
 
   if (values?.loading) return <Loading />;
 
@@ -72,19 +108,17 @@ const PozicijeOglasiPage = () => {
         }}
       >
         <TableHeader>
-          <TableHeaderCell>#</TableHeaderCell>
-          <TableHeaderCell>Posao ID</TableHeaderCell>
-          <TableHeaderCell>Kandidat ID</TableHeaderCell>
+          <TableHeaderCell>Posao</TableHeaderCell>
+          <TableHeaderCell>Kandidat</TableHeaderCell>
           <TableHeaderCell>Akcije</TableHeaderCell>
         </TableHeader>
         <tbody>
-          {values?.jobapplications?.length > 0 ? (
+          {enrichedApplications?.length > 0 ? (
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            values?.jobapplications?.map((offer: any) => (
+            enrichedApplications.map((offer: any) => (
               <TableRow key={offer.id}>
-                <TableCell>{offer?.id}</TableCell>
-                <TableCell>{offer?.jobid}</TableCell>
-                <TableCell>{offer?.candidateid}</TableCell>
+                <TableCell>{offer?.jobTitle}</TableCell>
+                <TableCell>{offer?.candidateName}</TableCell>
                 <TableCell className="flex gap-4">
                   <Button
                     tooltip="Zakazi intervju"

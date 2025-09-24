@@ -442,8 +442,8 @@ func (h *JobHandler) ScheduleInterview(w http.ResponseWriter, r *http.Request) {
 
 	role, _ := r.Context().Value("role").(string)
 
-	if role != "candidate" {
-		http.Error(w, "only candidated can schedule interview", http.StatusForbidden)
+	if role != "sszadmin" {
+		http.Error(w, "only sszadmin can schedule interview", http.StatusForbidden)
 		return
 	}
 
@@ -501,43 +501,76 @@ func (h *JobHandler) GetAllInterviews(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	ints, totalItems, err := h.interviewRepo.GetAllInterviews(r.Context(), page, limit)
-	if err != nil {
-		resp := JobApplicationsListResponse{
-			JobApplications: nil,
-			Page:            page,
-			TotalItems:      0,
-			TotalPages:      0,
-			Error:           err.Error(),
+	role, _ := r.Context().Value("role").(string)
+	email, _ := r.Context().Value("email").(string)
+
+	if role == "sszadmin" {
+		ints, totalItems, err := h.interviewRepo.GetAllInterviews(r.Context(), page, limit)
+		if err != nil {
+			resp := InterviewsListResponse{
+				Interviews: nil,
+				Page:            page,
+				TotalItems:      0,
+				TotalPages:      0,
+				Error:           err.Error(),
+			}
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(resp)
+			return
 		}
+	
+		totalPages := (totalItems + limit - 1) / limit
+	
+		resp := InterviewsListResponse{
+			Interviews: ints,
+			Page:       page,
+			TotalItems: totalItems,
+			TotalPages: totalPages,
+			Error:      nil,
+		}
+	
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(resp)
-		return
+	} else {
+		cand, err := h.candidateRepo.GetByEmail(r.Context(), email)
+		if err != nil {
+			http.Error(w, "candidate not found", http.StatusNotFound)
+			return
+		}
+
+		ints, totalItems, err := h.interviewRepo.GetAllInterviewsByCandidate(r.Context(), cand.ID, page, limit, )
+		if err != nil {
+			resp := InterviewsListResponse{
+				Interviews: nil,
+				Page:            page,
+				TotalItems:      0,
+				TotalPages:      0,
+				Error:           err.Error(),
+			}
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(resp)
+			return
+		}
+	
+		totalPages := (totalItems + limit - 1) / limit
+	
+		resp := InterviewsListResponse{
+			Interviews: ints,
+			Page:       page,
+			TotalItems: totalItems,
+			TotalPages: totalPages,
+			Error:      nil,
+		}
+	
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(resp)
 	}
 
-	totalPages := (totalItems + limit - 1) / limit
 
-	resp := InterviewsListResponse{
-		Interviews: ints,
-		Page:       page,
-		TotalItems: totalItems,
-		TotalPages: totalPages,
-		Error:      nil,
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(resp)
 }
 
 // Delete interview
 func (h *JobHandler) DeleteInterview(w http.ResponseWriter, r *http.Request) {
-
-	role, _ := r.Context().Value("role").(string)
-
-	if role != "sszadmin" {
-		http.Error(w, "only sszadmin can delete interview", http.StatusForbidden)
-		return
-	}
 
 	vars := mux.Vars(r)
 	idStr := vars["id"]
@@ -548,6 +581,70 @@ func (h *JobHandler) DeleteInterview(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.interviewRepo.DeleteInterview(r.Context(), id); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// ODBIJ
+func (h *JobHandler) Odbij(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	idStr := vars["id"]
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		http.Error(w, "invalid id", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.interviewRepo.Odbij(r.Context(), id); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// ZAPOSLI
+func (h *JobHandler) Zaposli(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	idStr := vars["candidateid"]
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		http.Error(w, "invalid candidateid", http.StatusBadRequest)
+		return
+	}
+
+	jobidStr := vars["jobid"]
+	jobid, err := uuid.Parse(jobidStr)
+	if err != nil {
+		http.Error(w, "invalid jobid", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.interviewRepo.Zaposli(r.Context(), id, jobid); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+
+// Accept interv
+func (h *JobHandler) AcceptInterview(w http.ResponseWriter, r *http.Request) {
+
+	vars := mux.Vars(r)
+	idStr := vars["id"]
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		http.Error(w, "invalid id", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.interviewRepo.AcceptInterview(r.Context(), id); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

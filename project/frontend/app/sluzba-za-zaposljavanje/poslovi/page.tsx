@@ -1,28 +1,29 @@
 "use client";
 
-import Button from "@/components/button";
-import Icon from "@/components/Icons";
-import Loading from "@/components/loading";
-import FullScreenModal, { ModalLabel } from "@/components/modal";
-import Table from "@/components/table/table";
-import TableCell from "@/components/table/tableCell";
-import TableHeader from "@/components/table/tableHeader";
-import TableHeaderCell from "@/components/table/tableHeaderCell";
-import TableRow from "@/components/table/tableRow";
-import Wrap from "@/components/wrap";
-import useJob from "@/hooks/useJob";
-import useLocalStorage, { AuthUser } from "@/hooks/useLocalStorage";
-import useModal from "@/hooks/useModal";
-import usePaginationAndSearch from "@/hooks/usePaginationAndSearch";
+import Button from "../../../components/button";
+import Icon from "../../../components/Icons";
+import Loading from "../../../components/loading";
+import FullScreenModal, { ModalLabel } from "../../../components/modal";
+import Table from "../../../components/table/table";
+import TableCell from "../../../components/table/tableCell";
+import TableHeader from "../../../components/table/tableHeader";
+import TableHeaderCell from "../../../components/table/tableHeaderCell";
+import TableRow from "../../../components/table/tableRow";
+import Wrap from "../../../components/wrap";
+import useJob from "../../../hooks/useJob";
+import useLocalStorage, { AuthUser } from "../../../hooks/useLocalStorage";
+import useModal from "../../../hooks/useModal";
+import usePaginationAndSearch from "../../../hooks/usePaginationAndSearch";
 import {
   handleApiError,
   handleApiSuccess,
   mockApiLoading,
-} from "@/services/api.service";
+} from "../../../services/api.service";
 import { useEffect, useState } from "react";
 import UpsertJobForm from "./jobs.form";
 import { useRouter } from "next/navigation";
-import { _truncate } from "@/utils/typography";
+import { _truncate } from "../../../utils/typography";
+import React from "react";
 
 const PosloviPage = () => {
   const { values, fetchJobs, deleteJob, updateJob, createJob, applyForJob } =
@@ -37,6 +38,7 @@ const PosloviPage = () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const onCreate = async (data: any) => {
     try {
+      // handleApiSuccess("TEST");
       await createJob(data);
       handleApiSuccess("Kreiranje posla uspjesno!");
     } catch (error) {
@@ -66,6 +68,8 @@ const PosloviPage = () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const onApplyForJob = async (job: any) => {
     const jobId = job.id;
+    mockApiLoading("Kandidat ispunjava prijavu...");
+    await new Promise((resolve) => setTimeout(resolve, 5000));
     if (job.requiredfaculty === true) {
       // mimifikacjia kao da cekamo da se potvrdi ustvari cemo samo stavit set timeout ovde..
       mockApiLoading(

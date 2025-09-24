@@ -1,7 +1,9 @@
 "use client";
+import { getIndexNumbers } from "@/api/students.api";
 import Button from "@/components/button";
 import Input from "@/components/form/input";
-import React, { useState } from "react";
+import Select from "@/components/form/select";
+import React, { useEffect, useState } from "react";
 
 interface FormProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -21,6 +23,8 @@ const UpsertCandidateForm = ({ data, onCreate, onEdit }: FormProps) => {
     role: "candidate",
   });
 
+  const [indices, setIndices] = useState<string[]>([]);
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -34,13 +38,26 @@ const UpsertCandidateForm = ({ data, onCreate, onEdit }: FormProps) => {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
+    if (formData?.indexno === "") delete formData.indexno;
     if (data?.id) {
       onEdit({ ...formData, id: data.id });
     } else {
       onCreate(formData);
     }
   };
+
+  useEffect(() => {
+    const fetchIndices = async () => {
+      try {
+        const data = await getIndexNumbers();
+        setIndices(data);
+      } catch (err) {
+        console.error("Failed to fetch index numbers", err);
+      }
+    };
+
+    fetchIndices();
+  }, []);
 
   return (
     <>
@@ -66,13 +83,25 @@ const UpsertCandidateForm = ({ data, onCreate, onEdit }: FormProps) => {
             placeholder="email@email.com"
             required
           />
-          <Input
+          <Select
+            id="indexno"
+            name="indexno"
+            value={formData.indexno}
+            onChange={handleChange}
+            options={[
+              { value: "", label: "Izaberi indeks" }, // placeholder
+              ...(indices
+                ?.filter((idx) => idx !== "") // izbaci prazne stringove
+                .map((idx) => ({ value: idx, label: idx })) || []),
+            ]}
+          />
+          {/* <Input
             id="indexno"
             name="indexno"
             value={formData.indexno}
             onChange={handleChange}
             placeholder=""
-          />
+          /> */}
           <Input
             type="password"
             id="password"

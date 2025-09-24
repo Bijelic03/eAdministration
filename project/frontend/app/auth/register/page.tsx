@@ -148,7 +148,7 @@ export default function RegisterPage() {
                 Uloga
               </label>
               <select
-                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-400 outline-none"
+                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-400 outline-none !text-black"
                 value={role}
                 onChange={(e) => setRole(e.target.value)}
                 disabled={loading}

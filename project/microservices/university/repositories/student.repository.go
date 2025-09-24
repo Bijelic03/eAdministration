@@ -137,6 +137,29 @@ func (r *StudentRepository) GetByID(ctx context.Context, id uuid.UUID) (*Student
 	return &stud, nil
 }
 
+
+// GetAllIndexNumbers vraća sve postojeće indexno u bazi
+func (r *StudentRepository) GetAllIndexNumbers(ctx context.Context) ([]string, error) {
+	query := `SELECT indexno FROM users WHERE indexno IS NOT NULL`
+
+	rows, err := r.db.Query(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var indices []string
+	for rows.Next() {
+		var idx string
+		if err := rows.Scan(&idx); err != nil {
+			return nil, err
+		}
+		indices = append(indices, idx)
+	}
+
+	return indices, nil
+}
+
 // Get student by email
 func (r *StudentRepository) GetByEmail(ctx context.Context, email string) (*Student, error) {
 	query := `SELECT id, fullname, email, password, status, indexno, role FROM users WHERE email = $1`

@@ -68,8 +68,8 @@ func (h *StudentHandler) CreateStudent(w http.ResponseWriter, r *http.Request) {
 
 	role, _ := r.Context().Value("role").(string)
 
-	if role != "professor" {
-		http.Error(w, "only professors can create student", http.StatusForbidden)
+	if role != "facultyadmin" {
+		http.Error(w, "only facultyadmin can create student", http.StatusForbidden)
 		return
 	}
 
@@ -108,6 +108,21 @@ func (h *StudentHandler) GetStudentByID(w http.ResponseWriter, r *http.Request) 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(stud)
 }
+
+// GetAllIndexNumbersHandler vraća sve postojeće index brojeve studenata
+func (h *StudentHandler) GetAllIndexNumbersHandler(w http.ResponseWriter, r *http.Request) {
+	indices, err := h.repo.GetAllIndexNumbers(r.Context())
+	if err != nil {
+		http.Error(w, "failed to fetch index numbers: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string][]string{
+		"indices": indices,
+	})
+}
+
 
 // Get student by email (JSON body)
 func (h *StudentHandler) GetStudentByEmail(w http.ResponseWriter, r *http.Request) {

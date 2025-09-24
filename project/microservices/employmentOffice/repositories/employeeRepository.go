@@ -247,12 +247,28 @@ func (r *EmployeeRepository) Update(ctx context.Context, emp *Employee) (*Employ
 	return &updated, nil
 }
 
-// Delete employee
-func (r *EmployeeRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	query := `DELETE FROM users WHERE id = $1`
-	_, err := r.db.Exec(ctx, query, id)
-	return err
+func (r *EmployeeRepository) Delete(ctx context.Context, employeeID uuid.UUID) error {
+    // 1️⃣ Obriši sve intervjue korisnika
+    _, err := r.db.Exec(ctx, `DELETE FROM interviews WHERE candidateid = $1`, employeeID)
+    if err != nil {
+        return err
+    }
+
+    // 2️⃣ Obriši sve job aplikacije korisnika
+    _, err = r.db.Exec(ctx, `DELETE FROM jobapplications WHERE candidateid = $1`, employeeID)
+    if err != nil {
+        return err
+    }
+
+    // 3️⃣ Na kraju obriši samog korisnika
+    _, err = r.db.Exec(ctx, `DELETE FROM users WHERE id = $1`, employeeID)
+    if err != nil {
+        return err
+    }
+
+    return nil
 }
+
 
 // QuitJob sets jobid to NULL and changes role to 'candidate'
 func (r *EmployeeRepository) QuitJob(ctx context.Context, email string) error {

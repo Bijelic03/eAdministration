@@ -1,9 +1,12 @@
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import {
+  acceptInterviewAPI,
   deleteInterviewAPI,
   fetchInterviewsAPI,
+  odbijAPI,
   scheduleInterviewAPI,
+  zaposliAPI,
 } from "@/api/interviews.api";
 
 export default function useInterviews() {
@@ -72,6 +75,63 @@ export default function useInterviews() {
     }
   };
 
+  const odbij = async (id: string) => {
+    setValues((prev) => ({ ...prev, loading: true, error: null }));
+    try {
+      await odbijAPI(id);
+      await fetchInterviews();
+      setValues((prev) => ({
+        ...prev,
+      }));
+    } catch (error) {
+      setValues((prev) => ({
+        ...prev,
+        error,
+      }));
+      throw error;
+    } finally {
+      setValues((prev) => ({ ...prev, loading: false }));
+    }
+  };
+
+  const zaposli = async (id: string, jobid: string) => {
+    setValues((prev) => ({ ...prev, loading: true, error: null }));
+    try {
+      await zaposliAPI(id, jobid);
+      await fetchInterviews();
+      setValues((prev) => ({
+        ...prev,
+      }));
+    } catch (error) {
+      setValues((prev) => ({
+        ...prev,
+        error,
+      }));
+      throw error;
+    } finally {
+      setValues((prev) => ({ ...prev, loading: false }));
+    }
+  };
+
+  const acceptInterview = async (id: string) => {
+    setValues((prev) => ({ ...prev, loading: true, error: null }));
+    try {
+      await acceptInterviewAPI(id);
+      await fetchInterviews();
+      setValues((prev) => ({
+        ...prev,
+      }));
+    } catch (error) {
+      setValues((prev) => ({
+        ...prev,
+        error,
+      }));
+      throw error;
+    } finally {
+      setValues((prev) => ({ ...prev, loading: false }));
+    }
+  };
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const scheduleInterview = async (data: any) => {
     setValues((prev) => ({ ...prev, loading: true, error: null }));
@@ -94,5 +154,8 @@ export default function useInterviews() {
     fetchInterviews,
     deleteIterview,
     scheduleInterview,
+    acceptInterview,
+    odbij,
+    zaposli,
   };
 }
