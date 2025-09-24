@@ -137,10 +137,17 @@ func (r *StudentRepository) GetByID(ctx context.Context, id uuid.UUID) (*Student
 	return &stud, nil
 }
 
-
-// GetAllIndexNumbers vraća sve postojeće indexno u bazi
+// GetAllIndexNumbers vraća sve indexno iz users tabele
+// koji nisu vezani za korisnike sa ulogom "candidate"
 func (r *StudentRepository) GetAllIndexNumbers(ctx context.Context) ([]string, error) {
-	query := `SELECT indexno FROM users WHERE indexno IS NOT NULL`
+	query := `
+		SELECT indexno
+		FROM users
+		WHERE indexno IS NOT NULL
+		AND indexno NOT IN (
+			SELECT indexno FROM users WHERE role = 'candidate' AND indexno IS NOT NULL
+		)
+	`
 
 	rows, err := r.db.Query(ctx, query)
 	if err != nil {

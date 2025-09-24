@@ -226,6 +226,11 @@ func (h *JobHandler) ApplyForJob(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if job.RequiredFaculty != nil && *job.RequiredFaculty {
+		if candidate.IndexNo == nil {
+			http.Error(w, "candidate has no index number", http.StatusBadRequest)
+			return
+		}
+		
 		client := &http.Client{Timeout: 5 * time.Second}
 		req, err := http.NewRequest(
 			"GET",
@@ -272,6 +277,7 @@ func (h *JobHandler) ApplyForJob(w http.ResponseWriter, r *http.Request) {
 			fmt.Println("Student je diplomirao!")
 		} else {
 			http.Error(w, "Verifikacija nije uspjesna - nemate diplomu", http.StatusNotFound)
+			return;
 		}
 	}
 

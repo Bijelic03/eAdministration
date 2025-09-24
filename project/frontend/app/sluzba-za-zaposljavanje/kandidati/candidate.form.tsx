@@ -83,18 +83,23 @@ const UpsertCandidateForm = ({ data, onCreate, onEdit }: FormProps) => {
             placeholder="email@email.com"
             required
           />
-          <Select
-            id="indexno"
-            name="indexno"
-            value={formData.indexno}
-            onChange={handleChange}
-            options={[
-              { value: "", label: "Izaberi indeks" }, // placeholder
-              ...(indices
-                ?.filter((idx) => idx !== "") // izbaci prazne stringove
-                .map((idx) => ({ value: idx, label: idx })) || []),
-            ]}
-          />
+          {!data?.id && (
+            <>
+              <Select
+                id="indexno"
+                name="indexno"
+                value={formData.indexno}
+                onChange={handleChange}
+                options={[
+                  { value: "", label: "Izaberi indeks" }, // placeholder
+                  ...(indices
+                    ?.filter((idx) => idx !== "") // izbaci prazne stringove
+                    .map((idx) => ({ value: idx, label: idx })) || []),
+                ]}
+              />
+            </>
+          )}
+
           {/* <Input
             id="indexno"
             name="indexno"

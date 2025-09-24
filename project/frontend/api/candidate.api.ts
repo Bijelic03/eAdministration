@@ -1,10 +1,9 @@
-import { axiosEmploymentOfficeInstance as axiosInstance } from "@/utils/axios";
+import { axiosEmploymentOfficeInstance as axiosInstance } from '@/utils/axios';
 
 const CANDIDATE_API_PATH = '/employmentOffice/candidates';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function createCandidateAPI(data: any) {
-
 	const response = await axiosInstance.post(CANDIDATE_API_PATH, data);
 	return response.data;
 }
@@ -25,6 +24,11 @@ export async function fetchCandidatesAPI(page = 1, max = 10, search = '') {
 
 export async function fetchCandidateByIdAPI(id: string) {
 	const response = await axiosInstance.get(`${CANDIDATE_API_PATH}/${id}`);
+	return response.data;
+}
+
+export async function fetchCandidateByEmailAPI() {
+	const response = await axiosInstance.get(`${CANDIDATE_API_PATH}/by-email`);
 	return response.data;
 }
 

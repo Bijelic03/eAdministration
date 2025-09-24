@@ -19,6 +19,7 @@ import UpsertInterviewsForm from "./interviews.form";
 import useInterviews from "@/hooks/useInterviews";
 import useJob from "@/hooks/useJob";
 import useCandidate from "@/hooks/useCandidate";
+import { isCandidate, isSSZAdmin } from "@/services/role.service";
 
 const PozicijeOglasiPage = () => {
   const { values, fetchOffers, deleteOffer } = useOffers();
@@ -120,21 +121,31 @@ const PozicijeOglasiPage = () => {
                 <TableCell>{offer?.jobTitle}</TableCell>
                 <TableCell>{offer?.candidateName}</TableCell>
                 <TableCell className="flex gap-4">
-                  <Button
-                    tooltip="Zakazi intervju"
-                    onClick={() => {
-                      setData(offer);
-                      toggleModal();
-                    }}
-                  >
-                    <Icon type="interviewSchedule" />
-                  </Button>
-                  <Button
-                    tooltip="Odbij ponudu"
-                    onClick={() => onDelete(offer.id)}
-                  >
-                    <Icon type="reject" />
-                  </Button>
+                  {isSSZAdmin() && (
+                    <>
+                      <Button
+                        tooltip="Zakazi intervju"
+                        onClick={() => {
+                          setData(offer);
+                          toggleModal();
+                        }}
+                      >
+                        <Icon type="interviewSchedule" />
+                      </Button>
+                    </>
+                  )}
+
+                  {isCandidate() ||
+                    (isSSZAdmin() && (
+                      <>
+                        <Button
+                          tooltip="Odbij ponudu"
+                          onClick={() => onDelete(offer.id)}
+                        >
+                          <Icon type="reject" />
+                        </Button>
+                      </>
+                    ))}
                 </TableCell>
               </TableRow>
             ))

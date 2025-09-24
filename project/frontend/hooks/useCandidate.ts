@@ -3,6 +3,7 @@ import { useSearchParams } from 'next/navigation';
 import {
 	createCandidateAPI,
 	deleteCandidateAPI,
+	fetchCandidateByEmailAPI,
 	fetchCandidateByIdAPI,
 	fetchCandidatesAPI,
 	updateCandidateAPI,
@@ -73,6 +74,24 @@ export default function useCandidate() {
 		}
 	};
 
+	const fetchCandidateByEmail = async () => {
+		setValues((prev) => ({ ...prev, loading: true, error: null }));
+		try {
+			const candidate = await fetchCandidateByEmailAPI();
+			setValues((prev) => ({
+				...prev,
+			}));
+			return candidate;
+		} catch (error) {
+			setValues((prev) => ({
+				...prev,
+				error,
+			}));
+		} finally {
+			setValues((prev) => ({ ...prev, loading: false }));
+		}
+	};
+
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const createCandidate = async (data: any) => {
 		setValues((prev) => ({ ...prev, loading: true, error: null }));
@@ -80,7 +99,7 @@ export default function useCandidate() {
 			const newCandidate = await createCandidateAPI(data);
 			setValues((prev) => ({
 				...prev,
-				candidates: [...prev.candidates || [], newCandidate],
+				candidates: [...(prev.candidates || []), newCandidate],
 			}));
 			return newCandidate;
 		} catch (error) {
@@ -140,6 +159,7 @@ export default function useCandidate() {
 		values,
 		setValues,
 		fetchCandidates,
+		fetchCandidateByEmail,
 		fetchCandidateById,
 		createCandidate,
 		updateCandidate,

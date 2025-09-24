@@ -16,6 +16,7 @@ import usePaginationAndSearch from "@/hooks/usePaginationAndSearch";
 import { handleApiError, handleApiSuccess } from "@/services/api.service";
 import { useEffect, useState } from "react";
 import { formatDateTime } from "../../../utils/date";
+import { isCandidate, isSSZAdmin } from "@/services/role.service";
 
 const PozicijeOglasiPage = () => {
   const { fetchJobById } = useJob();
@@ -120,7 +121,7 @@ const PozicijeOglasiPage = () => {
         <TableHeader>
           <TableHeaderCell>Posao</TableHeaderCell>
           <TableHeaderCell>Kandidat</TableHeaderCell>
-          <TableHeaderCell>Vrijeme</TableHeaderCell>
+          {/* <TableHeaderCell>Vrijeme</TableHeaderCell> */}
           <TableHeaderCell>Mjesto</TableHeaderCell>
           <TableHeaderCell>Akcije</TableHeaderCell>
         </TableHeader>
@@ -132,38 +133,51 @@ const PozicijeOglasiPage = () => {
                 <TableCell>
                   {candidate?.fullname || interview.candidateid}
                 </TableCell>
-                <TableCell>{formatDateTime(interview.datetime)}</TableCell>
+                {/* <TableCell>{interview.datetime}</TableCell> */}
                 <TableCell>{interview.location}</TableCell>
                 <TableCell className="flex gap-4">
                   {interview?.accepted !== true ? (
                     <>
-                      <Button
-                        tooltip="Prihvati intervju"
-                        onClick={() => onAccept(interview.id)}
-                      >
-                        <Icon type="accept" />
-                      </Button>
-                      <Button
-                        tooltip="Otkazi intervju"
-                        onClick={() => onDelete(interview.id)}
-                      >
-                        <Icon type="reject" />
-                      </Button>
+                      {isCandidate() && (
+                        <>
+                          <Button
+                            tooltip="Prihvati intervju"
+                            onClick={() => onAccept(interview.id)}
+                          >
+                            <Icon type="accept" />
+                          </Button>
+                        </>
+                      )}
+
+                      {(isCandidate() || isSSZAdmin()) && (
+                        <>
+                          <Button
+                            tooltip="Otkazi intervju"
+                            onClick={() => onDelete(interview.id)}
+                          >
+                            <Icon type="reject" />
+                          </Button>
+                        </>
+                      )}
                     </>
                   ) : (
                     <>
-                      <Button
-                        tooltip="Zaposli kandidata"
-                        onClick={() => onZaposli(candidate.id, job.id)}
-                      >
-                        <Icon type="accept" />
-                      </Button>
-                      <Button
-                        tooltip="Odbij kandidata"
-                        onClick={() => onOdbij(candidate.id)}
-                      >
-                        <Icon type="reject" />
-                      </Button>
+                      {isSSZAdmin() && (
+                        <>
+                          <Button
+                            tooltip="Zaposli kandidata"
+                            onClick={() => onZaposli(candidate.id, job.id)}
+                          >
+                            <Icon type="accept" />
+                          </Button>
+                          <Button
+                            tooltip="Odbij kandidata"
+                            onClick={() => onOdbij(candidate.id)}
+                          >
+                            <Icon type="reject" />
+                          </Button>
+                        </>
+                      )}
                     </>
                   )}
                 </TableCell>
