@@ -76,6 +76,7 @@ func main() {
 	candidates.Handle("/by-email", authMiddleware(http.HandlerFunc(candidateHandler.GetCandidateByEmail))).Methods("GET")
 	candidates.Handle("/{id}", authMiddleware(http.HandlerFunc(candidateHandler.UpdateCandidate))).Methods("PUT")
 	candidates.Handle("/{id}", authMiddleware(http.HandlerFunc(candidateHandler.DeleteCandidate))).Methods("DELETE")
+	candidates.Handle("/get/indexno/all", authMiddleware(http.HandlerFunc(candidateHandler.GetIndexAll))).Methods("GET")
 
 	// /api/v1/employmentOffice/jobs
 	jobRepository := repositories.NewJobRepository(conn)

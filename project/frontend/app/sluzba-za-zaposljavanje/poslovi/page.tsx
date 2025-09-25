@@ -180,12 +180,16 @@ const PosloviPage = () => {
 										</>
 									)}
 
-									<Button
-										tooltip='Pogledaj kandidate'
-										onClick={() => onViewCandidates(job.id)}
-									>
-										<Icon type='view' />
-									</Button>
+									{isSSZAdmin() && (
+										<>
+											<Button
+												tooltip='Pogledaj kandidate'
+												onClick={() => onViewCandidates(job.id)}
+											>
+												<Icon type='view' />
+											</Button>
+										</>
+									)}
 								</TableCell>
 							</TableRow>
 						))

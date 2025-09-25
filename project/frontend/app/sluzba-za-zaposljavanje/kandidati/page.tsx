@@ -46,6 +46,7 @@ const KandidatiPage = () => {
 		try {
 			await createCandidate(data);
 			handleApiSuccess('Kreiranje kandidata uspjesno!');
+			setData(null);
 		} catch (error) {
 			handleApiError(error, 'Kreiranje nije uspjelo');
 		}
@@ -56,6 +57,7 @@ const KandidatiPage = () => {
 		try {
 			await updateCandidate(data);
 			handleApiSuccess('Apdejtovanje kandidata uspjesno!');
+			setData(null);
 		} catch (error) {
 			handleApiError(error, 'Update nije uspio');
 		}

@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"io"
+	"time"
 
 	"github.com/Bijelic03/eAdministration/project/microservices/employmentOffice/repositories"
 	"github.com/google/uuid"
@@ -97,6 +99,44 @@ func (h *CandidateHandler) GetCandidateByEmail(w http.ResponseWriter, r *http.Re
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(emp)
 }
+
+// GetIndexAll poziva students servis da dobije sve index brojeve koji nisu kandidati ili zaposleni
+func (h *CandidateHandler) GetIndexAll(w http.ResponseWriter, r *http.Request) {
+	client := &http.Client{Timeout: 5 * time.Second}
+
+	req, err := http.NewRequest(
+		"GET",
+		"http://university:8081/api/v1/university/students/get/indexno/all",
+		nil,
+	)
+	if err != nil {
+		http.Error(w, "failed to build request", http.StatusInternalServerError)
+		return
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+
+	// Prosleđivanje Authorization header-a ako postoji
+	if authHeader := r.Header.Get("Authorization"); authHeader != "" {
+		req.Header.Set("Authorization", authHeader)
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		http.Error(w, "students service unreachable: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		http.Error(w, "students service returned error", resp.StatusCode)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	io.Copy(w, resp.Body)
+}
+
 
 // Get all candidates
 func (h *CandidateHandler) GetAllCandidates(w http.ResponseWriter, r *http.Request) {

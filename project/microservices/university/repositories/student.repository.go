@@ -138,14 +138,16 @@ func (r *StudentRepository) GetByID(ctx context.Context, id uuid.UUID) (*Student
 }
 
 // GetAllIndexNumbers vraća sve indexno iz users tabele
-// koji nisu vezani za korisnike sa ulogom "candidate"
+// koji nisu vezani za korisnike sa ulogom "candidate" ili "employee"
 func (r *StudentRepository) GetAllIndexNumbers(ctx context.Context) ([]string, error) {
 	query := `
 		SELECT indexno
 		FROM users
 		WHERE indexno IS NOT NULL
 		AND indexno NOT IN (
-			SELECT indexno FROM users WHERE role = 'candidate' AND indexno IS NOT NULL
+			SELECT indexno
+			FROM users
+			WHERE role IN ('candidate', 'employee') AND indexno IS NOT NULL
 		)
 	`
 
@@ -166,6 +168,7 @@ func (r *StudentRepository) GetAllIndexNumbers(ctx context.Context) ([]string, e
 
 	return indices, nil
 }
+
 
 // Get student by email
 func (r *StudentRepository) GetByEmail(ctx context.Context, email string) (*Student, error) {

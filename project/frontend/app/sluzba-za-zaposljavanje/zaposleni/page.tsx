@@ -39,6 +39,7 @@ const PosloviPage = () => {
 		try {
 			await createEmployer(data);
 			handleApiSuccess('Kreiranje zaposlenog uspjesno!');
+			setData(null);
 		} catch (error) {
 			handleApiError(error, 'Kreiranje nije uspjelo');
 		}
@@ -49,6 +50,7 @@ const PosloviPage = () => {
 		try {
 			await updateEmployer(data);
 			handleApiSuccess('Apdejtovanje zaposlenog uspjesno!');
+			setData(null);
 		} catch (error) {
 			handleApiError(error, 'Update nije uspio');
 		}

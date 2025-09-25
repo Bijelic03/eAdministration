@@ -4,6 +4,7 @@ import Input from '@/components/form/input';
 import React, { useEffect, useState } from 'react';
 import useJob from '@/hooks/useJob';
 import Select from '@/components/form/select';
+import { getIndexNumbersByOffice } from '@/api/students.api';
 
 interface FormProps {
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -26,6 +27,10 @@ const UpsertEmployerForm = ({ data, onCreate, onEdit }: FormProps) => {
 		role: 'employee',
 	});
 
+	console.log('data', data);
+
+	const [indices, setIndices] = useState<string[]>([]);
+
 	const handleChange = (
 		e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
 	) => {
@@ -41,7 +46,7 @@ const UpsertEmployerForm = ({ data, onCreate, onEdit }: FormProps) => {
 		e.preventDefault();
 
 		if (data?.id) {
-			onEdit({ ...formData, id: data.id });
+			onEdit({ ...formData, indexno: data.indexno, id: data.id });
 		} else {
 			onCreate(formData);
 		}
@@ -52,6 +57,17 @@ const UpsertEmployerForm = ({ data, onCreate, onEdit }: FormProps) => {
 	}, []);
 
 	useEffect(() => {
+		const fetchIndices = async () => {
+			try {
+				const data = await getIndexNumbersByOffice();
+				setIndices(data);
+			} catch (err) {
+				console.error('Failed to fetch index numbers', err);
+			}
+		};
+
+		fetchIndices();
+
 		if (
 			data !== undefined &&
 			data?.jobid !== undefined &&
@@ -90,13 +106,34 @@ const UpsertEmployerForm = ({ data, onCreate, onEdit }: FormProps) => {
 						required
 					/>
 
-					<Input
-						id='indexno'
-						name='indexno'
-						value={formData.indexno}
-						onChange={handleChange}
-						placeholder='Indeks NO.'
-					/>
+					{!data?.id ? (
+						<>
+							<Select
+								id='indexno'
+								name='indexno'
+								value={formData.indexno}
+								onChange={handleChange}
+								options={[
+									{ value: '', label: 'Izaberi indeks' }, // placeholder
+									...(indices
+										?.filter((idx) => idx !== '') // izbaci prazne stringove
+										.map((idx) => ({ value: idx, label: idx })) || []),
+								]}
+							/>
+						</>
+					) : (
+						<>
+							<Input
+								id='indexno'
+								name='indexno'
+								value={data.indexno}
+								onChange={handleChange}
+								placeholder=''
+								className='border-yellow-500'
+								required
+							/>
+						</>
+					)}
 
 					<Input
 						id='fullname'

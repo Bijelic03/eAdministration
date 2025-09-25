@@ -388,7 +388,7 @@ func (r *JobApplicationRepository) GetAllJobApplications(ctx context.Context, pa
 
 func (r *JobApplicationRepository) GetStudentIndicesByJobID(ctx context.Context, jobID uuid.UUID) ([]string, error) {
 	query := `
-		SELECT u.studentid
+		SELECT u.indexno
 		FROM jobapplications ja
 		JOIN users u ON ja.candidateid = u.id
 		WHERE ja.jobid = $1
