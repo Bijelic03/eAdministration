@@ -14,13 +14,16 @@ package repositories
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"log"
 
 	"github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgconn"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -32,14 +35,15 @@ const (
 )
 
 type Student struct {
-	ID       uuid.UUID      `json:"id" db:"id"`
-	FullName string         `json:"fullname" db:"fullname"`
-	Email    string         `json:"email" db:"email"`
-	Password string         `json:"password" db:"password"`
-	Role     string         `json:"role" db:"role"`
-	Status   *StudentStatus `json:"status" db:"status"`
-	IndexNo  *string        `json:"indexno" db:"indexno"`
-	Ects   *string    `json:"ects" db:"ects"`
+	ID          uuid.UUID      `json:"id" db:"id"`
+	FullName    string         `json:"fullname" db:"fullname"`
+	Email       string         `json:"email" db:"email"`
+	Password    string         `json:"password" db:"password"`
+	Role        string         `json:"role" db:"role"`
+	Status      *StudentStatus `json:"status" db:"status"`
+	IndexNo     *string        `json:"indexno" db:"indexno"`
+	Ects        *string        `json:"ects" db:"ects"`
+	SingletonID *uuid.UUID     `json:"singletonid" db:"singleton_id"`
 }
 
 type StudentWithAvg struct {
@@ -76,11 +80,20 @@ func NewStudentRepository(db *pgxpool.Pool) *StudentRepository {
 
 // Add new Student
 func (r *StudentRepository) Add(ctx context.Context, stud *Student) (*Student, error) {
+	existing, err := r.GetByIndexNoAndRole(ctx, *stud.IndexNo, "student")
+	if err != nil {
+		return nil, err
+	}
+	if existing != nil {
+		return nil, fmt.Errorf("a student with index number %s already exists", *stud.IndexNo)
+	}
+
 	query := `
-		INSERT INTO users (fullname, email, password, status, indexno, role)
-		VALUES ($1, $2, $3, $4, $5, $6)
-		RETURNING id, fullname, email, password, status, indexno, role
+		INSERT INTO users (fullname, email, password, status, indexno, role, singleton_id)
+		VALUES ($1, $2, $3, $4, $5, $6, $7)
+		RETURNING id, fullname, email, password, status, indexno, role, singleton_id
 	`
+
 	hash, err := bcrypt.GenerateFromPassword([]byte(stud.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, err
@@ -89,6 +102,7 @@ func (r *StudentRepository) Add(ctx context.Context, stud *Student) (*Student, e
 	stud.ID = uuid.New()
 	var created Student
 
+	log.Println(stud.SingletonID, " singleton id")
 	err = r.db.QueryRow(ctx, query,
 		stud.FullName,
 		stud.Email,
@@ -96,6 +110,7 @@ func (r *StudentRepository) Add(ctx context.Context, stud *Student) (*Student, e
 		stud.Status,
 		stud.IndexNo,
 		stud.Role,
+		stud.SingletonID,
 	).Scan(
 		&created.ID,
 		&created.FullName,
@@ -104,12 +119,13 @@ func (r *StudentRepository) Add(ctx context.Context, stud *Student) (*Student, e
 		&created.Status,
 		&created.IndexNo,
 		&created.Role,
+		&created.SingletonID,
 	)
 
 	if err != nil {
 		if pgErr, ok := err.(*pgconn.PgError); ok {
 			if pgErr.Code == "23505" { // unique_violation
-				return nil, fmt.Errorf("an student with this email already exists")
+				return nil, fmt.Errorf("a student with this email already exists")
 			}
 		}
 		return nil, err
@@ -168,7 +184,6 @@ func (r *StudentRepository) GetAllIndexNumbers(ctx context.Context) ([]string, e
 
 	return indices, nil
 }
-
 
 // Get student by email
 func (r *StudentRepository) GetByEmail(ctx context.Context, email string) (*Student, error) {
@@ -332,4 +347,33 @@ func (r *StudentRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	query := `DELETE FROM users WHERE id = $1`
 	_, err := r.db.Exec(ctx, query, id)
 	return err
+}
+
+// GetByIndexNoAndRole vraća studenta po indeksu i roli
+func (r *StudentRepository) GetByIndexNoAndRole(ctx context.Context, indexNo string, role string) (*Student, error) {
+	query := `
+		SELECT id, fullname, email, password, status, indexno, role, singleton_id
+		FROM users
+		WHERE indexno = $1 AND role = $2
+	`
+
+	var stud Student
+	err := r.db.QueryRow(ctx, query, indexNo, role).Scan(
+		&stud.ID,
+		&stud.FullName,
+		&stud.Email,
+		&stud.Password,
+		&stud.Status,
+		&stud.IndexNo,
+		&stud.Role,
+		&stud.SingletonID,
+	)
+
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &stud, nil
 }

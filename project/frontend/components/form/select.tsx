@@ -36,6 +36,9 @@ const Select: React.FC<SelectProps> = ({
           error ? "border-2 border-red-500" : ""
         }  ${className}`}
       >
+        <option value="" disabled>
+          -- Izaberi {name} --
+        </option>
         {options.map((option) => (
           <option
             className="text-black"

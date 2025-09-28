@@ -87,6 +87,10 @@ func main() {
 	courses.Handle("/{id}", authMiddleware(http.HandlerFunc(courseHandler.UpdateCourse))).Methods("PUT")
 	courses.Handle("/{id}", authMiddleware(http.HandlerFunc(courseHandler.DeleteCourse))).Methods("DELETE")
 
+	programs := api.PathPrefix("/programs").Subrouter()
+	programs.Handle("", authMiddleware(http.HandlerFunc(courseHandler.GetAllPrograms))).Methods("GET")
+	programs.Handle("/{id}/courses", authMiddleware(http.HandlerFunc(courseHandler.GetCoursesByProgram))).Methods("GET")
+
 	courseRegistrationRepository := repositories.NewCourseRegistrationRepository(conn)
 	courseRegistrationHandler := handlers.NewCourseRegistrationHandler(courseRegistrationRepository, studentRepository)
 	courses.Handle("/{id}/register", authMiddleware(http.HandlerFunc(courseRegistrationHandler.RegisterCourse))).Methods("POST")

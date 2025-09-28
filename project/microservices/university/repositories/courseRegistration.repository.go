@@ -17,7 +17,7 @@ type CourseRegistration struct {
 	CourseID  uuid.UUID `json:"courseid" db:"courseid"`
 	StudentID uuid.UUID `json:"studentid" db:"studentid"`
 	CreatedAt time.Time `json:"createdat" db:"createdat"`
-	Passed    bool      `json:"passed" db:"passed"` 
+	Passed    bool      `json:"passed" db:"passed"`
 }
 
 type CourseRegistrationRepository struct {
@@ -68,7 +68,7 @@ func (r *CourseRegistrationRepository) Register(ctx context.Context, courseID uu
 		ID:        uuid.New(),
 		CourseID:  courseID,
 		StudentID: studentID,
-		Passed: false,
+		Passed:    false,
 	}
 
 	ins := `
@@ -77,8 +77,8 @@ func (r *CourseRegistrationRepository) Register(ctx context.Context, courseID uu
         RETURNING id, courseid, studentid, createdat, passed
     `
 	if err := r.db.QueryRow(ctx, ins,
-		reg.ID, reg.CourseID, reg.StudentID,
-	).Scan(&reg.ID, &reg.CourseID, &reg.StudentID, &reg.CreatedAt); err != nil {
+		reg.ID, reg.CourseID, reg.StudentID, false,
+	).Scan(&reg.ID, &reg.CourseID, &reg.StudentID, &reg.CreatedAt, &reg.Passed); err != nil {
 		if pgErr, ok := err.(*pgconn.PgError); ok && pgErr.Code == "23505" {
 			return nil, fmt.Errorf("student already registered for this course")
 		}
