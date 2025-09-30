@@ -124,13 +124,13 @@ func (h *EmployeeHandler) GetAllEmployees(w http.ResponseWriter, r *http.Request
 
 	var emp *repositories.Employee
 
-    if role == "employee" {
-        var err error
-        emp, err = h.repo.GetByEmail(r.Context(), email)
-        if err != nil {
-            http.Error(w, "not found", http.StatusNotFound)
-            return
-        }
+	if role == "employee" {
+		var err error
+		emp, err = h.repo.GetByEmail(r.Context(), email)
+		if err != nil {
+			http.Error(w, "not found", http.StatusNotFound)
+			return
+		}
 
 		employees, totalItems, err := h.repo.GetAllByJobId(r.Context(), page, limit, *emp.JobID)
 		if err != nil {
@@ -145,9 +145,9 @@ func (h *EmployeeHandler) GetAllEmployees(w http.ResponseWriter, r *http.Request
 			json.NewEncoder(w).Encode(resp)
 			return
 		}
-	
+
 		totalPages := (totalItems + limit - 1) / limit
-	
+
 		resp := EmployeeListResponse{
 			Employees:  employees,
 			Page:       page,
@@ -155,10 +155,10 @@ func (h *EmployeeHandler) GetAllEmployees(w http.ResponseWriter, r *http.Request
 			TotalPages: totalPages,
 			Error:      nil,
 		}
-	
+
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(resp)
-    } else {
+	} else {
 		employees, totalItems, err := h.repo.GetAll(r.Context(), page, limit)
 		if err != nil {
 			resp := EmployeeListResponse{
@@ -172,9 +172,9 @@ func (h *EmployeeHandler) GetAllEmployees(w http.ResponseWriter, r *http.Request
 			json.NewEncoder(w).Encode(resp)
 			return
 		}
-	
+
 		totalPages := (totalItems + limit - 1) / limit
-	
+
 		resp := EmployeeListResponse{
 			Employees:  employees,
 			Page:       page,
@@ -182,14 +182,12 @@ func (h *EmployeeHandler) GetAllEmployees(w http.ResponseWriter, r *http.Request
 			TotalPages: totalPages,
 			Error:      nil,
 		}
-	
+
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(resp)
 	}
-	
+
 }
-
-
 
 // get all pofesors
 func (h *EmployeeHandler) GetAllProfessorsFromOtherService(w http.ResponseWriter, r *http.Request) {
@@ -230,7 +228,7 @@ func (h *EmployeeHandler) UpdateEmployee(w http.ResponseWriter, r *http.Request)
 
 	role, _ := r.Context().Value("role").(string)
 
-	if role != "employee" && role != "sszadmin"  {
+	if role != "employee" && role != "sszadmin" {
 		http.Error(w, "only sszadmin and employees can update employees", http.StatusForbidden)
 		return
 	}
@@ -277,17 +275,16 @@ func (h *EmployeeHandler) DeleteEmployee(w http.ResponseWriter, r *http.Request)
 	w.WriteHeader(http.StatusNoContent)
 }
 
-
 // Delete employee
 func (h *EmployeeHandler) QuitJob(w http.ResponseWriter, r *http.Request) {
 
 	email, _ := r.Context().Value("email").(string)
 
-    _, err := h.repo.GetByEmail(r.Context(), email)
-    if err != nil {
-        http.Error(w, "not found", http.StatusNotFound)
-        return
-    }
+	_, err := h.repo.GetByEmail(r.Context(), email)
+	if err != nil {
+		http.Error(w, "not found", http.StatusNotFound)
+		return
+	}
 
 	if err := h.repo.QuitJob(r.Context(), email); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -295,4 +292,29 @@ func (h *EmployeeHandler) QuitJob(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+// Check if student is employed by index number
+func (h *EmployeeHandler) IsEmployedByIndex(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	indexNo := vars["indexno"]
+
+	if indexNo == "" {
+		http.Error(w, "indexno is required", http.StatusBadRequest)
+		return
+	}
+
+	employed, err := h.repo.IsEmployedByIndex(r.Context(), indexNo)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	resp := map[string]interface{}{
+		"indexno":  indexNo,
+		"employed": employed,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(resp)
 }

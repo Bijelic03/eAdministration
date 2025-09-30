@@ -65,6 +65,7 @@ func main() {
 	employees.Handle("/quit/job", authMiddleware(http.HandlerFunc(employeeHandler.QuitJob))).Methods("PUT")
 	employees.Handle("/{id}", authMiddleware(http.HandlerFunc(employeeHandler.DeleteEmployee))).Methods("DELETE")
 	employees.Handle("/professors/all", authMiddleware(http.HandlerFunc(employeeHandler.GetAllProfessorsFromOtherService))).Methods("GET")
+	employees.Handle("/employed/{indexno}", authMiddleware(http.HandlerFunc(employeeHandler.IsEmployedByIndex))).Methods("GET")
 
 	// /api/v1/employmentOffice/candiates
 	candidateRepository := repositories.NewCandidateRepository(conn)

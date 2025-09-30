@@ -44,6 +44,7 @@ type Student struct {
 	IndexNo     *string        `json:"indexno" db:"indexno"`
 	Ects        *string        `json:"ects" db:"ects"`
 	SingletonID *uuid.UUID     `json:"singletonid" db:"singleton_id"`
+	Employed    bool           `json:"employed"`
 }
 
 type StudentWithAvg struct {
@@ -259,13 +260,23 @@ func (r *StudentRepository) GetStudentsByIndexWithAvgGrade(ctx context.Context, 
 	}
 
 	query := `
-    SELECT u.id, u.fullname, u.email, u.indexno, AVG(er.grade)::float AS avggrade
-    FROM users u
-    LEFT JOIN exam_registrations er ON u.id = er.studentid
-    WHERE u.indexno = ANY($1)
-    GROUP BY u.id, u.fullname, u.email, u.indexno
+    SELECT 
+        c.id,
+        c.fullname,
+        c.email,          -- uzimamo email kandidata
+        c.indexno,
+        AVG(er.grade)::float AS avggrade
+    FROM users c
+    JOIN users s 
+        ON c.indexno = s.indexno
+       AND s.role = 'student'
+    LEFT JOIN exam_registrations er 
+        ON s.id = er.studentid
+    WHERE c.indexno = ANY($1)
+      AND c.role = 'candidate'
+    GROUP BY c.id, c.fullname, c.email, c.indexno
     ORDER BY avggrade DESC NULLS LAST
-	`
+`
 
 	rows, err := r.db.Query(ctx, query, pq.Array(indices))
 	if err != nil {
