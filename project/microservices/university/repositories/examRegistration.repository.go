@@ -18,7 +18,7 @@ type ExamRegistration struct {
 	StudentID uuid.UUID `json:"studentid" db:"studentid"`
 	CreatedAt time.Time `json:"createdat" db:"createdat"`
 	Grade     *int      `json:"grade,omitempty" db:"grade"`
-	Passed    bool      `json:"passed" db:"passed"` 
+	Passed    bool      `json:"passed" db:"passed"`
 }
 
 type ExamRegistrationRepository struct {
@@ -43,17 +43,20 @@ func (r *ExamRegistrationRepository) Register(ctx context.Context, examID uuid.U
 		ID:        uuid.New(),
 		ExamID:    examID,
 		StudentID: studentID,
-		Passed: false,
+		CreatedAt: time.Now(),
+		Grade:     nil,
+		Passed:    false,
 	}
 
 	ins := `
-        INSERT INTO exam_registrations (id, examid, studentid, passed)
-        VALUES ($1, $2, $3, $4)
-        RETURNING id, examid, studentid, createdat, passed
-    `
+    INSERT INTO exam_registrations (id, examid, studentid, createdat, grade, passed)
+    VALUES ($1, $2, $3, $4, $5, $6)
+    RETURNING id, examid, studentid, createdat, grade, passed
+`
+
 	if err := r.db.QueryRow(ctx, ins,
-		reg.ID, reg.ExamID, reg.StudentID,
-	).Scan(&reg.ID, &reg.ExamID, &reg.StudentID, &reg.CreatedAt); err != nil {
+		reg.ID, reg.ExamID, reg.StudentID, reg.CreatedAt, reg.Grade, reg.Passed,
+	).Scan(&reg.ID, &reg.ExamID, &reg.StudentID, &reg.CreatedAt, &reg.Grade, &reg.Passed); err != nil {
 		if pgErr, ok := err.(*pgconn.PgError); ok && pgErr.Code == "23505" {
 			return nil, fmt.Errorf("student already registered for this exam")
 		}
@@ -181,13 +184,30 @@ func (r *ExamRegistrationRepository) GetByStudentEmail(ctx context.Context, emai
 }
 
 func (r *ExamRegistrationRepository) EnterGrade(ctx context.Context, examID, studentID uuid.UUID, grade int) (*ExamRegistration, error) {
+
+	var existingGrade *int
+	checkQuery := `
+        SELECT grade
+        FROM exam_registrations
+        WHERE examid = $1 AND studentid = $2
+    `
+	if err := r.db.QueryRow(ctx, checkQuery, examID, studentID).Scan(&existingGrade); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, fmt.Errorf("registration not found for exam %s and student %s", examID, studentID)
+		}
+		return nil, err
+	}
+	if existingGrade != nil {
+		return nil, fmt.Errorf("Ocena je vec upisana za ovaj ispit")
+	}
+
 	query := `
-		UPDATE exam_registrations
-		SET grade = $1,
-		    passed = CASE WHEN $1 >= 6 THEN TRUE ELSE FALSE END
-		WHERE examid = $2 AND studentid = $3
-		RETURNING id, examid, studentid, createdat, grade, passed
-	`
+        UPDATE exam_registrations
+        SET grade = $1,
+            passed = CASE WHEN $1 >= 6 THEN TRUE ELSE FALSE END
+        WHERE examid = $2 AND studentid = $3
+        RETURNING id, examid, studentid, createdat, grade, passed
+    `
 
 	var reg ExamRegistration
 	err := r.db.QueryRow(ctx, query, grade, examID, studentID).Scan(
@@ -198,12 +218,58 @@ func (r *ExamRegistrationRepository) EnterGrade(ctx context.Context, examID, stu
 		&reg.Grade,
 		&reg.Passed,
 	)
-	// ovde jos mora povezat studentu da se poveca ects ako polozi tj ocjena 6+
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, fmt.Errorf("registration not found for exam %s and student %s", examID, studentID)
 		}
 		return nil, err
+	}
+
+	if grade >= 6 {
+		var espb int
+		getEspb := `
+			SELECT c.ects
+			FROM exams e
+			JOIN courses c ON e.courseid::uuid = c.id
+			WHERE e.id = $1
+        `
+		if err := r.db.QueryRow(ctx, getEspb, examID).Scan(&espb); err != nil {
+			return nil, fmt.Errorf("failed to get espb for exam %s: %w", examID, err)
+		}
+
+		updateUser := `
+            UPDATE users
+            SET ects = COALESCE(ects, '0')::int + $1
+            WHERE id = $2
+        `
+		if _, err := r.db.Exec(ctx, updateUser, espb, studentID); err != nil {
+			return nil, fmt.Errorf("failed to update ects for student %s: %w", studentID, err)
+		}
+
+		var studentECTS, requiredECTS int
+		getECTS := `
+			SELECT COALESCE(u.ects, '0')::int, p.ects::int
+			FROM users u
+			JOIN exam_registrations er ON er.studentid = u.id
+			JOIN exams e ON er.examid = e.id
+			JOIN courses c ON e.courseid::uuid = c.id
+			JOIN singleton p ON c.singleton_id = p.id
+			WHERE u.id = $1 AND e.id = $2
+		`
+		if err := r.db.QueryRow(ctx, getECTS, studentID, examID).Scan(&studentECTS, &requiredECTS); err != nil {
+			return nil, fmt.Errorf("failed to check graduation status for student %s: %w", studentID, err)
+		}
+
+		if studentECTS >= requiredECTS {
+			markGraduated := `
+				UPDATE users
+				SET status = 'GRADUATED'
+				WHERE id = $1
+			`
+			if _, err := r.db.Exec(ctx, markGraduated, studentID); err != nil {
+				return nil, fmt.Errorf("failed to mark student %s as GRADUATED: %w", studentID, err)
+			}
+		}
 	}
 
 	return &reg, nil

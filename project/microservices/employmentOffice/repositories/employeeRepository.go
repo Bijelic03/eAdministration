@@ -11,13 +11,13 @@ import (
 )
 
 type Employee struct {
-	ID       uuid.UUID `json:"id" db:"id"`
-	FullName string    `json:"fullname" db:"fullname"`
-	Email    string    `json:"email" db:"email"`
-	Password string    `json:"password" db:"password"`
-	Role     string    `json:"role" db:"role"`
+	ID       uuid.UUID  `json:"id" db:"id"`
+	FullName string     `json:"fullname" db:"fullname"`
+	Email    string     `json:"email" db:"email"`
+	Password string     `json:"password" db:"password"`
+	Role     string     `json:"role" db:"role"`
 	JobID    *uuid.UUID `json:"jobid" db:"jobid"`
-	IndexNo *string   `json:"indexno" db:"indexno"`
+	IndexNo  *string    `json:"indexno" db:"indexno"`
 }
 
 type EmployeeRepository struct {
@@ -160,7 +160,6 @@ func (r *EmployeeRepository) GetAll(ctx context.Context, page, limit int) ([]*Em
 	return employees, totalItems, nil
 }
 
-
 // Get all employees by job ID
 func (r *EmployeeRepository) GetAllByJobId(ctx context.Context, page, limit int, jobid uuid.UUID) ([]*Employee, int, error) {
 	if page < 1 {
@@ -209,7 +208,6 @@ func (r *EmployeeRepository) GetAllByJobId(ctx context.Context, page, limit int,
 	return employees, totalItems, nil
 }
 
-
 func (r *EmployeeRepository) Update(ctx context.Context, emp *Employee) (*Employee, error) {
 	query := `
 		UPDATE users
@@ -248,27 +246,26 @@ func (r *EmployeeRepository) Update(ctx context.Context, emp *Employee) (*Employ
 }
 
 func (r *EmployeeRepository) Delete(ctx context.Context, employeeID uuid.UUID) error {
-    // 1️⃣ Obriši sve intervjue korisnika
-    _, err := r.db.Exec(ctx, `DELETE FROM interviews WHERE candidateid = $1`, employeeID)
-    if err != nil {
-        return err
-    }
+	// 1️⃣ Obriši sve intervjue korisnika
+	_, err := r.db.Exec(ctx, `DELETE FROM interviews WHERE candidateid = $1`, employeeID)
+	if err != nil {
+		return err
+	}
 
-    // 2️⃣ Obriši sve job aplikacije korisnika
-    _, err = r.db.Exec(ctx, `DELETE FROM jobapplications WHERE candidateid = $1`, employeeID)
-    if err != nil {
-        return err
-    }
+	// 2️⃣ Obriši sve job aplikacije korisnika
+	_, err = r.db.Exec(ctx, `DELETE FROM jobapplications WHERE candidateid = $1`, employeeID)
+	if err != nil {
+		return err
+	}
 
-    // 3️⃣ Na kraju obriši samog korisnika
-    _, err = r.db.Exec(ctx, `DELETE FROM users WHERE id = $1`, employeeID)
-    if err != nil {
-        return err
-    }
+	// 3️⃣ Na kraju obriši samog korisnika
+	_, err = r.db.Exec(ctx, `DELETE FROM users WHERE id = $1`, employeeID)
+	if err != nil {
+		return err
+	}
 
-    return nil
+	return nil
 }
-
 
 // QuitJob sets jobid to NULL and changes role to 'candidate'
 func (r *EmployeeRepository) QuitJob(ctx context.Context, email string) error {
@@ -279,4 +276,23 @@ func (r *EmployeeRepository) QuitJob(ctx context.Context, email string) error {
 	`
 	_, err := r.db.Exec(ctx, query, email)
 	return err
+}
+
+// IsEmployedByIndex checks if a student with given index number is employed
+func (r *EmployeeRepository) IsEmployedByIndex(ctx context.Context, indexNo string) (bool, error) {
+	query := `
+		SELECT EXISTS (
+			SELECT 1 
+			FROM users 
+			WHERE indexno = $1 AND role = 'employee'
+		)
+	`
+
+	var employed bool
+	err := r.db.QueryRow(ctx, query, indexNo).Scan(&employed)
+	if err != nil {
+		return false, err
+	}
+
+	return employed, nil
 }

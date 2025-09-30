@@ -39,8 +39,10 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/Bijelic03/eAdministration/project/microservices/university/repositories"
 	"github.com/google/uuid"
@@ -123,7 +125,6 @@ func (h *StudentHandler) GetAllIndexNumbersHandler(w http.ResponseWriter, r *htt
 	})
 }
 
-
 // Get student by email (JSON body)
 func (h *StudentHandler) GetStudentByEmail(w http.ResponseWriter, r *http.Request) {
 	var req struct {
@@ -204,6 +205,44 @@ func (h *StudentHandler) GetAllStudents(w http.ResponseWriter, r *http.Request) 
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(resp)
 		return
+	}
+
+	client := &http.Client{Timeout: 3 * time.Second}
+	for _, s := range students {
+		if s.IndexNo == nil || *s.IndexNo == "" {
+			s.Employed = false
+			continue
+		}
+
+		url := "http://employment-office:8082/api/v1/employmentOffice/employees/employed/" + *s.IndexNo
+		req, err := http.NewRequest("GET", url, nil)
+		if err != nil {
+			s.Employed = false
+			continue
+		}
+
+		if authHeader := r.Header.Get("Authorization"); authHeader != "" {
+			req.Header.Set("Authorization", authHeader)
+		}
+
+		respEmp, err := client.Do(req)
+		if err != nil || respEmp.StatusCode != http.StatusOK {
+			s.Employed = false
+			continue
+		}
+		defer respEmp.Body.Close()
+
+		var employedResp struct {
+			IndexNo  string `json:"indexno"`
+			Employed bool   `json:"employed"`
+		}
+		if err := json.NewDecoder(respEmp.Body).Decode(&employedResp); err != nil {
+			s.Employed = false
+			continue
+		}
+		log.Println(employedResp.IndexNo, " zaopslen:", employedResp.Employed)
+
+		s.Employed = employedResp.Employed
 	}
 
 	totalPages := (totalItems + limit - 1) / limit

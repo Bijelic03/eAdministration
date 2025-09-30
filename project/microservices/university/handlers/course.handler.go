@@ -19,6 +19,14 @@ type CourseListResponse struct {
 	Error      interface{}            `json:"error"`
 }
 
+type ProgramListResponse struct {
+	Programs   []*repositories.Singleton `json:"programs"`
+	Page       int                       `json:"page"`
+	TotalItems int                       `json:"totalItems"`
+	TotalPages int                       `json:"totalPages"`
+	Error      interface{}               `json:"error"`
+}
+
 type CourseHandler struct {
 	repo *repositories.CourseRepository
 }
@@ -92,7 +100,23 @@ func (h *CourseHandler) GetAllCourses(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	courses, totalItems, err := h.repo.GetAll(r.Context(), page, limit)
+	// 👇 Uzimamo iz contexta email i rolu
+	email, _ := r.Context().Value("email").(string)
+	role, _ := r.Context().Value("role").(string)
+
+	var (
+		courses    []*repositories.Course
+		totalItems int
+		err        error
+	)
+
+	if role == "student" {
+		programId, _ := h.repo.GetUserProgramID(r.Context(), email)
+		courses, totalItems, err = h.repo.GetByProgram(r.Context(), programId, page, limit)
+	} else {
+		courses, totalItems, err = h.repo.GetAll(r.Context(), page, limit)
+	}
+
 	if err != nil {
 		resp := CourseListResponse{
 			Courses:    nil,
@@ -170,4 +194,106 @@ func (h *CourseHandler) DeleteCourse(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+// Get all courses for a program
+func (h *CourseHandler) GetCoursesByProgram(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	programIDStr := vars["id"]
+	programID, err := uuid.Parse(programIDStr)
+	if err != nil {
+		http.Error(w, "invalid program id", http.StatusBadRequest)
+		return
+	}
+
+	pageStr := r.URL.Query().Get("page")
+	limitStr := r.URL.Query().Get("max")
+
+	page := 1
+	limit := 10
+
+	if pageStr != "" {
+		if p, err := strconv.Atoi(pageStr); err == nil && p > 0 {
+			page = p
+		}
+	}
+	if limitStr != "" {
+		if l, err := strconv.Atoi(limitStr); err == nil && l > 0 {
+			limit = l
+		}
+	}
+
+	courses, totalItems, err := h.repo.GetByProgram(r.Context(), programID, page, limit)
+	if err != nil {
+		resp := CourseListResponse{
+			Courses:    nil,
+			Page:       page,
+			TotalItems: 0,
+			TotalPages: 0,
+			Error:      err.Error(),
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	totalPages := (totalItems + limit - 1) / limit
+
+	resp := CourseListResponse{
+		Courses:    courses,
+		Page:       page,
+		TotalItems: totalItems,
+		TotalPages: totalPages,
+		Error:      nil,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(resp)
+}
+
+// Get all programs
+func (h *CourseHandler) GetAllPrograms(w http.ResponseWriter, r *http.Request) {
+	pageStr := r.URL.Query().Get("page")
+	limitStr := r.URL.Query().Get("max")
+
+	page := 1
+	limit := 10
+
+	if pageStr != "" {
+		if p, err := strconv.Atoi(pageStr); err == nil && p > 0 {
+			page = p
+		}
+	}
+	if limitStr != "" {
+		if l, err := strconv.Atoi(limitStr); err == nil && l > 0 {
+			limit = l
+		}
+	}
+
+	programs, totalItems, err := h.repo.GetAllPrograms(r.Context(), page, limit)
+	if err != nil {
+		resp := ProgramListResponse{
+			Programs:   nil,
+			Page:       page,
+			TotalItems: 0,
+			TotalPages: 0,
+			Error:      err.Error(),
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	totalPages := (totalItems + limit - 1) / limit
+
+	resp := ProgramListResponse{
+		Programs:   programs,
+		Page:       page,
+		TotalItems: totalItems,
+		TotalPages: totalPages,
+		Error:      nil,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(resp)
 }

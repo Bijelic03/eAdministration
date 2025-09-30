@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -27,7 +28,6 @@ func (h *ExamRegistrationHandler) RegisterExam(w http.ResponseWriter, r *http.Re
 
 	email, _ := r.Context().Value("email").(string)
 	role, _ := r.Context().Value("role").(string)
-
 	if email == "" {
 		http.Error(w, "unauthorized", http.StatusUnauthorized)
 		return
@@ -69,6 +69,8 @@ func (h *ExamRegistrationHandler) RegisterExam(w http.ResponseWriter, r *http.Re
 		http.Error(w, "Greška prilikom provjere course registration:", http.StatusNotFound)
 		return
 	}
+
+	log.Println("dosao je dovde")
 
 	if coursesReg == nil {
 		http.Error(w, "Student nije registrovan na ovaj kurs:", http.StatusNotFound)
