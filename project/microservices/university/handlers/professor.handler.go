@@ -133,6 +133,31 @@ func (h *ProfessorHandler) GetAllProfessors(w http.ResponseWriter, r *http.Reque
 		}
 	}
 
+	role, _ := r.Context().Value("role").(string)
+	email, _ := r.Context().Value("email").(string)
+
+	// Ako je profesor -> vrati samo njega
+	if role == "professor" {
+		prof, err := h.repo.GetByEmail(r.Context(), email)
+		if err != nil {
+			http.Error(w, "not found", http.StatusNotFound)
+			return
+		}
+
+		resp := ProfessorListResponse{
+			Professors: []*repositories.Professor{prof},
+			Page:       1,
+			TotalItems: 1,
+			TotalPages: 1,
+			Error:      nil,
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	// Inače vrati sve
 	professors, totalItems, err := h.repo.GetAll(r.Context(), page, limit)
 	if err != nil {
 		resp := ProfessorListResponse{

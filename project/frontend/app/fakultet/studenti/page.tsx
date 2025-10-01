@@ -16,6 +16,7 @@ import usePaginationAndSearch from "@/hooks/usePaginationAndSearch";
 import { handleApiError, handleApiSuccess } from "@/services/api.service";
 import { useEffect, useState } from "react";
 import UpsertStudentForm from "./students.form";
+import { isFacultyAdmin, isSSZAdmin, isStudent } from "@/services/role.service";
 
 const StudentiPage = () => {
   const { values, fetchStudents, deleteStudent, updateStudent, createStudent } =
@@ -66,7 +67,7 @@ const StudentiPage = () => {
   return (
     <Wrap>
       <Table
-        hasAddButton={true}
+        hasAddButton={isFacultyAdmin() ? true : false}
         addButtonOnClick={() => toggleModal()}
         addButtonLabel="Dodaj novog studenta"
         className="mt-8"
@@ -78,7 +79,6 @@ const StudentiPage = () => {
         }}
       >
         <TableHeader>
-          <TableHeaderCell>#</TableHeaderCell>
           <TableHeaderCell>Broj indeksa</TableHeaderCell>
           <TableHeaderCell>Ime i prezime</TableHeaderCell>
           <TableHeaderCell>Email</TableHeaderCell>
@@ -91,24 +91,31 @@ const StudentiPage = () => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             values?.students?.map((student: any) => (
               <TableRow key={student.id}>
-                <TableCell>{student?.id}</TableCell>
                 <TableCell>{student?.indexno}</TableCell>
                 <TableCell>{student?.fullname}</TableCell>
                 <TableCell>{student?.email}</TableCell>
                 <TableCell>{student?.employed ? "DA" : "NE"}</TableCell>
                 <TableCell>{student?.status}</TableCell>
                 <TableCell className="flex gap-4">
-                  <Button
-                    onClick={() => {
-                      setData(student);
-                      toggleModal();
-                    }}
-                  >
-                    <Icon type="edit" />
-                  </Button>
-                  <Button onClick={() => onDelete(student.id)}>
-                    <Icon type="reject" />
-                  </Button>
+                  {(isStudent() || isFacultyAdmin()) && (
+                    <>
+                      <Button
+                        tooltip="Edituj"
+                        onClick={() => {
+                          setData(student);
+                          toggleModal();
+                        }}
+                      >
+                        <Icon type="edit" />
+                      </Button>
+                      <Button
+                        tooltip="Obrisi"
+                        onClick={() => onDelete(student.id)}
+                      >
+                        <Icon type="reject" />
+                      </Button>
+                    </>
+                  )}
                 </TableCell>
               </TableRow>
             ))

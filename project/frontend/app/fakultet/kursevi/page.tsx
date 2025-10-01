@@ -16,6 +16,7 @@ import { handleApiError, handleApiSuccess } from "@/services/api.service";
 import { useEffect, useState } from "react";
 import UpsertCoursesForm from "./courses.form";
 import useCourse from "@/hooks/useCourse";
+import { isFacultyAdmin, isSSZAdmin, isStudent } from "@/services/role.service";
 
 const KurseviPage = () => {
   const {
@@ -81,7 +82,7 @@ const KurseviPage = () => {
   return (
     <Wrap>
       <Table
-        hasAddButton={true}
+        hasAddButton={isFacultyAdmin() ? true : false}
         addButtonOnClick={() => toggleModal()}
         addButtonLabel="Dodaj novi kurs"
         className="mt-8"
@@ -93,11 +94,9 @@ const KurseviPage = () => {
         }}
       >
         <TableHeader>
-          <TableHeaderCell>#</TableHeaderCell>
           <TableHeaderCell>Kod</TableHeaderCell>
           <TableHeaderCell>Naziv</TableHeaderCell>
           <TableHeaderCell>ECTS bodovi</TableHeaderCell>
-          <TableHeaderCell>Smer</TableHeaderCell>
           <TableHeaderCell>Aktivan</TableHeaderCell>
           <TableHeaderCell>Akcije</TableHeaderCell>
         </TableHeader>
@@ -106,31 +105,41 @@ const KurseviPage = () => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             values?.courses?.map((course: any) => (
               <TableRow key={course.id}>
-                <TableCell>{course?.id}</TableCell>
                 <TableCell>{course?.code}</TableCell>
                 <TableCell>{course?.name}</TableCell>
                 <TableCell>{course?.ects}</TableCell>
-                <TableCell>{course?.singletonid}</TableCell>
                 <TableCell>{course?.active === true ? "Da" : "Ne"}</TableCell>
                 <TableCell className="flex gap-4">
-                  <Button
-                    onClick={() => {
-                      onJoinCourse(course?.id);
-                    }}
-                  >
-                    <Icon type="upload" />
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      setData(course);
-                      toggleModal();
-                    }}
-                  >
-                    <Icon type="edit" />
-                  </Button>
-                  <Button onClick={() => onDelete(course.id)}>
-                    <Icon type="reject" />
-                  </Button>
+                  {isStudent() && (
+                    <Button
+                      tooltip="Prijavi se"
+                      onClick={() => {
+                        onJoinCourse(course?.id);
+                      }}
+                    >
+                      <Icon type="upload" />
+                    </Button>
+                  )}
+
+                  {isFacultyAdmin() && (
+                    <>
+                      <Button
+                        tooltip="Edituj"
+                        onClick={() => {
+                          setData(course);
+                          toggleModal();
+                        }}
+                      >
+                        <Icon type="edit" />
+                      </Button>
+                      <Button
+                        tooltip="Obrisi"
+                        onClick={() => onDelete(course.id)}
+                      >
+                        <Icon type="reject" />
+                      </Button>
+                    </>
+                  )}
                 </TableCell>
               </TableRow>
             ))

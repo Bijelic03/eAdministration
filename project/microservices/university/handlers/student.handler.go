@@ -39,7 +39,7 @@ package handlers
 import (
 	"context"
 	"encoding/json"
-	"log"
+
 	"net/http"
 	"strconv"
 	"time"
@@ -175,6 +175,7 @@ func (h *StudentHandler) VerifyGraduation(w http.ResponseWriter, r *http.Request
 }
 
 // Get all students
+// Get all students
 func (h *StudentHandler) GetAllStudents(w http.ResponseWriter, r *http.Request) {
 	pageStr := r.URL.Query().Get("page")
 	limitStr := r.URL.Query().Get("max")
@@ -193,6 +194,55 @@ func (h *StudentHandler) GetAllStudents(w http.ResponseWriter, r *http.Request) 
 		}
 	}
 
+	role, _ := r.Context().Value("role").(string)
+	email, _ := r.Context().Value("email").(string)
+
+	client := &http.Client{Timeout: 3 * time.Second}
+
+	// Ako je student → vrati samo njega
+	if role == "student" {
+		student, err := h.repo.GetByEmail(r.Context(), email)
+		if err != nil {
+			http.Error(w, "not found", http.StatusNotFound)
+			return
+		}
+
+		// employment provjera
+		if student.IndexNo != nil && *student.IndexNo != "" {
+			url := "http://employment-office:8082/api/v1/employmentOffice/employees/employed/" + *student.IndexNo
+			req, _ := http.NewRequest("GET", url, nil)
+			if authHeader := r.Header.Get("Authorization"); authHeader != "" {
+				req.Header.Set("Authorization", authHeader)
+			}
+
+			respEmp, err := client.Do(req)
+			if err == nil && respEmp.StatusCode == http.StatusOK {
+				defer respEmp.Body.Close()
+				var employedResp struct {
+					IndexNo  string `json:"indexno"`
+					Employed bool   `json:"employed"`
+				}
+				if err := json.NewDecoder(respEmp.Body).Decode(&employedResp); err == nil {
+					student.Employed = employedResp.Employed
+				}
+			}
+		} else {
+			student.Employed = false
+		}
+
+		resp := StudentListResponse{
+			Students:   []*repositories.Student{student},
+			Page:       1,
+			TotalItems: 1,
+			TotalPages: 1,
+			Error:      nil,
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	// Inače vrati sve
 	students, totalItems, err := h.repo.GetAll(r.Context(), page, limit)
 	if err != nil {
 		resp := StudentListResponse{
@@ -207,7 +257,7 @@ func (h *StudentHandler) GetAllStudents(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	client := &http.Client{Timeout: 3 * time.Second}
+	// provjeri employment za sve
 	for _, s := range students {
 		if s.IndexNo == nil || *s.IndexNo == "" {
 			s.Employed = false
@@ -220,7 +270,6 @@ func (h *StudentHandler) GetAllStudents(w http.ResponseWriter, r *http.Request) 
 			s.Employed = false
 			continue
 		}
-
 		if authHeader := r.Header.Get("Authorization"); authHeader != "" {
 			req.Header.Set("Authorization", authHeader)
 		}
@@ -240,7 +289,6 @@ func (h *StudentHandler) GetAllStudents(w http.ResponseWriter, r *http.Request) 
 			s.Employed = false
 			continue
 		}
-		log.Println(employedResp.IndexNo, " zaopslen:", employedResp.Employed)
 
 		s.Employed = employedResp.Employed
 	}
@@ -258,6 +306,7 @@ func (h *StudentHandler) GetAllStudents(w http.ResponseWriter, r *http.Request) 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(resp)
 }
+
 
 // Update student
 func (h *StudentHandler) UpdateStudent(w http.ResponseWriter, r *http.Request) {

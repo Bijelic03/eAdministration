@@ -47,6 +47,13 @@ const UpsertCoursesForm = ({ data, onCreate, onEdit }: FormProps) => {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    console.log(formData.singletonid, "fsid");
+    if (
+      formData.singletonid === undefined ||
+      formData.singletonid === null ||
+      formData.singletonid === ""
+    )
+      return;
 
     if (data?.id) {
       onEdit({ ...formData, id: data.id });
@@ -57,12 +64,13 @@ const UpsertCoursesForm = ({ data, onCreate, onEdit }: FormProps) => {
 
   // programs
   const { values: programsValues, fetchPrograms } = usePrograms();
-  const PROGRAM_OPTIONS =
-    programsValues?.programs?.map((prog) => ({
+  const PROGRAM_OPTIONS = [
+    { value: "", label: "--- Select ---" },
+    ...(programsValues?.programs?.map((prog) => ({
       value: prog.id,
       label: prog.name,
-    })) ?? [];
-
+    })) ?? []),
+  ];
   useEffect(() => {
     fetchPrograms();
   }, []);

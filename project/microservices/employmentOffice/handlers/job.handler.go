@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/Bijelic03/eAdministration/project/microservices/employmentOffice/repositories"
@@ -226,8 +227,8 @@ func (h *JobHandler) ApplyForJob(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if job.RequiredFaculty != nil && *job.RequiredFaculty {
-		if candidate.IndexNo == nil {
-			http.Error(w, "candidate has no index number", http.StatusBadRequest)
+		if candidate.IndexNo == nil || *candidate.IndexNo == "" {
+			http.Error(w, "Verifikacija nije uspjesna - nemate indeks", http.StatusBadRequest)
 			return
 		}
 		
@@ -266,20 +267,21 @@ func (h *JobHandler) ApplyForJob(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// Provjera statusa
 		graduated := false
-		if status, ok := stud["status"].(bool); ok && status {
-			graduated = true
+		if statusVal, ok := stud["status"]; ok {
+			switch status := statusVal.(type) {
+			case bool:
+				graduated = status
+			case string:
+				graduated = strings.ToUpper(status) == "TRUE" || strings.ToUpper(status) == "GRADUATED"
+			}
 		}
 
-		// Sada graduated ima true/false
-		if graduated {
-			fmt.Println("Student je diplomirao!")
-		} else {
+		if !graduated {
 			http.Error(w, "Verifikacija nije uspjesna - nemate diplomu", http.StatusNotFound)
-			return;
+			return
 		}
-	}
+			}
 
 	existing, err := h.jobAppsRepo.GetJobApplicationByCandidateIDAndByJobID(r.Context(), jobID, candidate.ID)
 	if err != nil {
