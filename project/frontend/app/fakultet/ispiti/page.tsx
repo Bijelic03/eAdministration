@@ -119,7 +119,7 @@ const IspitiPage = () => {
                   {isStudent() && (
                     <>
                       <Button
-                        tooltip="Zakazi intervju"
+                        tooltip="Prijavi ispit"
                         onClick={() => enterExam(exam.id)}
                       >
                         <Icon type="interviewSchedule" />
